@@ -1,7 +1,7 @@
 package astavie.spellcrafting.common.caster;
 
 import astavie.spellcrafting.Spellcrafting;
-import astavie.spellcrafting.api.spell.ICaster;
+import astavie.spellcrafting.api.spell.caster.ICaster;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;

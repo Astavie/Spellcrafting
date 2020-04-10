@@ -1,6 +1,6 @@
 package astavie.spellcrafting.common.caster;
 
-import astavie.spellcrafting.api.spell.ICaster;
+import astavie.spellcrafting.api.spell.caster.ICaster;
 import net.minecraft.nbt.INBT;
 import net.minecraft.util.Direction;
 import net.minecraftforge.common.capabilities.Capability;

@@ -1,16 +1,19 @@
 package astavie.spellcrafting.common.caster;
 
-import astavie.spellcrafting.api.spell.ICaster;
-import astavie.spellcrafting.api.spell.ISpellInfo;
+import astavie.spellcrafting.api.spell.ISpell;
+import astavie.spellcrafting.api.spell.caster.ICasterEntity;
 import astavie.spellcrafting.api.util.Location;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 
 import javax.annotation.Nullable;
 
-public class CasterPlayer implements ICaster {
+public class CasterPlayer implements ICasterEntity {
 
 	private final PlayerEntity entity;
+
+	public Entity tEntity;
+	public Location tLocation;
 
 	public CasterPlayer(PlayerEntity entity) {
 		this.entity = entity;
@@ -28,14 +31,20 @@ public class CasterPlayer implements ICaster {
 
 	@Nullable
 	@Override
-	public Entity getTargetEntity(ISpellInfo info) {
-		return null;
+	public Entity getAsEntity() {
+		return entity;
 	}
 
 	@Nullable
 	@Override
-	public Location getTargetLocation(ISpellInfo info) {
-		return null;
+	public Entity getTargetEntity(ISpell info) {
+		return tEntity;
+	}
+
+	@Nullable
+	@Override
+	public Location getTargetLocation(ISpell info) {
+		return tLocation;
 	}
 
 }

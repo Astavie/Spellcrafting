@@ -3,10 +3,9 @@ package astavie.spellcrafting.apiimpl;
 import astavie.spellcrafting.api.ISpellcraftingAPI;
 import astavie.spellcrafting.api.SpellcraftingAPIInject;
 import astavie.spellcrafting.api.spell.*;
-import astavie.spellcrafting.apiimpl.spell.ArgumentStack;
-import astavie.spellcrafting.apiimpl.spell.BeadStack;
-import astavie.spellcrafting.apiimpl.spell.Spell;
-import astavie.spellcrafting.apiimpl.spell.type.ArgumentTypes;
+import astavie.spellcrafting.api.spell.caster.ICaster;
+import astavie.spellcrafting.apiimpl.spell.*;
+import astavie.spellcrafting.apiimpl.spell.type.FocusTypes;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.forgespi.language.ModFileScanData;
 import org.apache.logging.log4j.LogManager;
@@ -23,7 +22,11 @@ public class SpellcraftingAPI implements ISpellcraftingAPI {
 	private static final Logger LOGGER = LogManager.getLogger(SpellcraftingAPI.class);
 	private static final SpellcraftingAPI INSTANCE = new SpellcraftingAPI();
 
-	private final ArgumentTypes types = new ArgumentTypes();
+	private final FocusTypes types = new FocusTypes();
+	private final SpellRegistry registry = new SpellRegistry();
+
+	private SpellcraftingAPI() {
+	}
 
 	public static SpellcraftingAPI instance() {
 		return INSTANCE;
@@ -59,8 +62,8 @@ public class SpellcraftingAPI implements ISpellcraftingAPI {
 	}
 
 	@Override
-	public IArgumentStack createArgumentStack() {
-		return new ArgumentStack();
+	public IFocusStack createFocusStack() {
+		return new FocusStack();
 	}
 
 	@Override
@@ -69,13 +72,23 @@ public class SpellcraftingAPI implements ISpellcraftingAPI {
 	}
 
 	@Override
-	public ISpell createSpell() {
-		return new Spell();
+	public ISpellTemplate createSpellTemplate() {
+		return new SpellTemplate();
 	}
 
 	@Override
-	public IArgumentTypes argumentTypes() {
+	public ISpell createSpell(ICaster caster, ISpellTemplate spell) {
+		return new Spell(caster, spell);
+	}
+
+	@Override
+	public IFocusTypes focusTypes() {
 		return types;
+	}
+
+	@Override
+	public ISpellRegistry spellRegistry() {
+		return registry;
 	}
 
 }

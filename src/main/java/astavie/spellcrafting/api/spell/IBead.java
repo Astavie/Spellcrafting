@@ -6,23 +6,40 @@ import java.util.List;
 public interface IBead {
 
 	/**
-	 * @return the amount of arguments this bead has
+	 * @return the amount of foci this bead has
 	 */
-	int getArgumentCount();
+	int getFocusCount();
 
 	/**
-	 * @param argument the index of the argument
-	 * @return what argument types can be inserted into the argument
+	 * @param focus the index of the focus
+	 * @return what focus types can be inserted into the focus
 	 */
-	List<IArgumentType<?>> getApplicableTypes(int argument);
+	List<IFocusType<?>> getApplicableTypes(int focus);
 
 	/**
-	 * @param argument the index of the argument
-	 * @return the fixed argument at the specified index, if there is one
+	 * @param focus the index of the focus
+	 * @return the fixed focus at the specified index, if there is one
 	 */
 	@Nullable
-	default IArgumentStack getForcedArgument(int argument) {
+	default IFocusStack getFixedFocus(int focus) {
 		return null;
 	}
+
+	/**
+	 * @param spell     the spell this bead is in
+	 * @param stack     the stack this bead is in
+	 * @param castEvent whether or not the spell was triggered by a manual cast
+	 * @return whether or not to continue after this bead
+	 */
+	default boolean shouldContinue(ISpell spell, IBeadStack stack, boolean castEvent) {
+		return true;
+	}
+
+	/**
+	 * @param spell the spell this bead is in
+	 * @param stack the stack this bead is in
+	 * @return if this bead was casted successfully
+	 */
+	boolean cast(ISpell spell, IBeadStack stack);
 
 }

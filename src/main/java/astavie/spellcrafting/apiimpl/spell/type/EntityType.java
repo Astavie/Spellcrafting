@@ -1,6 +1,6 @@
 package astavie.spellcrafting.apiimpl.spell.type;
 
-import astavie.spellcrafting.api.spell.IArgumentType;
+import astavie.spellcrafting.api.spell.IFocusType;
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.INBT;
@@ -8,7 +8,7 @@ import net.minecraft.world.World;
 import net.minecraft.world.dimension.DimensionType;
 import net.minecraftforge.fml.server.ServerLifecycleHooks;
 
-public class EntityArgument implements IArgumentType<Entity> {
+public class EntityType implements IFocusType<Entity> {
 
 	@Override
 	public INBT writeToNBT(Entity object) {

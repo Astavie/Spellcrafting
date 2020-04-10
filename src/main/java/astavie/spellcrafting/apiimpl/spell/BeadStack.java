@@ -1,19 +1,23 @@
 package astavie.spellcrafting.apiimpl.spell;
 
-import astavie.spellcrafting.api.spell.IArgumentStack;
 import astavie.spellcrafting.api.spell.IBead;
 import astavie.spellcrafting.api.spell.IBeadStack;
+import astavie.spellcrafting.api.spell.IFocusStack;
 
 public class BeadStack implements IBeadStack {
 
 	private final int id;
 	private final IBead bead;
-	private final IArgumentStack[] arguments;
+	private final IFocusStack[] foci;
 
 	public BeadStack(int id, IBead bead) {
 		this.id = id;
 		this.bead = bead;
-		this.arguments = new IArgumentStack[bead.getArgumentCount()];
+		this.foci = new IFocusStack[bead.getFocusCount()];
+
+		for (int i = 0; i < foci.length; i++) {
+			foci[i] = bead.getFixedFocus(i);
+		}
 	}
 
 	@Override
@@ -27,13 +31,13 @@ public class BeadStack implements IBeadStack {
 	}
 
 	@Override
-	public IArgumentStack getArgument(int index) {
-		return arguments[index];
+	public IFocusStack getFocus(int index) {
+		return foci[index];
 	}
 
 	@Override
-	public void setArgument(int index, IArgumentStack stack) {
-		arguments[index] = stack;
+	public void setFocus(int index, IFocusStack stack) {
+		foci[index] = stack;
 	}
 
 }

@@ -1,7 +1,9 @@
-package astavie.spellcrafting.api.spell;
+package astavie.spellcrafting.api.spell.caster;
 
+import astavie.spellcrafting.api.spell.ISpell;
 import astavie.spellcrafting.api.util.Location;
 import net.minecraft.entity.Entity;
+import net.minecraft.tileentity.TileEntity;
 
 import javax.annotation.Nullable;
 
@@ -21,15 +23,37 @@ public interface ICaster {
 	Location getEyes();
 
 	/**
+	 * @return if the caster is a block
+	 */
+	boolean isBlock();
+
+	/**
+	 * @return if the caster is an entity
+	 */
+	boolean isEntity();
+
+	/**
+	 * @return the caster as a tile entity, if it is one
+	 */
+	@Nullable
+	TileEntity getAsBlock();
+
+	/**
+	 * @return the caster as an entity, if it is one
+	 */
+	@Nullable
+	Entity getAsEntity();
+
+	/**
 	 * @return the target entity
 	 */
 	@Nullable
-	Entity getTargetEntity(ISpellInfo info);
+	Entity getTargetEntity(ISpell info);
 
 	/**
 	 * @return the target location
 	 */
 	@Nullable
-	Location getTargetLocation(ISpellInfo info);
+	Location getTargetLocation(ISpell info);
 
 }

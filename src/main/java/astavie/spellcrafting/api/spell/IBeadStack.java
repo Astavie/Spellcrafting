@@ -3,7 +3,7 @@ package astavie.spellcrafting.api.spell;
 public interface IBeadStack {
 
 	/**
-	 * Used to reference beads from {@link IArgumentStack}s
+	 * Used to reference beads from {@link IFocusStack}s
 	 *
 	 * @return the id of this stack
 	 */
@@ -15,15 +15,15 @@ public interface IBeadStack {
 	IBead getBead();
 
 	/**
-	 * @param index the index of the argument
-	 * @return the argument at the specified index
+	 * @param index the index of the focus
+	 * @return the focus at the specified index
 	 */
-	IArgumentStack getArgument(int index);
+	IFocusStack getFocus(int index);
 
 	/**
-	 * @param index the index of the argument
-	 * @param stack the argument that will be placed at the specified index
+	 * @param index the index of the focus
+	 * @param stack the focus that will be placed at the specified index
 	 */
-	void setArgument(int index, IArgumentStack stack);
+	void setFocus(int index, IFocusStack stack);
 
 }

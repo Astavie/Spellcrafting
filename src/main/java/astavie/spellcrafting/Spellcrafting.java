@@ -1,9 +1,14 @@
 package astavie.spellcrafting;
 
 import astavie.spellcrafting.apiimpl.SpellcraftingAPI;
-import astavie.spellcrafting.client.render.RendererManager;
+import astavie.spellcrafting.common.caster.CasterCapability;
 import astavie.spellcrafting.common.caster.CasterProvider;
 import astavie.spellcrafting.common.item.ItemSpellTest;
+import astavie.spellcrafting.common.network.PacketHandler;
+import astavie.spellcrafting.common.spell.augment.Augments;
+import astavie.spellcrafting.common.spell.bead.Beads;
+import astavie.spellcrafting.common.spell.event.Events;
+import astavie.spellcrafting.common.spell.focus.Foci;
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraftforge.common.MinecraftForge;
@@ -28,11 +33,18 @@ public class Spellcrafting {
     }
 
     private void commonSetup(final FMLCommonSetupEvent event) {
+	    CasterCapability.register();
+	    PacketHandler.register();
+
         MinecraftForge.EVENT_BUS.register(CasterProvider.class);
+
+	    Events.register();
+	    Beads.register();
+	    Foci.register();
+	    Augments.register();
     }
 
     private void clientSetup(final FMLClientSetupEvent event) {
-        RendererManager.register();
     }
 
     @Mod.EventBusSubscriber(bus=Mod.EventBusSubscriber.Bus.MOD)

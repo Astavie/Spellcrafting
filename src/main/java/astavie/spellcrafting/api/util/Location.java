@@ -1,5 +1,6 @@
 package astavie.spellcrafting.api.util;
 
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraft.world.dimension.DimensionType;
@@ -8,16 +9,26 @@ import net.minecraftforge.fml.server.ServerLifecycleHooks;
 public class Location {
 
 	private final DimensionType dimension;
+
+	private final BlockPos block;
 	private final Vec3d pos;
 
 	public Location(World world, Vec3d pos) {
-		this.dimension = world.getDimension().getType();
-		this.pos = pos;
+		this(world, pos, new BlockPos(pos));
 	}
 
 	public Location(DimensionType dimension, Vec3d pos) {
+		this(dimension, pos, new BlockPos(pos));
+	}
+
+	public Location(World world, Vec3d pos, BlockPos block) {
+		this(world.getDimension().getType(), pos, block);
+	}
+
+	public Location(DimensionType dimension, Vec3d pos, BlockPos block) {
 		this.dimension = dimension;
 		this.pos = pos;
+		this.block = block;
 	}
 
 	/**
@@ -40,6 +51,10 @@ public class Location {
 	 */
 	public Vec3d getPos() {
 		return pos;
+	}
+
+	public BlockPos getBlock() {
+		return block;
 	}
 
 }
