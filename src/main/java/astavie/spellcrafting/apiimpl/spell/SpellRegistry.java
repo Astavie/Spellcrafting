@@ -18,8 +18,8 @@ public class SpellRegistry implements ISpellRegistry {
 	private final Map<ResourceLocation, IAugment<?>> augments = new LinkedHashMap<>();
 
 	@Override
-	public void registerBead(ResourceLocation location, IBead bead) {
-		beads.put(location, bead);
+	public void registerBead(IBead bead) {
+		beads.put(bead.getRegistryName(), bead);
 	}
 
 	@Override
@@ -33,8 +33,8 @@ public class SpellRegistry implements ISpellRegistry {
 	}
 
 	@Override
-	public void registerFocus(ResourceLocation location, IFocus<?> focus) {
-		foci.put(location, focus);
+	public void registerFocus(IFocus<?> focus) {
+		foci.put(focus.getRegistryName(), focus);
 	}
 
 	@Override
@@ -48,8 +48,8 @@ public class SpellRegistry implements ISpellRegistry {
 	}
 
 	@Override
-	public void registerAugment(ResourceLocation location, IAugment<?> augment) {
-		augments.put(location, augment);
+	public void registerAugment(IAugment<?> augment) {
+		augments.put(augment.getRegistryName(), augment);
 	}
 
 	@Override

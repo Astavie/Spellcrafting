@@ -23,6 +23,11 @@ public interface ICaster {
 	Location getEyes();
 
 	/**
+	 * @return the location of the feet of the caster
+	 */
+	Location getFeet();
+
+	/**
 	 * @return if the caster is a block
 	 */
 	boolean isBlock();

@@ -1,5 +1,7 @@
 package astavie.spellcrafting.api.spell;
 
+import net.minecraft.nbt.ListNBT;
+
 import javax.annotation.Nullable;
 import java.util.List;
 
@@ -21,5 +23,9 @@ public interface ISpellTemplate {
 	 * @return the position of a bead in the bead list
 	 */
 	int getPosition(IBeadStack stack);
+
+	ListNBT writeToNbt();
+
+	void readFromNbt(ListNBT nbt);
 
 }

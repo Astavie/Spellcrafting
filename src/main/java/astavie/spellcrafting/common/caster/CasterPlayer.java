@@ -29,6 +29,11 @@ public class CasterPlayer implements ICasterEntity {
 		return new Location(entity.dimension, entity.getEyePosition(1));
 	}
 
+	@Override
+	public Location getFeet() {
+		return new Location(entity.dimension, entity.getPositionVec());
+	}
+
 	@Nullable
 	@Override
 	public Entity getAsEntity() {

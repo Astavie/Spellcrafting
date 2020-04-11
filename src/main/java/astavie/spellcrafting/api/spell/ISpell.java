@@ -1,17 +1,23 @@
 package astavie.spellcrafting.api.spell;
 
+import astavie.spellcrafting.api.ISpellcraftingAPI;
 import astavie.spellcrafting.api.spell.caster.ICaster;
+import net.minecraft.nbt.CompoundNBT;
+
+import javax.annotation.Nullable;
 
 public interface ISpell {
 
 	/**
 	 * @return the object of an focus of a bead
 	 */
+	@Nullable
 	Object getFocus(IBeadStack stack, int focus);
 
 	/**
 	 * @return the caster of the spell
 	 */
+	@Nullable
 	ICaster getCaster();
 
 	/**
@@ -48,5 +54,12 @@ public interface ISpell {
 	 * @return if the spell is waiting for a "Cast" event
 	 */
 	boolean isWaitingForCast();
+
+	/**
+	 * Read with {@link ISpellcraftingAPI#readSpell(CompoundNBT)}
+	 */
+	CompoundNBT writeToNbt();
+
+	boolean isLoaded();
 
 }

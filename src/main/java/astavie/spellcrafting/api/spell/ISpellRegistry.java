@@ -8,7 +8,7 @@ public interface ISpellRegistry {
 
 	// Beads
 
-	void registerBead(ResourceLocation location, IBead bead);
+	void registerBead(IBead bead);
 
 	IBead getBead(ResourceLocation location);
 
@@ -16,7 +16,7 @@ public interface ISpellRegistry {
 
 	// Focuss
 
-	void registerFocus(ResourceLocation location, IFocus<?> focus);
+	void registerFocus(IFocus<?> focus);
 
 	IFocus<?> getFocus(ResourceLocation location);
 
@@ -24,7 +24,7 @@ public interface ISpellRegistry {
 
 	// Augments
 
-	void registerAugment(ResourceLocation location, IAugment<?> focus);
+	void registerAugment(IAugment<?> focus);
 
 	IAugment<?> getAugment(ResourceLocation location);
 

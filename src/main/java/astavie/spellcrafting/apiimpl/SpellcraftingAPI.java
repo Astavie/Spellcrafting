@@ -6,6 +6,7 @@ import astavie.spellcrafting.api.spell.*;
 import astavie.spellcrafting.api.spell.caster.ICaster;
 import astavie.spellcrafting.apiimpl.spell.*;
 import astavie.spellcrafting.apiimpl.spell.type.FocusTypes;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.forgespi.language.ModFileScanData;
 import org.apache.logging.log4j.LogManager;
@@ -79,6 +80,11 @@ public class SpellcraftingAPI implements ISpellcraftingAPI {
 	@Override
 	public ISpell createSpell(ICaster caster, ISpellTemplate spell) {
 		return new Spell(caster, spell);
+	}
+
+	@Override
+	public ISpell readSpell(CompoundNBT nbt) {
+		return new Spell(nbt);
 	}
 
 	@Override

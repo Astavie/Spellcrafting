@@ -1,5 +1,8 @@
 package astavie.spellcrafting.api.spell;
 
+import astavie.spellcrafting.api.util.Location;
+import net.minecraft.util.ResourceLocation;
+
 import javax.annotation.Nullable;
 import java.util.List;
 
@@ -35,11 +38,18 @@ public interface IBead {
 		return true;
 	}
 
+	@Nullable
+	default Location getLocation(ISpell spell, IBeadStack stack) {
+		return null;
+	}
+
 	/**
 	 * @param spell the spell this bead is in
 	 * @param stack the stack this bead is in
 	 * @return if this bead was casted successfully
 	 */
 	boolean cast(ISpell spell, IBeadStack stack);
+
+	ResourceLocation getRegistryName();
 
 }

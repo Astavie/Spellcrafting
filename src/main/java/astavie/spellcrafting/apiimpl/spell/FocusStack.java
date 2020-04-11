@@ -1,7 +1,13 @@
 package astavie.spellcrafting.apiimpl.spell;
 
 import astavie.spellcrafting.api.spell.*;
+import astavie.spellcrafting.apiimpl.SpellcraftingAPI;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.ListNBT;
+import net.minecraft.nbt.StringNBT;
 import net.minecraft.util.NonNullList;
+import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.common.util.Constants;
 import org.apache.commons.lang3.tuple.Pair;
 
 import javax.annotation.Nullable;
@@ -65,6 +71,40 @@ public class FocusStack implements IFocusStack {
 		}
 
 		return object;
+	}
+
+	@Override
+	public CompoundNBT writeToNbt() {
+		CompoundNBT nbt = new CompoundNBT();
+
+		if (reference != null) {
+			nbt.putInt("referenceBead", reference.getLeft());
+			nbt.putInt("referenceFocus", reference.getRight());
+		} else {
+			nbt.putString("focus", focus.getRegistryName().toString());
+		}
+
+		ListNBT list = new ListNBT();
+		for (IAugment augment : augments) {
+			list.add(StringNBT.valueOf(augment.getRegistryName().toString()));
+		}
+
+		nbt.put("augments", list);
+		return nbt;
+	}
+
+	@Override
+	public void readFromNbt(CompoundNBT nbt) {
+		if (nbt.contains("referenceBead")) {
+			reference = Pair.of(nbt.getInt("referenceBead"), nbt.getInt("referenceFocus"));
+		} else {
+			focus = SpellcraftingAPI.instance().spellRegistry().getFocus(new ResourceLocation(nbt.getString("focus")));
+		}
+
+		ListNBT list = nbt.getList("augments", Constants.NBT.TAG_STRING);
+		for (int i = 0; i < list.size(); i++) {
+			augments.add(SpellcraftingAPI.instance().spellRegistry().getAugment(new ResourceLocation(list.getString(i))));
+		}
 	}
 
 }

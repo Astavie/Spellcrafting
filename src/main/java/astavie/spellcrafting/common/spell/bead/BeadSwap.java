@@ -1,5 +1,6 @@
 package astavie.spellcrafting.common.spell.bead;
 
+import astavie.spellcrafting.Spellcrafting;
 import astavie.spellcrafting.api.spell.IBead;
 import astavie.spellcrafting.api.spell.IBeadStack;
 import astavie.spellcrafting.api.spell.IFocusType;
@@ -12,6 +13,7 @@ import com.google.common.collect.ImmutableList;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.Vec2f;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
@@ -80,6 +82,11 @@ public class BeadSwap implements IBead {
 		}
 
 		return e0 != null && e1 != null;
+	}
+
+	@Override
+	public ResourceLocation getRegistryName() {
+		return new ResourceLocation(Spellcrafting.MODID, "swap");
 	}
 
 	private Vec2f getRotation(Entity e) {

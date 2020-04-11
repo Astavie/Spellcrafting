@@ -2,6 +2,7 @@ package astavie.spellcrafting.api;
 
 import astavie.spellcrafting.api.spell.*;
 import astavie.spellcrafting.api.spell.caster.ICaster;
+import net.minecraft.nbt.CompoundNBT;
 
 public interface ISpellcraftingAPI {
 
@@ -12,6 +13,11 @@ public interface ISpellcraftingAPI {
 	ISpellTemplate createSpellTemplate();
 
 	ISpell createSpell(ICaster caster, ISpellTemplate spell);
+
+	/**
+	 * Write with {@link ISpell#writeToNbt()}
+	 */
+	ISpell readSpell(CompoundNBT nbt);
 
 	IFocusTypes focusTypes();
 

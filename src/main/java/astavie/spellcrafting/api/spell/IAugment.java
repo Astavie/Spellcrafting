@@ -1,5 +1,7 @@
 package astavie.spellcrafting.api.spell;
 
+import net.minecraft.util.ResourceLocation;
+
 import java.util.List;
 
 public interface IAugment<I> {
@@ -28,5 +30,7 @@ public interface IAugment<I> {
 	default boolean isApplicable(IFocusType<?> type) {
 		return getApplicableTypes().contains(type);
 	}
+
+	ResourceLocation getRegistryName();
 
 }

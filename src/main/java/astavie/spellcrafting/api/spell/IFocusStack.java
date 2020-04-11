@@ -1,5 +1,6 @@
 package astavie.spellcrafting.api.spell;
 
+import net.minecraft.nbt.CompoundNBT;
 import org.apache.commons.lang3.tuple.Pair;
 
 import javax.annotation.Nullable;
@@ -53,5 +54,9 @@ public interface IFocusStack {
 	 * @return the object
 	 */
 	Object calculate(ISpell spell);
+
+	CompoundNBT writeToNbt();
+
+	void readFromNbt(CompoundNBT nbt);
 
 }

@@ -1,5 +1,7 @@
 package astavie.spellcrafting.api.spell;
 
+import net.minecraft.util.ResourceLocation;
+
 public interface IFocus<I> {
 
 	/**
@@ -12,5 +14,7 @@ public interface IFocus<I> {
 	 * @return the object
 	 */
 	I calculate(ISpell spell);
+
+	ResourceLocation getRegistryName();
 
 }

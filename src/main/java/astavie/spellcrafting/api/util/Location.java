@@ -4,6 +4,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraft.world.dimension.DimensionType;
+import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.fml.server.ServerLifecycleHooks;
 
 public class Location {
@@ -55,6 +56,11 @@ public class Location {
 
 	public BlockPos getBlock() {
 		return block;
+	}
+
+	public boolean isLoaded() {
+		World world = DimensionManager.getWorld(ServerLifecycleHooks.getCurrentServer(), dimension, false, false);
+		return world != null && world.isAreaLoaded(block, 1);
 	}
 
 }

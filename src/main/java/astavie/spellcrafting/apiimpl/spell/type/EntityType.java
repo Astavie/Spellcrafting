@@ -6,6 +6,7 @@ import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.INBT;
 import net.minecraft.world.World;
 import net.minecraft.world.dimension.DimensionType;
+import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.fml.server.ServerLifecycleHooks;
 
 public class EntityType implements IFocusType<Entity> {
@@ -21,7 +22,11 @@ public class EntityType implements IFocusType<Entity> {
 	@Override
 	public Entity readFromNBT(INBT nbt) {
 		CompoundNBT compound = (CompoundNBT) nbt;
-		World world = ServerLifecycleHooks.getCurrentServer().getWorld(DimensionType.getById(compound.getInt("dim")));
+
+		World world = DimensionManager.getWorld(ServerLifecycleHooks.getCurrentServer(), DimensionType.getById(compound.getInt("dim")), false, false);
+		if (world == null)
+			return null;
+
 		return world.getEntityByID(compound.getInt("entity"));
 	}
 
