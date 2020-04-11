@@ -31,7 +31,7 @@ public class Spell implements ISpell {
 		caster = nbt.get("caster");
 
 		spell = SpellcraftingAPI.instance().createSpellTemplate();
-		spell.readFromNbt(nbt.getList("spell", Constants.NBT.TAG_COMPOUND));
+		spell.readFromNbt(nbt.getCompound("spell"));
 
 		position = nbt.getInt("position");
 
@@ -175,6 +175,12 @@ public class Spell implements ISpell {
 	@Override
 	public void setCenter(Location location) {
 		center = location;
+	}
+
+	@Override
+	public boolean isInRange(Location location) {
+		double range = spell.getRange();
+		return location.getDimension() == center.getDimension() && location.getPos().squareDistanceTo(center.getPos()) < range * range;
 	}
 
 	@Override

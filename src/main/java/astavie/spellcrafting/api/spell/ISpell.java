@@ -65,6 +65,8 @@ public interface ISpell {
 
 	void setCenter(Location location);
 
+	boolean isInRange(Location location);
+
 	boolean isLoaded();
 
 }

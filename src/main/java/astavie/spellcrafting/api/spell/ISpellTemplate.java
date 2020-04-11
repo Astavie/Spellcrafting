@@ -1,6 +1,6 @@
 package astavie.spellcrafting.api.spell;
 
-import net.minecraft.nbt.ListNBT;
+import net.minecraft.nbt.CompoundNBT;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -24,8 +24,12 @@ public interface ISpellTemplate {
 	 */
 	int getPosition(IBeadStack stack);
 
-	ListNBT writeToNbt();
+	double getRange();
 
-	void readFromNbt(ListNBT nbt);
+	void setRange(double range);
+
+	CompoundNBT writeToNbt();
+
+	void readFromNbt(CompoundNBT nbt);
 
 }

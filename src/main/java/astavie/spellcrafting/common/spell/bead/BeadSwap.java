@@ -5,6 +5,7 @@ import astavie.spellcrafting.api.spell.IBead;
 import astavie.spellcrafting.api.spell.IBeadStack;
 import astavie.spellcrafting.api.spell.IFocusType;
 import astavie.spellcrafting.api.spell.ISpell;
+import astavie.spellcrafting.api.util.Location;
 import astavie.spellcrafting.apiimpl.SpellcraftingAPI;
 import astavie.spellcrafting.common.network.PacketHandler;
 import astavie.spellcrafting.common.network.client.MessagePosition;
@@ -43,6 +44,9 @@ public class BeadSwap implements IBead {
 		Entity e1 = SpellUtils.getEntity(spell, stack, 1);
 
 		if (e0 == null || e1 == null)
+			return false;
+
+		if (!spell.isInRange(new Location(e0.dimension, e0.getPositionVec())) || !spell.isInRange(new Location(e1.dimension, e1.getPositionVec())))
 			return false;
 
 		// Get mounts

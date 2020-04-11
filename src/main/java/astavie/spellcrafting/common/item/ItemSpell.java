@@ -45,6 +45,7 @@ public abstract class ItemSpell extends Item implements ISpellItem {
 	public void castSpell(ICaster caster, ItemStack stack) {
 		// TODO: Test
 		ISpellTemplate template = SpellcraftingAPI.instance().createSpellTemplate();
+		template.setRange(2);
 
 		IBeadStack cast = SpellcraftingAPI.instance().createBeadStack(0, Events.CAST);
 		template.getBeads().add(cast);

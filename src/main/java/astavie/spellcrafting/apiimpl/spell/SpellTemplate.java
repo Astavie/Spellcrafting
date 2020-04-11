@@ -17,6 +17,7 @@ import java.util.List;
 public class SpellTemplate implements ISpellTemplate {
 
 	private final List<IBeadStack> beads = NonNullList.create();
+	private double range;
 
 	@Override
 	public List<IBeadStack> getBeads() {
@@ -41,7 +42,17 @@ public class SpellTemplate implements ISpellTemplate {
 	}
 
 	@Override
-	public ListNBT writeToNbt() {
+	public double getRange() {
+		return range;
+	}
+
+	@Override
+	public void setRange(double range) {
+		this.range = range;
+	}
+
+	@Override
+	public CompoundNBT writeToNbt() {
 		ListNBT list = new ListNBT();
 
 		for (IBeadStack stack : beads) {
@@ -58,13 +69,18 @@ public class SpellTemplate implements ISpellTemplate {
 			list.add(tag);
 		}
 
-		return list;
+		CompoundNBT compound = new CompoundNBT();
+		compound.put("beads", list);
+		compound.putDouble("range", range);
+		return compound;
 	}
 
 	@Override
-	public void readFromNbt(ListNBT nbt) {
+	public void readFromNbt(CompoundNBT nbt) {
+		ListNBT list = nbt.getList("beads", Constants.NBT.TAG_COMPOUND);
+
 		for (int i = 0; i < nbt.size(); i++) {
-			CompoundNBT tag = nbt.getCompound(i);
+			CompoundNBT tag = list.getCompound(i);
 
 			int id = tag.getInt("id");
 			IBead bead = SpellcraftingAPI.instance().spellRegistry().getBead(new ResourceLocation(tag.getString("bead")));
@@ -79,6 +95,8 @@ public class SpellTemplate implements ISpellTemplate {
 
 			beads.add(stack);
 		}
+
+		range = nbt.getInt("range");
 	}
 
 }
