@@ -15,11 +15,12 @@ import java.util.Map;
 
 public class Spell implements ISpell {
 
+	private final INBT caster;
 	private final ISpellTemplate spell;
 	private final Map<Integer, INBT[]> objects = new HashMap<>();
 
-	private INBT caster;
 	private int position = 0;
+	private Location center;
 
 	public Spell(ICaster caster, ISpellTemplate spell) {
 		this.caster = SpellcraftingAPI.instance().focusTypes().caster().writeToNBT(caster);
@@ -167,10 +168,19 @@ public class Spell implements ISpell {
 	}
 
 	@Override
+	public Location getCenter() {
+		return center;
+	}
+
+	@Override
+	public void setCenter(Location location) {
+		center = location;
+	}
+
+	@Override
 	public boolean isLoaded() {
 		IBeadStack stack = spell.getBeads().get(position);
-		Location location = stack.getBead().getLocation(this, stack);
-		return location != null && location.isLoaded();
+		return stack.getBead().isLoaded(this, stack);
 	}
 
 }

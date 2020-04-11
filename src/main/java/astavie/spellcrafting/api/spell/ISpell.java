@@ -2,6 +2,7 @@ package astavie.spellcrafting.api.spell;
 
 import astavie.spellcrafting.api.ISpellcraftingAPI;
 import astavie.spellcrafting.api.spell.caster.ICaster;
+import astavie.spellcrafting.api.util.Location;
 import net.minecraft.nbt.CompoundNBT;
 
 import javax.annotation.Nullable;
@@ -59,6 +60,10 @@ public interface ISpell {
 	 * Read with {@link ISpellcraftingAPI#readSpell(CompoundNBT)}
 	 */
 	CompoundNBT writeToNbt();
+
+	Location getCenter();
+
+	void setCenter(Location location);
 
 	boolean isLoaded();
 

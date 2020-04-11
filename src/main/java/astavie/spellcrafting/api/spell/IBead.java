@@ -1,6 +1,5 @@
 package astavie.spellcrafting.api.spell;
 
-import astavie.spellcrafting.api.util.Location;
 import net.minecraft.util.ResourceLocation;
 
 import javax.annotation.Nullable;
@@ -38,9 +37,8 @@ public interface IBead {
 		return true;
 	}
 
-	@Nullable
-	default Location getLocation(ISpell spell, IBeadStack stack) {
-		return null;
+	default boolean isLoaded(ISpell spell, IBeadStack stack) {
+		return true;
 	}
 
 	/**
