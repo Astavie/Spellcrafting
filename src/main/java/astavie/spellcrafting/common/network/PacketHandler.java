@@ -1,6 +1,8 @@
 package astavie.spellcrafting.common.network;
 
 import astavie.spellcrafting.Spellcrafting;
+import astavie.spellcrafting.common.network.client.MessagePosition;
+import astavie.spellcrafting.common.network.server.MessageCast;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.network.NetworkRegistry;
@@ -20,6 +22,7 @@ public class PacketHandler {
 		INSTANCE = NetworkRegistry.newSimpleChannel(new ResourceLocation(Spellcrafting.MODID, "main"), () -> PROTOCOL_VERSION, PROTOCOL_VERSION::equals, PROTOCOL_VERSION::equals);
 
 		registerPacket(MessageCast.class, MessageCast::new);
+		registerPacket(MessagePosition.class, MessagePosition::new);
 	}
 
 	private static <MSG extends IMessage> void registerPacket(Class<MSG> clazz, Supplier<MSG> supplier) {

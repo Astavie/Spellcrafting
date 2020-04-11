@@ -1,11 +1,13 @@
 package astavie.spellcrafting.client.util;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.projectile.ProjectileHelper;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.EntityRayTraceResult;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.World;
 
 public class ClientUtils {
 
@@ -30,6 +32,10 @@ public class ClientUtils {
 		}
 
 		return objectMouseOver;
+	}
+
+	public static World getClientWorld() {
+		return Minecraft.getInstance().world;
 	}
 
 }

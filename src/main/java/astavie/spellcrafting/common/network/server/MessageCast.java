@@ -1,10 +1,11 @@
-package astavie.spellcrafting.common.network;
+package astavie.spellcrafting.common.network.server;
 
 import astavie.spellcrafting.api.item.ISpellItem;
 import astavie.spellcrafting.api.util.Location;
 import astavie.spellcrafting.client.util.ClientUtils;
 import astavie.spellcrafting.common.caster.CasterCapability;
 import astavie.spellcrafting.common.caster.CasterPlayer;
+import astavie.spellcrafting.common.network.IMessage;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.PacketBuffer;
