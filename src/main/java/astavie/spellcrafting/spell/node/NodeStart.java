@@ -31,8 +31,8 @@ public class NodeStart implements SpellNode {
     }
 
     @Override
-    public @NotNull Object[] apply(@NotNull Spell spell, @NotNull Object[] input) {
-        return new Object[] { Unit.INSTANCE, spell.caster().asTarget(), spell.target() };
+    public void apply(@NotNull Spell spell) {
+        spell.apply(this, new Object[] { Unit.INSTANCE, spell.caster().asTarget(), spell.target() });
     }
     
 }

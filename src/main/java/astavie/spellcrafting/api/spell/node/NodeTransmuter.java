@@ -13,11 +13,12 @@ public interface NodeTransmuter extends SpellNode {
     }
 
     @Override
-    default @NotNull Object[] apply(@NotNull Spell spell, @NotNull Object[] input) {
+    default void apply(@NotNull Spell spell) {
+        Object[] input = spell.getInput(this);
         if (ArrayUtils.contains(input, null)) {
-            return new Object[] { returnTypes().length };
+            spell.apply(this, new Object[] { returnTypes().length });
         }
-        return transmute(spell, input);
+        spell.apply(this, transmute(spell, input));
     }
 
     @NotNull Object[] transmute(@NotNull Spell spell, @NotNull Object[] input);

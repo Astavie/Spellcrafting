@@ -4,7 +4,6 @@ import org.jetbrains.annotations.NotNull;
 
 import astavie.spellcrafting.api.spell.Spell;
 import astavie.spellcrafting.api.spell.SpellType;
-import astavie.spellcrafting.api.spell.Spell.Event;
 import astavie.spellcrafting.api.util.ItemList;
 
 public interface SpellNode {
@@ -21,9 +20,9 @@ public interface SpellNode {
         return 1;
     }
 
-    @NotNull Object[] apply(@NotNull Spell spell, @NotNull Object[] input);
+    void apply(@NotNull Spell spell);
 
-    default <T> void onEvent(@NotNull Spell spell, @NotNull Object[] input, Event<T> type, T context) {
+    default void onEvent(@NotNull Spell spell, Spell.Event type, Object context) {
     }
     
 }

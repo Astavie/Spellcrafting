@@ -1,6 +1,5 @@
 package astavie.spellcrafting.api.spell;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -18,48 +17,51 @@ import astavie.spellcrafting.api.spell.target.Target;
 import astavie.spellcrafting.api.util.ItemList;
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.NbtLong;
+import net.minecraft.nbt.NbtNull;
 import net.minecraft.util.Identifier;
 
 public class Spell {
 
-    public static record Connection(@NotNull SpellNode node, int index) {
+    public static record Socket(@NotNull SpellNode node, int index) {
     }
 
-    public static record Event<T>(@NotNull Identifier eventType, @Nullable NbtElement argument) {
+    public static record Event(@NotNull Identifier eventType, @NotNull NbtElement argument) {
 
         public static final @NotNull Identifier TARGET_ID = new Identifier("spellcrafting:target");
         public static final @NotNull Identifier HIT_ID = new Identifier("spellcrafting:hit");
         public static final @NotNull Identifier TICK_ID = new Identifier("spellcrafting:tick");
 
-        public static final @NotNull Event<Target> TARGET = new Event<>(TARGET_ID, null);
+        public static final @NotNull Event TARGET = new Event(TARGET_ID, NbtNull.INSTANCE);
         
     }
 
-    private final Map<SpellNode, Object[]> input = new HashMap<>();
-    private final Map<SpellNode, Connection[]> nodes;
+    private final Map<Socket, Object> output = new HashMap<>();
+    private final Multimap<Socket, Socket> nodes;
+    private final Map<Socket, Socket> inverse = new HashMap<>();
     private final SpellNode start;
 
     private final ItemList components = new ItemList();
     private Caster caster;
     private Target target;
 
-    private final Multimap<Event<?>, SpellNode> events = HashMultimap.create();
+    private final Multimap<Event, SpellNode> events = HashMultimap.create();
+    private final Map<Event, Object> eventsThisTick = new HashMap<>();
 
-    public Spell(SpellNode start, Map<SpellNode, Connection[]> nodes) {
+    public Spell(SpellNode start, Multimap<Socket, Socket> nodes) {
         if (start.parameters().length > 0) throw new IllegalArgumentException("Illegal start node");
         this.start = start;
         this.nodes = nodes;
-
-        for (SpellNode node : nodes.keySet()) {
-            input.put(node, new Object[node.parameters().length]);
+        
+        for (Map.Entry<Socket, Socket> entry : nodes.entries()) {
+            if (inverse.containsKey(entry.getValue())) throw new IllegalArgumentException("Spell has edges that combine");
+            inverse.put(entry.getValue(), entry.getKey());
         }
 
         // Check graph and calculate multipliers
         Map<SpellNode, Integer> factors = new HashMap<>();
         factors.put(start, 1);
         continueFactor(factors, new HashSet<>(), start);
-
-        if (factors.size() != nodes.size()) throw new IllegalArgumentException("Spell has multiple components");
 
         // Add components
         for (Entry<SpellNode, Integer> entry : factors.entrySet()) {
@@ -69,23 +71,27 @@ public class Spell {
 
     private void continueFactor(Map<SpellNode, Integer> factors, Set<SpellNode> blacklist, SpellNode node) {
         int multiplier = factors.get(node);
-        Connection[] conn = nodes.get(node);
 
         Set<SpellNode> nextBlacklist = new HashSet<>(blacklist);
         nextBlacklist.add(node);
 
-        for (int i = 0; i < conn.length; i++) {
-            if (conn[i] == null) continue;
+        int returnTypes = node.returnTypes().length;
+        for (int i = 0; i < returnTypes; i++) {
+            for (Socket in : nodes.get(new Socket(node, i))) {
+                if (nextBlacklist.contains(in.node)) throw new IllegalArgumentException("Cyclic spell");
+                if (node.returnTypes()[i] != in.node.parameters()[in.index]) throw new IllegalArgumentException("Spell has illegal connections");
 
-            if (nextBlacklist.contains(conn[i].node)) throw new IllegalArgumentException("Cyclic spell");
-            if (node.returnTypes()[i] != conn[i].node.parameters()[conn[i].index]) throw new IllegalArgumentException("Spell has illegal connections");
-
-            int m = factors.getOrDefault(conn[i].node, 0);
-            if (m < multiplier * node.componentFactor(i)) {
-                factors.put(conn[i].node, multiplier * node.componentFactor(i));
-                continueFactor(factors, nextBlacklist, conn[i].node);
+                int m = factors.getOrDefault(in.node, 0);
+                if (m < multiplier * node.componentFactor(i)) {
+                    factors.put(in.node, multiplier * node.componentFactor(i));
+                    continueFactor(factors, nextBlacklist, in.node);
+                }
             }
         }
+    }
+
+    public boolean isActive() {
+        return caster != null;
     }
 
     public long getTime() {
@@ -109,15 +115,14 @@ public class Spell {
     }
 
     public void end() {
-        for (SpellNode node : nodes.keySet()) {
-            Arrays.fill(input.get(node), null);
-        }
+        output.clear();
         events.clear();
+        eventsThisTick.clear();
         caster = null;
     }
 
     public boolean onTarget(@NotNull Caster caster, @NotNull Target target) {
-        if (this.caster == null) {
+        if (!isActive()) {
             // Use components
 			Transaction transaction = Transaction.openOuter();
             ItemList missing = caster.useComponents(components, transaction);
@@ -130,7 +135,7 @@ public class Spell {
             transaction.commit();
             this.caster = caster;
             this.target = target;
-            apply(start, start.apply(this, new Object[0]));
+            start.apply(this);
             this.target = null;
             return true;
         } else if (events.containsKey(Event.TARGET)) {
@@ -142,13 +147,53 @@ public class Spell {
         return false;
     }
 
-    public void registerEvent(@NotNull Event<?> event, @NotNull SpellNode handler) {
-        events.put(event, handler);
+    public void registerEvent(@NotNull Event event, @NotNull SpellNode handler) {
+        if (eventsThisTick.containsKey(event)) {
+            handler.onEvent(this, event, eventsThisTick.get(event));
+        } else {
+            events.put(event, handler);
+        }
     }
 
-    public <T> void onEvent(@NotNull Event<T> event, T context) {
+    public void onEvent(@NotNull Event event, Object context) {
         for (SpellNode node : events.removeAll(event)) {
-            node.onEvent(this, input.get(node), event, context);
+            node.onEvent(this, event, context);
+        }
+        if (event.eventType == Event.TICK_ID) {
+            eventsThisTick.clear();
+        } else {
+            eventsThisTick.put(event, context);
+        }
+    }
+
+    public void schedule(@NotNull SpellNode handler) {
+        registerEvent(new Event(Event.TICK_ID, NbtLong.of(getTime() + 1)), handler);
+    }
+
+    public @NotNull Object[] getInput(@NotNull SpellNode node) {
+        int parameters = node.parameters().length;
+        Object[] ret = new Object[parameters];
+        for (int i = 0; i < parameters; i++) {
+            ret[i] = output.get(inverse.get(new Socket(node, i)));
+        }
+        return ret;
+    }
+
+    public void apply(@NotNull SpellNode node, int index, @Nullable Object returnValue) {
+        SpellType returnType = node.returnTypes()[index];
+
+        if (returnValue != null && !returnType.valueType().isInstance(returnValue)) {
+            throw new IllegalArgumentException();
+        }
+
+        Socket out = new Socket(node, index);
+        output.put(out, returnValue);
+
+        for (Socket in : nodes.get(out)) {
+            // Apply if this has no effect or we are sending a TIME signal
+            if (in.node.applyOnChange() || returnType == SpellType.TIME) {
+                in.node.apply(this);
+            }
         }
     }
 
@@ -158,27 +203,10 @@ public class Spell {
             throw new IllegalArgumentException();
         }
 
-        Connection[] conn = this.nodes.getOrDefault(node, new Connection[returnTypes.length]);
-
         // Iterate in reverse order so the TIME signal, if it exists, is last
         // TODO: Come up with a better solution
-        for (int i = conn.length - 1; i >= 0; i--) {
-            if (returnValues[i] != null && !returnTypes[i].valueType().isInstance(returnValues[i])) {
-                throw new IllegalArgumentException();
-            }
-
-            if (conn[i] == null) continue;
-
-            // Apply if this has no effect or we are sending a TIME signal
-            boolean apply = conn[i].node.applyOnChange() || returnTypes[i] == SpellType.TIME;
-
-            Object[] input = this.input.get(conn[i].node);
-            input[conn[i].index] = returnValues[i];
-
-            if (apply) {
-                Object[] returns = conn[i].node.apply(this, input);
-                apply(conn[i].node, returns);
-            }
+        for (int i = returnValues.length - 1; i >= 0; i--) {
+            apply(node, i, returnValues[i]);
         }
     }
 

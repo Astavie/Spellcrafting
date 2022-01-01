@@ -26,7 +26,7 @@ public class ProjectileEntityMixin {
         // TODO: Check if attuned
 
         // TODO: This now only works on test spell
-        Spellcrafting.TEST_SPELL.onEvent(new Spell.Event<>(Spell.Event.HIT_ID, NbtString.of(entity.getUuidAsString())), hit);
+        Spellcrafting.TEST_SPELL.onEvent(new Spell.Event(Spell.Event.HIT_ID, NbtString.of(entity.getUuidAsString())), hit);
     }
     
 }

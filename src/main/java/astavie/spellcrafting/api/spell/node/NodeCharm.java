@@ -27,12 +27,17 @@ public interface NodeCharm extends SpellNode {
     }
 
     @Override
-    default @NotNull Object[] apply(@NotNull Spell spell, @NotNull Object[] input) {
-        if (input[0] == null) {
-            return new Object[returnTypes().length];
+    default void apply(@NotNull Spell spell) {
+        Object[] input = spell.getInput(this);
+        if (input[0] != null) {
+            spell.apply(this, ArrayUtils.insert(0, cast(spell, Arrays.copyOfRange(input, 1, input.length)), (Unit) null));
+            spell.schedule(this);
         }
+    }
 
-        return ArrayUtils.insert(0, cast(spell, Arrays.copyOfRange(input, 1, input.length)), Unit.INSTANCE);
+    @Override
+    default void onEvent(@NotNull Spell spell, Spell.Event type, Object context) {
+        spell.apply(this, 0, Unit.INSTANCE);
     }
 
     @NotNull SpellType[] charmParameters();

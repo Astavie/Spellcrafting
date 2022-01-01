@@ -29,15 +29,15 @@ public class EventHit implements NodeEvent<Target> {
     }
 
     @Override
-    public @Nullable Spell.Event<?> getEvent(@NotNull Spell spell, @NotNull Object[] input) {
+    public @Nullable Spell.Event getEvent(@NotNull Spell spell, @NotNull Object[] input) {
         Entity entity = ((Target) input[0]).getEntity();
         if (entity == null) return null;
 
-        return new Spell.Event<>(Spell.Event.HIT_ID, NbtString.of(entity.getUuidAsString()));
+        return new Spell.Event(Spell.Event.HIT_ID, NbtString.of(entity.getUuidAsString()));
     }
 
     @Override
-    public @NotNull Object[] onEvent(@NotNull Spell spell, @NotNull Object[] input, Target context) {
+    public @NotNull Object[] onEvent(@NotNull Spell spell, Target context) {
         return new Object[] { context };
     }
     

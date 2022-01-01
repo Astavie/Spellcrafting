@@ -1,12 +1,12 @@
 package astavie.spellcrafting;
 
-import java.util.HashMap;
-import java.util.Map;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 
 import astavie.spellcrafting.api.item.SpellContainer;
 import astavie.spellcrafting.api.spell.Caster;
 import astavie.spellcrafting.api.spell.Spell;
-import astavie.spellcrafting.api.spell.Spell.Connection;
+import astavie.spellcrafting.api.spell.Spell.Socket;
 import astavie.spellcrafting.api.spell.node.SpellNode;
 import astavie.spellcrafting.api.spell.target.Target;
 import astavie.spellcrafting.api.spell.target.TargetBlock;
@@ -45,30 +45,23 @@ public class Spellcrafting implements ModInitializer {
 
 	static {
 		SpellNode start = new NodeStart();
-		SpellNode charm1 = new CharmArrow();
-		SpellNode event = new EventHit();
-		SpellNode charm2 = new CharmIgnite();
+		SpellNode arrow = new CharmArrow();
+		SpellNode hit = new EventHit();
+		SpellNode ignite = new CharmIgnite();
 		SpellNode end = new NodeEnd();
 
-		Map<SpellNode, Connection[]> nodes = new HashMap<>();
-		nodes.put(start, new Connection[] {
-			new Connection(charm1, 0),
-			new Connection(charm1, 1),
-			new Connection(charm1, 2)
-		});
-		nodes.put(charm1, new Connection[] {
-			new Connection(event, 0),
-			new Connection(event, 1)
-		});
-		nodes.put(event, new Connection[] {
-			new Connection(charm2, 0),
-			new Connection(charm2, 1)
-		});
-		nodes.put(charm2, new Connection[] {
-			new Connection(end, 0)
-		});
-		nodes.put(end, new Connection[] {
-		});
+		Multimap<Socket, Socket> nodes = HashMultimap.create();
+		nodes.put(new Socket(start, 0), new Socket(arrow, 0));
+		nodes.put(new Socket(start, 1), new Socket(arrow, 1));
+		nodes.put(new Socket(start, 2), new Socket(arrow, 2));
+
+		nodes.put(new Socket(arrow, 0), new Socket(hit, 0));
+		nodes.put(new Socket(arrow, 1), new Socket(hit, 1));
+
+		nodes.put(new Socket(hit, 0), new Socket(ignite, 0));
+		nodes.put(new Socket(hit, 1), new Socket(ignite, 1));
+
+		nodes.put(new Socket(ignite, 0), new Socket(end, 0));
 
 		TEST_SPELL = new Spell(start, nodes);
 	}
@@ -84,7 +77,7 @@ public class Spellcrafting implements ModInitializer {
 
 		// Events
         // TODO: This now only works on test spell
-		ServerTickEvents.END_SERVER_TICK.register(w -> TEST_SPELL.onEvent(new Spell.Event<>(Spell.Event.TICK_ID, NbtLong.of(w.getOverworld().getTime())), null));
+		ServerTickEvents.END_SERVER_TICK.register(w -> TEST_SPELL.onEvent(new Spell.Event(Spell.Event.TICK_ID, NbtLong.of(w.getOverworld().getTime())), null));
 
 		// Networking
 		ServerPlayNetworking.registerGlobalReceiver(CAST_PACKET_ID, (server, player, handler, buf, responseSender) -> {

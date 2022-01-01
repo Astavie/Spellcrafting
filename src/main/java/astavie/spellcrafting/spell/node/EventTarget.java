@@ -16,7 +16,7 @@ public class EventTarget implements NodeEvent<Target> {
     }
 
     @Override
-    public Spell.Event<Target> getEvent(@NotNull Spell spell, @NotNull Object[] input) {
+    public Spell.Event getEvent(@NotNull Spell spell, @NotNull Object[] input) {
         return Spell.Event.TARGET;
     }
 
@@ -31,7 +31,7 @@ public class EventTarget implements NodeEvent<Target> {
     }
 
     @Override
-    public @NotNull Object[] onEvent(@NotNull Spell spell, @NotNull Object[] input, Target context) {
+    public @NotNull Object[] onEvent(@NotNull Spell spell, Target context) {
         return new Object[] { context };
     }
     

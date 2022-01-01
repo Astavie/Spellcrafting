@@ -28,28 +28,27 @@ public interface NodeEvent<T> extends SpellNode {
     }
 
     @Override
-    default @NotNull Object[] apply(@NotNull Spell spell, @NotNull Object[] input) {
+    default void apply(@NotNull Spell spell) {
+        Object[] input = spell.getInput(this);
         if (input[0] != null) {
-            Spell.Event<?> event = getEvent(spell, Arrays.copyOfRange(input, 1, input.length));
+            Spell.Event event = getEvent(spell, Arrays.copyOfRange(input, 1, input.length));
             if (event != null) {
                 spell.registerEvent(event, this);
             }
         }
-
-        return new Object[returnTypes().length];
     }
 
     @NotNull SpellType[] eventParameters();
     
     @NotNull SpellType[] eventReturnTypes();
 
-    @Nullable Spell.Event<?> getEvent(@NotNull Spell spell, @NotNull Object[] input);
+    @Nullable Spell.Event getEvent(@NotNull Spell spell, @NotNull Object[] input);
 
-    @NotNull Object[] onEvent(@NotNull Spell spell, @NotNull Object[] input, T context);
+    @NotNull Object[] onEvent(@NotNull Spell spell, T context);
 
     @SuppressWarnings("unchecked")
-    default <U> void onEvent(Spell spell, Object[] input, Spell.Event<U> type, U context) {
-        Object[] ret = onEvent(spell, Arrays.copyOfRange(input, 1, input.length), (T) context);
+    default void onEvent(Spell spell, Spell.Event type, Object context) {
+        Object[] ret = onEvent(spell, (T) context);
         spell.apply(this, ArrayUtils.insert(0, ret, Unit.INSTANCE));
     };
     
