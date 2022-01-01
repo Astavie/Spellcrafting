@@ -12,7 +12,6 @@ import astavie.spellcrafting.api.spell.node.SpellNode;
 import astavie.spellcrafting.api.spell.target.Target;
 import astavie.spellcrafting.api.spell.target.TargetBlock;
 import astavie.spellcrafting.api.spell.target.TargetEntity;
-import astavie.spellcrafting.mixin.EntityMixin;
 import astavie.spellcrafting.spell.CasterPlayer;
 import astavie.spellcrafting.spell.node.CharmArrow;
 import astavie.spellcrafting.spell.node.CharmIgnite;

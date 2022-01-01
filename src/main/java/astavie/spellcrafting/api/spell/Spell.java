@@ -182,10 +182,6 @@ public class Spell {
         registerEvent(new Event(Event.TICK_ID, NbtLong.of(getTime() + 1)), handler);
     }
 
-    public void unschedule(@NotNull SpellNode handler) {
-        events.remove(new Event(Event.TICK_ID, NbtLong.of(getTime())), handler);
-    }
-
     public @NotNull Object[] getInput(@NotNull SpellNode node) {
         int parameters = node.getParameters().length;
         Object[] ret = new Object[parameters];

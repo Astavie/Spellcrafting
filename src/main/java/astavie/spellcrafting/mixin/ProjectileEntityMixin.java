@@ -6,7 +6,6 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import astavie.spellcrafting.Spellcrafting;
-import astavie.spellcrafting.api.spell.Attunable;
 import astavie.spellcrafting.api.spell.Spell;
 import astavie.spellcrafting.api.spell.target.Target;
 import net.minecraft.entity.projectile.ProjectileEntity;
