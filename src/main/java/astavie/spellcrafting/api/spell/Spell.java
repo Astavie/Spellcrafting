@@ -104,10 +104,10 @@ public class Spell {
     }
 
     public boolean inRange(@NotNull DistancedTarget target) {
-        if (target.origin() == null) return false;
+        if (target.origin() == null || target.origin().asAttunable() == null) return false;
 
         double range = caster.getRange();
-        return target.origin().isAttuned(caster) && target.origin().getPos().squaredDistanceTo(target.target().getPos()) <= range * range;
+        return target.origin().asAttunable().isAttunedTo(caster) && target.origin().getPos().squaredDistanceTo(target.target().getPos()) <= range * range;
     }
 
     public @Nullable Caster getCaster() {

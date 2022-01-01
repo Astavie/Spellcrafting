@@ -3,6 +3,7 @@ package astavie.spellcrafting.api.spell.target;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import astavie.spellcrafting.api.spell.Attunable;
 import astavie.spellcrafting.api.spell.Caster;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
@@ -25,6 +26,7 @@ public interface Target {
     @Nullable
     Caster asCaster();
 
-    boolean isAttuned(@NotNull Caster caster);
+    @Nullable
+    Attunable asAttunable();
 
 }

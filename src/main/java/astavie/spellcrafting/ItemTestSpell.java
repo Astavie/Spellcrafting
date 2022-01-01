@@ -1,7 +1,7 @@
 package astavie.spellcrafting;
 
-import astavie.spellcrafting.api.item.SpellContainer;
 import astavie.spellcrafting.api.spell.Spell;
+import astavie.spellcrafting.api.spell.SpellContainer;
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.EquipmentSlot;

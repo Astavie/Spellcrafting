@@ -50,9 +50,8 @@ public class TargetEntity implements Target {
     }
 
     @Override
-    public boolean isAttuned(@NotNull Caster caster) {
-        Attunable attunable = Attunable.ENTITY_ATTUNABLE.find(entity, null);
-        return attunable != null && attunable.isAttunedTo(caster);
+    public @Nullable Attunable asAttunable() {
+        return Attunable.ENTITY_ATTUNABLE.find(entity, null);
     }
     
 }

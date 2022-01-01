@@ -3,6 +3,7 @@ package astavie.spellcrafting.api.spell.target;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import astavie.spellcrafting.api.spell.Attunable;
 import astavie.spellcrafting.api.spell.Caster;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
@@ -53,9 +54,8 @@ public class TargetBlock implements Target {
     }
 
     @Override
-    public boolean isAttuned(@NotNull Caster caster) {
-        // TODO Auto-generated method stub
-        return false;
+    public @Nullable Attunable asAttunable() {
+        return Attunable.BLOCK_ATTUNABLE.find(world, block, facing);
     }
     
 }

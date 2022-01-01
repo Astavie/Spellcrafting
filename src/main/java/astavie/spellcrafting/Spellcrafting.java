@@ -3,10 +3,10 @@ package astavie.spellcrafting;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 
-import astavie.spellcrafting.api.item.SpellContainer;
 import astavie.spellcrafting.api.spell.Attunable;
 import astavie.spellcrafting.api.spell.Caster;
 import astavie.spellcrafting.api.spell.Spell;
+import astavie.spellcrafting.api.spell.SpellContainer;
 import astavie.spellcrafting.api.spell.Spell.Socket;
 import astavie.spellcrafting.api.spell.node.SpellNode;
 import astavie.spellcrafting.api.spell.target.Target;
