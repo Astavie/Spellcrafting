@@ -27,13 +27,7 @@ public class ItemTestSpell extends Item {
         ItemStack stack = user.getStackInHand(hand);
         TypedActionResult<ItemStack> result = TypedActionResult.pass(stack);
 
-        if (hand != Hand.OFF_HAND) {
-            return result;
-        }
-
-        ItemStack focus = user.getMainHandStack();
-        // TODO: Custom foci
-        if (!focus.isEmpty()) {
+        if (Spellcrafting.getSpell(user) == null) {
             return result;
         }
 
@@ -43,7 +37,6 @@ public class ItemTestSpell extends Item {
             Spellcrafting.cast(hit);
         }
 
-        user.swingHand(Hand.MAIN_HAND);
         return result;
     }
 

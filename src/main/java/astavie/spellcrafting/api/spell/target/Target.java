@@ -1,8 +1,9 @@
-package astavie.spellcrafting.api.spell;
+package astavie.spellcrafting.api.spell.target;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import astavie.spellcrafting.api.spell.Caster;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
@@ -21,10 +22,17 @@ public interface Target {
     Vec3d getPos();
 
     @NotNull
+    Vec3d getOrigin();
+
+    @NotNull
     World getWorld();
 
     @NotNull
     Vec3d getFacing();
+
+    default boolean inRange(double range) {
+        return getOrigin().squaredDistanceTo(getPos()) <= range * range;
+    }
 
     @NotNull
     default Direction getDirection() {

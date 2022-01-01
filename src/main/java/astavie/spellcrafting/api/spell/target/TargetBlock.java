@@ -1,4 +1,4 @@
-package astavie.spellcrafting.api.spell;
+package astavie.spellcrafting.api.spell.target;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -13,20 +13,22 @@ public class TargetBlock implements Target {
 
     private final World world;
     private final BlockPos block;
-    private final Vec3d pos, facing;
+    private final Vec3d pos, facing, origin;
 
-    public TargetBlock(@NotNull World world, @NotNull BlockPos block, @NotNull Vec3d pos, @NotNull Vec3d facing) {
+    public TargetBlock(@NotNull World world, @NotNull BlockPos block, @NotNull Vec3d pos, @NotNull Vec3d facing, @NotNull Vec3d origin) {
         this.world = world;
         this.block = block;
         this.pos = pos;
         this.facing = facing;
+        this.origin = origin;
     }
 
-    public TargetBlock(@NotNull World world, @NotNull BlockPos block, @NotNull Vec3d pos, @NotNull Direction facing) {
+    public TargetBlock(@NotNull World world, @NotNull BlockPos block, @NotNull Vec3d pos, @NotNull Direction facing, @NotNull Vec3d origin) {
         this.world = world;
         this.block = block;
         this.pos = pos;
         this.facing = Vec3d.of(facing.getVector());
+        this.origin = origin;
     }
 
     @Override
@@ -52,6 +54,11 @@ public class TargetBlock implements Target {
     @Override
     public @NotNull Vec3d getFacing() {
         return facing;
+    }
+
+    @Override
+    public @NotNull Vec3d getOrigin() {
+        return origin;
     }
     
 }

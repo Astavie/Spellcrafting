@@ -4,6 +4,7 @@ import java.util.Map.Entry;
 
 import org.jetbrains.annotations.NotNull;
 
+import astavie.spellcrafting.api.spell.target.Target;
 import astavie.spellcrafting.api.util.ItemList;
 import net.fabricmc.fabric.api.lookup.v1.block.BlockApiLookup;
 import net.fabricmc.fabric.api.lookup.v1.entity.EntityApiLookup;

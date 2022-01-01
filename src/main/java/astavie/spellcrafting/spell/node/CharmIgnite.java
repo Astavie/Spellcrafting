@@ -1,10 +1,11 @@
-package astavie.spellcrafting.spell.charm;
+package astavie.spellcrafting.spell.node;
 
 import org.jetbrains.annotations.NotNull;
 
-import astavie.spellcrafting.api.spell.ActiveSpell;
-import astavie.spellcrafting.api.spell.Charm;
-import astavie.spellcrafting.api.spell.Target;
+import astavie.spellcrafting.api.spell.Spell;
+import astavie.spellcrafting.api.spell.SpellType;
+import astavie.spellcrafting.api.spell.node.NodeCharm;
+import astavie.spellcrafting.api.spell.target.Target;
 import astavie.spellcrafting.api.util.ItemList;
 import net.minecraft.block.AbstractFireBlock;
 import net.minecraft.block.Block;
@@ -15,37 +16,34 @@ import net.minecraft.block.CandleCakeBlock;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.state.property.Properties;
-import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.event.GameEvent;
 
-public class CharmIgnite implements Charm {
+public class CharmIgnite implements NodeCharm {
 
     @Override
-    public Identifier getIdentifier() {
-        return new Identifier("spellcrafting:ignite");
-    }
-
-    @Override
-    public @NotNull Class<?>[] getArgumentTypes() {
-        return new Class<?>[] {
-            Target.class
-        };
-    }
-
-    @Override
-    public @NotNull ItemList getComponents() {
+    public @NotNull ItemList components() {
         return new ItemList(); // TODO: Components
     }
 
     @Override
-    public void cast(@NotNull ActiveSpell context, @NotNull Object[] arguments, int id) {
-        Target target = (Target) arguments[0];
+    public @NotNull SpellType[] charmParameters() {
+        return new SpellType[] { SpellType.TARGET };
+    }
 
-        if (target == null || !context.inRange(target)) {
+    @Override
+    public @NotNull SpellType[] charmReturnTypes() {
+        return new SpellType[0];
+    }
+
+    @Override
+    public @NotNull Object[] cast(@NotNull Spell spell, @NotNull Object[] input) {
+        Target target = (Target) input[0];
+
+        if (!spell.inRange(target)) {
             // TODO: "Too far away" particle effect
-            return;
+            return new Object[0];
         }
 
         // Entity
@@ -54,7 +52,7 @@ public class CharmIgnite implements Charm {
                 target.getWorld().playSoundFromEntity(null, target.getEntity(), SoundEvents.ITEM_FIRECHARGE_USE, SoundCategory.BLOCKS, 1.0f, (target.getWorld().getRandom().nextFloat() - target.getWorld().getRandom().nextFloat()) * 0.2f + 1.0f);
                 target.getEntity().setOnFireFor(5);
             }
-            return;
+            return new Object[0];
         }
 
         // Special block
@@ -63,7 +61,7 @@ public class CharmIgnite implements Charm {
             target.getWorld().playSound(null, target.getBlock(), SoundEvents.ITEM_FIRECHARGE_USE, SoundCategory.BLOCKS, 1.0f, (target.getWorld().getRandom().nextFloat() - target.getWorld().getRandom().nextFloat()) * 0.2f + 1.0f);
             target.getWorld().setBlockState(target.getBlock(), (BlockState)blockState.with(Properties.LIT, true), Block.NOTIFY_ALL | Block.REDRAW_ON_MAIN_THREAD);
             target.getWorld().emitGameEvent(null, GameEvent.BLOCK_PLACE, target.getBlock());
-            return;
+            return new Object[0];
         }
 
         // Fire
@@ -79,9 +77,9 @@ public class CharmIgnite implements Charm {
             BlockState blockState2 = AbstractFireBlock.getState(target.getWorld(), blockPos2);
             target.getWorld().setBlockState(blockPos2, blockState2, Block.NOTIFY_ALL | Block.REDRAW_ON_MAIN_THREAD);
             target.getWorld().emitGameEvent(null, GameEvent.BLOCK_PLACE, target.getBlock());
-            return;
+            return new Object[0];
         }
-        return;
+        return new Object[0];
     }
     
 }
