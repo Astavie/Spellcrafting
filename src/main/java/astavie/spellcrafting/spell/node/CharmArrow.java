@@ -2,9 +2,11 @@ package astavie.spellcrafting.spell.node;
 
 import org.jetbrains.annotations.NotNull;
 
+import astavie.spellcrafting.api.spell.Attunable;
 import astavie.spellcrafting.api.spell.Spell;
 import astavie.spellcrafting.api.spell.SpellType;
 import astavie.spellcrafting.api.spell.node.NodeCharm;
+import astavie.spellcrafting.api.spell.target.DistancedTarget;
 import astavie.spellcrafting.api.spell.target.Target;
 import astavie.spellcrafting.api.spell.target.TargetEntity;
 import astavie.spellcrafting.api.util.ItemList;
@@ -19,39 +21,41 @@ import net.minecraft.util.math.Vec3d;
 public class CharmArrow implements NodeCharm {
 
     @Override
-    public @NotNull ItemList components() {
+    public @NotNull ItemList getComponents() {
         ItemList list = new ItemList();
         list.addItem(Items.ARROW); // TODO: More components for speed?
         return list;
     }
 
     @Override
-    public @NotNull SpellType[] charmParameters() {
+    public @NotNull SpellType[] getCharmParameters() {
         return new SpellType[] { SpellType.TARGET, SpellType.TARGET };
     }
 
     @Override
-    public @NotNull SpellType[] charmReturnTypes() {
+    public @NotNull SpellType[] getCharmReturnTypes() {
         return new SpellType[] { SpellType.TARGET };
     }
 
     @Override
     public @NotNull Object[] cast(@NotNull Spell spell, @NotNull Object[] input) {
-        Target origin = (Target) input[0];
-        Target target = (Target) input[1];
+        DistancedTarget origin = (DistancedTarget) input[0];
+        DistancedTarget target = (DistancedTarget) input[1];
 
-        if (origin.getWorld() != target.getWorld() || !spell.inRange(origin)) {
+        if (origin.target().getWorld() != target.target().getWorld() || !spell.inRange(origin)) {
             // TODO: Out of range particles
             return new Object[] { null };
         }
 
-        Vec3d dir = target.getPos().subtract(origin.getPos());
+        Vec3d dir = target.target().getPos().subtract(origin.target().getPos());
         float f = 1.0f;
 
         // Create arrow entity
         ItemStack arrowItem = new ItemStack(Items.ARROW);
-        ArrowEntity arrow = new ArrowEntity(origin.getWorld(), origin.getPos().x, origin.getPos().y, origin.getPos().z);
-        arrow.setOwner(spell.caster().asTarget().getEntity()); // set caster entity as owner
+        ArrowEntity arrow = new ArrowEntity(origin.target().getWorld(), origin.target().getPos().x, origin.target().getPos().y, origin.target().getPos().z);
+        if (spell.getCaster().asTarget() instanceof TargetEntity) {
+            arrow.setOwner(((TargetEntity) spell.getCaster().asTarget()).getEntity()); // set caster entity as owner
+        }
         arrow.pickupType = PickupPermission.ALLOWED;
         arrow.initFromStack(arrowItem);
         arrow.setVelocity(dir.x, dir.y, dir.z, f * 3.0f, 1.0f);
@@ -59,11 +63,15 @@ public class CharmArrow implements NodeCharm {
             arrow.setCritical(true);
         }
 
-        // Spawn arrow
-        origin.getWorld().spawnEntity(arrow);
-        origin.getWorld().playSound(null, origin.getPos().x, origin.getPos().y, origin.getPos().z, SoundEvents.ENTITY_ARROW_SHOOT, SoundCategory.PLAYERS, 1.0f, 1.0f / (origin.getWorld().getRandom().nextFloat() * 0.4f + 1.2f) + f * 0.5f);
+        // Attune arrow
+        Attunable.ENTITY_ATTUNABLE.find(arrow, null).attuneTo(spell.getCaster());
 
-        return new Object[] { new TargetEntity(arrow, origin.getPos(), origin.getOrigin()) };
+        // Spawn arrow
+        origin.target().getWorld().spawnEntity(arrow);
+        origin.target().getWorld().playSound(null, origin.target().getPos().x, origin.target().getPos().y, origin.target().getPos().z, SoundEvents.ENTITY_ARROW_SHOOT, SoundCategory.PLAYERS, 1.0f, 1.0f / (origin.target().getWorld().getRandom().nextFloat() * 0.4f + 1.2f) + f * 0.5f);
+
+        Target arrowTarget = new TargetEntity(arrow, origin.target().getPos());
+        return new Object[] { new DistancedTarget(arrowTarget, arrowTarget) };
     }
     
 }

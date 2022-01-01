@@ -8,19 +8,17 @@ import astavie.spellcrafting.api.util.ItemList;
 
 public interface SpellNode {
 
-    boolean applyOnChange();
+    @NotNull SpellType[] getParameters();
 
-    @NotNull SpellType[] parameters();
+    @NotNull SpellType[] getReturnTypes();
 
-    @NotNull SpellType[] returnTypes();
+    @NotNull ItemList getComponents();
 
-    @NotNull ItemList components();
-
-    default int componentFactor(int ouputIndex) {
+    default int getComponentFactor(int ouputIndex) {
         return 1;
     }
 
-    void apply(@NotNull Spell spell);
+    void apply(@NotNull Spell spell, boolean timeSent);
 
     default void onEvent(@NotNull Spell spell, Spell.Event type, Object context) {
     }

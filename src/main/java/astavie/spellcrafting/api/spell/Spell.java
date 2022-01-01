@@ -13,6 +13,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import astavie.spellcrafting.api.spell.node.SpellNode;
+import astavie.spellcrafting.api.spell.target.DistancedTarget;
 import astavie.spellcrafting.api.spell.target.Target;
 import astavie.spellcrafting.api.util.ItemList;
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
@@ -49,7 +50,7 @@ public class Spell {
     private final Map<Event, Object> eventsThisTick = new HashMap<>();
 
     public Spell(SpellNode start, Multimap<Socket, Socket> nodes) {
-        if (start.parameters().length > 0) throw new IllegalArgumentException("Illegal start node");
+        if (start.getParameters().length > 0) throw new IllegalArgumentException("Illegal start node");
         this.start = start;
         this.nodes = nodes;
         
@@ -65,7 +66,7 @@ public class Spell {
 
         // Add components
         for (Entry<SpellNode, Integer> entry : factors.entrySet()) {
-            components.addItemList(entry.getKey().components(), entry.getValue());
+            components.addItemList(entry.getKey().getComponents(), entry.getValue());
         }
     }
 
@@ -75,19 +76,23 @@ public class Spell {
         Set<SpellNode> nextBlacklist = new HashSet<>(blacklist);
         nextBlacklist.add(node);
 
-        int returnTypes = node.returnTypes().length;
+        int returnTypes = node.getReturnTypes().length;
         for (int i = 0; i < returnTypes; i++) {
             for (Socket in : nodes.get(new Socket(node, i))) {
                 if (nextBlacklist.contains(in.node)) throw new IllegalArgumentException("Cyclic spell");
-                if (node.returnTypes()[i] != in.node.parameters()[in.index]) throw new IllegalArgumentException("Spell has illegal connections");
+                if (node.getReturnTypes()[i] != in.node.getParameters()[in.index]) throw new IllegalArgumentException("Spell has illegal connections");
 
                 int m = factors.getOrDefault(in.node, 0);
-                if (m < multiplier * node.componentFactor(i)) {
-                    factors.put(in.node, multiplier * node.componentFactor(i));
+                if (m < multiplier * node.getComponentFactor(i)) {
+                    factors.put(in.node, multiplier * node.getComponentFactor(i));
                     continueFactor(factors, nextBlacklist, in.node);
                 }
             }
         }
+    }
+
+    public @Nullable Object getOutput(@NotNull Socket socket) {
+        return output.get(socket);
     }
 
     public boolean isActive() {
@@ -98,15 +103,18 @@ public class Spell {
         return caster.asTarget().getWorld().getServer().getOverworld().getTime();
     }
 
-    public boolean inRange(@NotNull Target target) {
-        return target.inRange(caster.getRange());
+    public boolean inRange(@NotNull DistancedTarget target) {
+        if (target.origin() == null) return false;
+
+        double range = caster.getRange();
+        return target.origin().isAttuned(caster) && target.origin().getPos().squaredDistanceTo(target.target().getPos()) <= range * range;
     }
 
-    public @Nullable Caster caster() {
+    public @Nullable Caster getCaster() {
         return caster;
     }
 
-    public @Nullable Target target() {
+    public @Nullable Target getTarget() {
         return target;
     }
 
@@ -135,7 +143,7 @@ public class Spell {
             transaction.commit();
             this.caster = caster;
             this.target = target;
-            start.apply(this);
+            start.apply(this, false);
             this.target = null;
             return true;
         } else if (events.containsKey(Event.TARGET)) {
@@ -155,6 +163,10 @@ public class Spell {
         }
     }
 
+    public void cancelEvents(@NotNull SpellNode handler) {
+        events.values().remove(handler);
+    }
+
     public void onEvent(@NotNull Event event, Object context) {
         for (SpellNode node : events.removeAll(event)) {
             node.onEvent(this, event, context);
@@ -170,8 +182,12 @@ public class Spell {
         registerEvent(new Event(Event.TICK_ID, NbtLong.of(getTime() + 1)), handler);
     }
 
+    public void unschedule(@NotNull SpellNode handler) {
+        events.remove(new Event(Event.TICK_ID, NbtLong.of(getTime())), handler);
+    }
+
     public @NotNull Object[] getInput(@NotNull SpellNode node) {
-        int parameters = node.parameters().length;
+        int parameters = node.getParameters().length;
         Object[] ret = new Object[parameters];
         for (int i = 0; i < parameters; i++) {
             ret[i] = output.get(inverse.get(new Socket(node, i)));
@@ -180,7 +196,7 @@ public class Spell {
     }
 
     public void apply(@NotNull SpellNode node, int index, @Nullable Object returnValue) {
-        SpellType returnType = node.returnTypes()[index];
+        SpellType returnType = node.getReturnTypes()[index];
 
         if (returnValue != null && !returnType.valueType().isInstance(returnValue)) {
             throw new IllegalArgumentException();
@@ -190,15 +206,12 @@ public class Spell {
         output.put(out, returnValue);
 
         for (Socket in : nodes.get(out)) {
-            // Apply if this has no effect or we are sending a TIME signal
-            if (in.node.applyOnChange() || returnType == SpellType.TIME) {
-                in.node.apply(this);
-            }
+            in.node.apply(this, returnType == SpellType.TIME);
         }
     }
 
     public void apply(@NotNull SpellNode node, @NotNull Object[] returnValues) {
-        SpellType[] returnTypes = node.returnTypes();
+        SpellType[] returnTypes = node.getReturnTypes();
         if (returnValues.length != returnTypes.length) {
             throw new IllegalArgumentException();
         }

@@ -13,34 +13,34 @@ import net.minecraft.util.Unit;
 public interface NodeEvent<T> extends SpellNode {
 
     @Override
-    default boolean applyOnChange() {
-        return false;
+    default @NotNull SpellType[] getParameters() {
+        return ArrayUtils.insert(0, getEventParameters(), SpellType.TIME);
     }
 
     @Override
-    default @NotNull SpellType[] parameters() {
-        return ArrayUtils.insert(0, eventParameters(), SpellType.TIME);
+    default @NotNull SpellType[] getReturnTypes() {
+        return ArrayUtils.insert(0, getEventReturnTypes(), SpellType.TIME);
     }
 
     @Override
-    default @NotNull SpellType[] returnTypes() {
-        return ArrayUtils.insert(0, eventReturnTypes(), SpellType.TIME);
-    }
-
-    @Override
-    default void apply(@NotNull Spell spell) {
-        Object[] input = spell.getInput(this);
-        if (input[0] != null) {
-            Spell.Event event = getEvent(spell, Arrays.copyOfRange(input, 1, input.length));
-            if (event != null) {
-                spell.registerEvent(event, this);
+    default void apply(@NotNull Spell spell, boolean timeSent) {
+        if (timeSent) {
+            Object[] input = spell.getInput(this);
+            if (input[0] != null) {
+                Spell.Event event = getEvent(spell, Arrays.copyOfRange(input, 1, input.length));
+                if (event != null) {
+                    spell.registerEvent(event, this);
+                    return;
+                }
             }
         }
+
+        spell.cancelEvents(this);
     }
 
-    @NotNull SpellType[] eventParameters();
+    @NotNull SpellType[] getEventParameters();
     
-    @NotNull SpellType[] eventReturnTypes();
+    @NotNull SpellType[] getEventReturnTypes();
 
     @Nullable Spell.Event getEvent(@NotNull Spell spell, @NotNull Object[] input);
 

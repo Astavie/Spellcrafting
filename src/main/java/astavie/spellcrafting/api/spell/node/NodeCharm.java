@@ -12,22 +12,19 @@ import net.minecraft.util.Unit;
 public interface NodeCharm extends SpellNode {
 
     @Override
-    default boolean applyOnChange() {
-        return false;
+    default @NotNull SpellType[] getParameters() {
+        return ArrayUtils.insert(0, getCharmParameters(), SpellType.TIME);
     }
 
     @Override
-    default @NotNull SpellType[] parameters() {
-        return ArrayUtils.insert(0, charmParameters(), SpellType.TIME);
+    default @NotNull SpellType[] getReturnTypes() {
+        return ArrayUtils.insert(0, getCharmReturnTypes(), SpellType.TIME);
     }
 
     @Override
-    default @NotNull SpellType[] returnTypes() {
-        return ArrayUtils.insert(0, charmReturnTypes(), SpellType.TIME);
-    }
-
-    @Override
-    default void apply(@NotNull Spell spell) {
+    default void apply(@NotNull Spell spell, boolean timeSent) {
+        if (!timeSent) return;
+        
         Object[] input = spell.getInput(this);
         if (input[0] != null) {
             spell.apply(this, ArrayUtils.insert(0, cast(spell, Arrays.copyOfRange(input, 1, input.length)), (Unit) null));
@@ -40,9 +37,9 @@ public interface NodeCharm extends SpellNode {
         spell.apply(this, 0, Unit.INSTANCE);
     }
 
-    @NotNull SpellType[] charmParameters();
+    @NotNull SpellType[] getCharmParameters();
     
-    @NotNull SpellType[] charmReturnTypes();
+    @NotNull SpellType[] getCharmReturnTypes();
 
     @NotNull Object[] cast(@NotNull Spell spell, @NotNull Object[] input);
     

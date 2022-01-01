@@ -8,15 +8,10 @@ import astavie.spellcrafting.api.spell.Spell;
 public interface NodeTransmuter extends SpellNode {
 
     @Override
-    default boolean applyOnChange() {
-        return true;
-    }
-
-    @Override
-    default void apply(@NotNull Spell spell) {
+    default void apply(@NotNull Spell spell, boolean timeSent) {
         Object[] input = spell.getInput(this);
         if (ArrayUtils.contains(input, null)) {
-            spell.apply(this, new Object[] { returnTypes().length });
+            spell.apply(this, new Object[] { getReturnTypes().length });
         }
         spell.apply(this, transmute(spell, input));
     }

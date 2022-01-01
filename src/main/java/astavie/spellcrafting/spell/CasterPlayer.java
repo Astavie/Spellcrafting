@@ -14,8 +14,8 @@ public record CasterPlayer(PlayerEntity player) implements Caster {
 
     @Override
     public @NotNull Target asTarget() {
-        // TODO: instead of getEyePos use hand position for pos
-        return new TargetEntity(player, player.getEyePos(), player.getEyePos());
+        // TODO: instead of getEyePos use hand position
+        return new TargetEntity(player, player.getEyePos());
     }
 
     @Override
@@ -27,5 +27,5 @@ public record CasterPlayer(PlayerEntity player) implements Caster {
     public double getRange() {
         return player.isCreative() ? 5.0 : 4.5;
     }
-    
+
 }

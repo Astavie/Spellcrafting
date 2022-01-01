@@ -3,7 +3,7 @@ package astavie.spellcrafting.api.spell.target;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import net.minecraft.entity.Entity;
+import astavie.spellcrafting.api.spell.Caster;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
@@ -13,27 +13,14 @@ public class TargetBlock implements Target {
 
     private final World world;
     private final BlockPos block;
-    private final Vec3d pos, facing, origin;
+    private final Vec3d pos;
+    private final Direction facing;
 
-    public TargetBlock(@NotNull World world, @NotNull BlockPos block, @NotNull Vec3d pos, @NotNull Vec3d facing, @NotNull Vec3d origin) {
+    public TargetBlock(@NotNull World world, @NotNull BlockPos block, @NotNull Vec3d pos, @NotNull Direction facing) {
         this.world = world;
         this.block = block;
         this.pos = pos;
         this.facing = facing;
-        this.origin = origin;
-    }
-
-    public TargetBlock(@NotNull World world, @NotNull BlockPos block, @NotNull Vec3d pos, @NotNull Direction facing, @NotNull Vec3d origin) {
-        this.world = world;
-        this.block = block;
-        this.pos = pos;
-        this.facing = Vec3d.of(facing.getVector());
-        this.origin = origin;
-    }
-
-    @Override
-    public @Nullable Entity getEntity() {
-        return null;
     }
 
     @Override
@@ -53,12 +40,22 @@ public class TargetBlock implements Target {
 
     @Override
     public @NotNull Vec3d getFacing() {
+        return Vec3d.of(facing.getVector());
+    }
+
+    public Direction getDirection() {
         return facing;
     }
 
     @Override
-    public @NotNull Vec3d getOrigin() {
-        return origin;
+    public @Nullable Caster asCaster() {
+        return Caster.BLOCK_CASTER.find(world, block, facing);
+    }
+
+    @Override
+    public boolean isAttuned(@NotNull Caster caster) {
+        // TODO Auto-generated method stub
+        return false;
     }
     
 }

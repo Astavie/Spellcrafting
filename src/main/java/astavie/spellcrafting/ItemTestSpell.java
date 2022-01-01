@@ -3,7 +3,6 @@ package astavie.spellcrafting;
 import astavie.spellcrafting.api.item.SpellContainer;
 import astavie.spellcrafting.api.spell.Spell;
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
-import net.fabricmc.fabric.api.transfer.v1.context.ContainerItemContext;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.player.PlayerEntity;

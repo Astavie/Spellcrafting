@@ -4,6 +4,7 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 
 import astavie.spellcrafting.api.item.SpellContainer;
+import astavie.spellcrafting.api.spell.Attunable;
 import astavie.spellcrafting.api.spell.Caster;
 import astavie.spellcrafting.api.spell.Spell;
 import astavie.spellcrafting.api.spell.Spell.Socket;
@@ -11,6 +12,7 @@ import astavie.spellcrafting.api.spell.node.SpellNode;
 import astavie.spellcrafting.api.spell.target.Target;
 import astavie.spellcrafting.api.spell.target.TargetBlock;
 import astavie.spellcrafting.api.spell.target.TargetEntity;
+import astavie.spellcrafting.mixin.EntityMixin;
 import astavie.spellcrafting.spell.CasterPlayer;
 import astavie.spellcrafting.spell.node.CharmArrow;
 import astavie.spellcrafting.spell.node.CharmIgnite;
@@ -73,6 +75,8 @@ public class Spellcrafting implements ModInitializer {
 
 		// APIs
 		Caster.ENTITY_CASTER.registerForType((player, context) -> new CasterPlayer(player), EntityType.PLAYER);
+		Attunable.ENTITY_ATTUNABLE.registerForTypes((entity, context) -> (Attunable) entity, EntityType.PLAYER, EntityType.ARROW);
+
 		SpellContainer.ITEM_SPELL.registerForItems((stack, context) -> () -> TEST_SPELL, test);
 
 		// Events
@@ -93,10 +97,10 @@ public class Spellcrafting implements ModInitializer {
 				Vec3d pos = new Vec3d(buf.readDouble(), buf.readDouble(), buf.readDouble());
 				Entity e = player.world.getEntityById(buf.readInt());
 				if (e == null) return;
-				target = new TargetEntity(e, pos, caster.asTarget().getOrigin());
+				target = new TargetEntity(e, pos);
 			} else {
 				BlockHitResult hit = buf.readBlockHitResult();
-				target = new TargetBlock(player.world, hit.getBlockPos(), hit.getPos(), hit.getSide(), caster.asTarget().getOrigin());
+				target = new TargetBlock(player.world, hit.getBlockPos(), hit.getPos(), hit.getSide());
 			}
 
 			// Get spell
@@ -112,12 +116,12 @@ public class Spellcrafting implements ModInitializer {
 		});
 	}
 
-	public static Target getTarget(World world, Vec3d origin, HitResult result) {
+	public static Target getTarget(World world, HitResult result) {
 		if (result.getType() == HitResult.Type.ENTITY) {
-			return new TargetEntity(((EntityHitResult) result).getEntity(), result.getPos(), origin);
+			return new TargetEntity(((EntityHitResult) result).getEntity(), result.getPos());
 		} else {
 			BlockHitResult block = (BlockHitResult) result;
-			return new TargetBlock(world, block.getBlockPos(), block.getPos(), block.getSide(), origin);
+			return new TargetBlock(world, block.getBlockPos(), block.getPos(), block.getSide());
 		}
 	}
 
