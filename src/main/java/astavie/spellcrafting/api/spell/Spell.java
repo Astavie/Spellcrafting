@@ -53,21 +53,20 @@ public class Spell {
     private Target target;
     private final Map<Event, Object> eventsThisTick = new HashMap<>();
 
-    private final Node start;
+    private final Set<Node> start;
     private final Multimap<Socket, Socket> nodes;
     private final Map<Socket, Socket> inverse = new HashMap<>();
     private final Map<Socket, Object> output = new HashMap<>();
     private final Multimap<Event, Node> events = HashMultimap.create();
     private final ItemList components = new ItemList();
 
-    private Spell(Node start) {
-        if (start.type.getParameters().length > 0) throw new IllegalArgumentException("Illegal start node");
-        this.start = start;
+    private Spell() {
+        this.start = new HashSet<>();
         this.nodes = HashMultimap.create();
     }
 
-    public Spell(Node start, Multimap<Socket, Socket> nodes) {
-        if (start.type.getParameters().length > 0) throw new IllegalArgumentException("Illegal start node");
+    public Spell(Set<Node> start, Multimap<Socket, Socket> nodes) {
+        if (start.stream().anyMatch(n -> n.type.getParameters().length > 0)) throw new IllegalArgumentException("Illegal start node");
         this.start = start;
         this.nodes = nodes;
         
@@ -82,8 +81,10 @@ public class Spell {
     private void calculateComponents() {
         // Check graph and calculate multipliers
         Set<Node> nodes = new HashSet<>();
-        nodes.add(start);
-        continueFactor(nodes, new HashSet<>(), start);
+        for (Node node : start) {
+            nodes.add(node);
+            continueFactor(nodes, new HashSet<>(), node);
+        }
 
         // Add components
         for (Node node : nodes) {
@@ -109,12 +110,12 @@ public class Spell {
         NbtList nodeList = new NbtList();
         NbtList socketList = new NbtList();
 
-        // Pass 0: starting node
-        {
-            nodes.put(spell.start, nodeList.size());
+        // Pass 0: starting nodes
+        for (Node node : spell.start) {
+            nodes.put(node, nodeList.size());
 
             NbtCompound cmp = new NbtCompound();
-            cmp.putString("type", NodeType.REGISTRY.getId(spell.start.type).toString());
+            cmp.putString("type", NodeType.REGISTRY.getId(node.type).toString());
             nodeList.add(cmp);
         }
 
@@ -181,16 +182,17 @@ public class Spell {
         Node[] totalNodes = new Node[nodes.size()];
         Socket[] totalSockets = new Socket[sockets.size()];
 
-        Node start = new Node(NodeType.REGISTRY.get(new Identifier(nodes.getCompound(0).getString("type"))));
-        totalNodes[0] = start;
-
-        Spell spell = new Spell(start);
+        Spell spell = new Spell();
 
         // Phase 0: get all nodes with events
         for (int i = 1; i < nodes.size(); i++) {
             NbtCompound cmp = nodes.getCompound(i);
             Node node = new Node(NodeType.REGISTRY.get(new Identifier(cmp.getString("type"))));
             totalNodes[i] = node;
+
+            if (node.type.getParameters().length == 0) {
+                spell.start.add(node);
+            }
 
             if (cmp.contains("event")) {
                 Event event = new Event(new Identifier(cmp.getString("event")), cmp.get("arg"));
@@ -276,7 +278,7 @@ public class Spell {
 
         // Check range
         double range = caster.getRange();
-        return target.getOrigin().getPos().squaredDistanceTo(target.getTarget().getPos()) <= range * range;
+        return target.getOrigin().getPos().squaredDistanceTo(target.getTarget().getPos()) <= range * range + 0.1;
     }
 
     public @Nullable Caster getCaster() {
@@ -312,7 +314,9 @@ public class Spell {
             transaction.commit();
             this.caster = caster;
             this.target = target;
-            start.type.apply(this, start);
+
+            for (Node node : start) node.type.apply(this, node);
+
             this.target = null;
             checkForEnd();
             return true;
@@ -353,11 +357,10 @@ public class Spell {
         }
         if (event.eventType == Event.TICK_ID) {
             eventsThisTick.clear();
+            checkForEnd();
         } else {
             eventsThisTick.put(event, context);
         }
-
-        checkForEnd();
     }
 
     public void schedule(@NotNull Node handler) {
@@ -402,9 +405,7 @@ public class Spell {
             throw new IllegalArgumentException();
         }
 
-        // Iterate in reverse order so the TIME signal, if it exists, is last
-        // TODO: Come up with a better solution
-        for (int i = returnValues.length - 1; i >= 0; i--) {
+        for (int i = 0; i < returnValues.length; i++) {
             apply(node, i, returnValues[i]);
         }
     }

@@ -27,9 +27,6 @@ public class ItemTestSpell extends Item {
     @Override
     @SuppressWarnings("resource")
     public TypedActionResult<ItemStack> use(World world, PlayerEntity user, Hand hand) {
-        ItemStack stack = user.getStackInHand(hand);
-        TypedActionResult<ItemStack> result = TypedActionResult.pass(stack);
-
         // Magic!
         if (user.isSneaking()) {
             if (!world.isClient) {
@@ -41,7 +38,7 @@ public class ItemTestSpell extends Item {
             Spellcrafting.cast(hit);
         }
 
-        return result;
+        return TypedActionResult.pass(user.getStackInHand(hand));
     }
 
 }
