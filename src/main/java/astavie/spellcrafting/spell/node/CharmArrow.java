@@ -21,24 +21,24 @@ import net.minecraft.util.math.Vec3d;
 public class CharmArrow implements NodeCharm {
 
     @Override
-    public @NotNull ItemList getComponents() {
+    public @NotNull ItemList getComponents(@NotNull Spell spell, @NotNull Spell.Node node) {
         ItemList list = new ItemList();
         list.addItem(Items.ARROW); // TODO: More components for speed?
         return list;
     }
 
     @Override
-    public @NotNull SpellType<?>[] getCharmParameters() {
+    public @NotNull SpellType<?>[] getParameters() {
         return new SpellType[] { SpellType.TARGET, SpellType.TARGET };
     }
 
     @Override
-    public @NotNull SpellType<?>[] getCharmReturnTypes() {
+    public @NotNull SpellType<?>[] getReturnTypes(@NotNull Spell spell, @NotNull Spell.Node node) {
         return new SpellType[] { SpellType.TARGET };
     }
 
     @Override
-    public @NotNull Object[] cast(@NotNull Spell spell, @NotNull Object[] input) {
+    public @NotNull Object[] cast(@NotNull Spell spell, @NotNull Spell.Node node, @NotNull Object[] input) {
         DistancedTarget origin = (DistancedTarget) input[0];
         DistancedTarget target = (DistancedTarget) input[1];
 
@@ -64,6 +64,7 @@ public class CharmArrow implements NodeCharm {
         }
 
         // Attune arrow
+        // TODO: Arrows shouldn't be attunable
         Attunable.ENTITY_ATTUNABLE.find(arrow, null).attuneTo(spell.getCaster().asAttunable());
 
         // Spawn arrow

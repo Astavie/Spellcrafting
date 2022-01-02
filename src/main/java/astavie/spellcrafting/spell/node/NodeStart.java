@@ -7,7 +7,6 @@ import astavie.spellcrafting.api.spell.SpellType;
 import astavie.spellcrafting.api.spell.node.NodeType;
 import astavie.spellcrafting.api.spell.target.DistancedTarget;
 import astavie.spellcrafting.api.util.ItemList;
-import net.minecraft.util.Unit;
 
 public class NodeStart implements NodeType {
 
@@ -17,19 +16,18 @@ public class NodeStart implements NodeType {
     }
 
     @Override
-    public @NotNull SpellType<?>[] getReturnTypes() {
-        return new SpellType[] { SpellType.TIME, SpellType.TARGET, SpellType.TARGET };
+    public @NotNull SpellType<?>[] getReturnTypes(@NotNull Spell spell, @NotNull Spell.Node node) {
+        return new SpellType[] { SpellType.TARGET, SpellType.TARGET };
     }
 
     @Override
-    public @NotNull ItemList getComponents() {
+    public @NotNull ItemList getComponents(@NotNull Spell spell, @NotNull Spell.Node node) {
         return new ItemList(); // TODO: Initial components?
     }
 
     @Override
-    public void apply(@NotNull Spell spell, @NotNull Spell.Node node, boolean timeSent) {
+    public void apply(@NotNull Spell spell, @NotNull Spell.Node node) {
         spell.apply(node, new Object[] {
-            Unit.INSTANCE,
             new DistancedTarget(spell.getCaster().asTarget(), spell.getCaster().asTarget()),
             new DistancedTarget(spell.getTarget(),            spell.getCaster().asTarget()),
         });

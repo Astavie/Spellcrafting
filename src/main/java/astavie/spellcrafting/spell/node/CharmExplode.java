@@ -15,24 +15,24 @@ import net.minecraft.world.explosion.Explosion;
 public class CharmExplode implements NodeCharm {
 
     @Override
-    public @NotNull ItemList getComponents() {
+    public @NotNull ItemList getComponents(@NotNull Spell spell, @NotNull Spell.Node node) {
         ItemList list = new ItemList();
         list.addItem(Items.GUNPOWDER); // TODO: More components for bigger explosio?
         return list;
     }
 
     @Override
-    public @NotNull SpellType<?>[] getCharmParameters() {
+    public @NotNull SpellType<?>[] getParameters() {
         return new SpellType[] { SpellType.TARGET };
     }
 
     @Override
-    public @NotNull SpellType<?>[] getCharmReturnTypes() {
+    public @NotNull SpellType<?>[] getReturnTypes(@NotNull Spell spell, @NotNull Spell.Node node) {
         return new SpellType[0];
     }
 
     @Override
-    public @NotNull Object[] cast(@NotNull Spell spell, @NotNull Object[] input) {
+    public @NotNull Object[] cast(@NotNull Spell spell, @NotNull Spell.Node node, @NotNull Object[] input) {
         DistancedTarget origin = (DistancedTarget) input[0];
 
         if (!spell.inRange(origin)) {

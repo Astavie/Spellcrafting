@@ -23,22 +23,22 @@ public class EventEntityInteract implements NodeEvent<Target> {
     }
 
     @Override
-    public @NotNull ItemList getComponents() {
+    public @NotNull ItemList getComponents(@NotNull Spell spell, @NotNull Spell.Node node) {
         return new ItemList(); // TODO: Components?
     }
 
     @Override
-    public @NotNull SpellType<?>[] getEventParameters() {
+    public @NotNull SpellType<?>[] getParameters() {
         return new SpellType[] { SpellType.TARGET };
     }
 
     @Override
-    public @NotNull SpellType<?>[] getEventReturnTypes() {
+    public @NotNull SpellType<?>[] getReturnTypes(@NotNull Spell spell, @NotNull Spell.Node node) {
         return new SpellType[] { SpellType.TARGET };
     }
 
     @Override
-    public @Nullable Spell.Event getEvent(@NotNull Spell spell, @NotNull Object[] input) {
+    public @Nullable Spell.Event getEvent(@NotNull Spell spell, @NotNull Spell.Node node, @NotNull Object[] input) {
         if (!(input[0] instanceof DistancedTarget) || !(((DistancedTarget) input[0]).getTarget() instanceof TargetEntity)) return null;
         
         Entity entity = ((TargetEntity) ((DistancedTarget) input[0]).getTarget()).getEntity();
@@ -47,7 +47,7 @@ public class EventEntityInteract implements NodeEvent<Target> {
 
     @Override
     public @NotNull Object[] onEvent(@NotNull Spell spell, @NotNull Spell.Node node, Target context) {
-        DistancedTarget input = (DistancedTarget) spell.getInput(node)[1];
+        DistancedTarget input = (DistancedTarget) spell.getInput(node)[0];
         if (input == null) {
             return new Object[] { new DistancedTarget(context, null) };
         } else {

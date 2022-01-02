@@ -26,22 +26,22 @@ import net.minecraft.world.event.GameEvent;
 public class CharmIgnite implements NodeCharm {
 
     @Override
-    public @NotNull ItemList getComponents() {
+    public @NotNull ItemList getComponents(@NotNull Spell spell, @NotNull Spell.Node node) {
         return new ItemList(); // TODO: Components
     }
 
     @Override
-    public @NotNull SpellType<?>[] getCharmParameters() {
+    public @NotNull SpellType<?>[] getParameters() {
         return new SpellType[] { SpellType.TARGET };
     }
 
     @Override
-    public @NotNull SpellType<?>[] getCharmReturnTypes() {
+    public @NotNull SpellType<?>[] getReturnTypes(@NotNull Spell spell, @NotNull Spell.Node node) {
         return new SpellType[0];
     }
 
     @Override
-    public @NotNull Object[] cast(@NotNull Spell spell, @NotNull Object[] input) {
+    public @NotNull Object[] cast(@NotNull Spell spell, @NotNull Spell.Node node, @NotNull Object[] input) {
         DistancedTarget d = (DistancedTarget) input[0];
 
         if (!spell.inRange(d)) {

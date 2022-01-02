@@ -25,7 +25,7 @@ public class EntityMixin implements Attunable {
 
     private UUID attunement = UUID.randomUUID();
 
-    @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/block/Block;onEntityLand"), method = "move")
+    @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/block/Block;onEntityLand(Lnet/minecraft/world/BlockView;Lnet/minecraft/entity/Entity;)V"), method = "move")
     public void move(MovementType movementType, Vec3d movement, CallbackInfo info) {
         Entity e = (Entity) (Object) this;
         if (e.world.isClient) return;

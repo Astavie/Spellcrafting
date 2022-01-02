@@ -3,7 +3,6 @@ package astavie.spellcrafting.api.spell;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
 import com.google.common.collect.HashMultimap;
@@ -82,14 +81,20 @@ public class Spell {
 
     private void calculateComponents() {
         // Check graph and calculate multipliers
-        Map<Node, Integer> factors = new HashMap<>();
-        factors.put(start, 1);
-        continueFactor(factors, new HashSet<>(), start);
+        Set<Node> nodes = new HashSet<>();
+        nodes.add(start);
+        continueFactor(nodes, new HashSet<>(), start);
 
         // Add components
-        for (Entry<Node, Integer> entry : factors.entrySet()) {
-            components.addItemList(entry.getKey().type.getComponents(), entry.getValue());
+        for (Node node : nodes) {
+            components.addItemList(node.type.getComponents(this, node));
         }
+    }
+
+    public @Nullable SpellType<?> getActualInputType(@NotNull Socket socket) {
+        Socket out = inverse.get(socket);
+        if (out == null) return null;
+        return out.node.type.getReturnTypes(this, out.node)[out.index];
     }
 
     public static @NotNull NbtCompound serialize(Spell spell) {
@@ -138,7 +143,7 @@ public class Spell {
             cmp.putInt("index", out.index);
             
             if (spell.output.containsKey(out)) {
-                SpellType<?> type = out.node.type.getReturnTypes()[out.index];
+                SpellType<?> type = out.node.type.getReturnTypes(spell, out.node)[out.index];
                 cmp.put("value", SpellType.serialize(type, spell.output.get(out)));
             }
 
@@ -193,17 +198,12 @@ public class Spell {
             }
         }
 
-        // Phase 1: get all sockets with outputs
+        // Phase 1: get all sockets
         for (int i = 0; i < sockets.size(); i++) {
             NbtCompound cmp = sockets.getCompound(i);
 
             Socket socket = new Socket(totalNodes[cmp.getInt("node")], cmp.getInt("index"));
             totalSockets[i] = socket;
-
-            if (cmp.contains("value")) {
-                SpellType<?> type = socket.node.type.getReturnTypes()[socket.index];
-                spell.output.put(socket, type.deserialize(cmp.get("value"), world));
-            }
         }
 
         // Phase 2: get all connections
@@ -222,26 +222,33 @@ public class Spell {
             }
         }
 
+        // Phase 3: get all outputs
+        for (int i = 0; i < sockets.size(); i++) {
+            NbtCompound cmp = sockets.getCompound(i);
+            if (cmp.contains("value")) {
+                Socket socket = totalSockets[i];
+                SpellType<?> type = socket.node.type.getReturnTypes(spell, socket.node)[socket.index];
+                spell.output.put(socket, type.deserialize(cmp.get("value"), world));
+            }
+        }
+
         spell.calculateComponents();
         return spell;
     }
 
-    private void continueFactor(Map<Node, Integer> factors, Set<Node> blacklist, Node node) {
-        int multiplier = factors.get(node);
-
+    private void continueFactor(Set<Node> total, Set<Node> blacklist, Node node) {
         Set<Node> nextBlacklist = new HashSet<>(blacklist);
         nextBlacklist.add(node);
 
-        int returnTypes = node.type.getReturnTypes().length;
+        int returnTypes = node.type.getReturnTypes(this, node).length;
         for (int i = 0; i < returnTypes; i++) {
             for (Socket in : nodes.get(new Socket(node, i))) {
                 if (nextBlacklist.contains(in.node)) throw new IllegalArgumentException("Cyclic spell");
-                if (node.type.getReturnTypes()[i] != in.node.type.getParameters()[in.index]) throw new IllegalArgumentException("Spell has illegal connections");
+                if (!in.node.type.getParameters()[in.index].getValueClass().isAssignableFrom(node.type.getReturnTypes(this, node)[i].getValueClass())) throw new IllegalArgumentException("Spell has illegal connections");
 
-                int m = factors.getOrDefault(in.node, 0);
-                if (m < multiplier * node.type.getComponentFactor(i)) {
-                    factors.put(in.node, multiplier * node.type.getComponentFactor(i));
-                    continueFactor(factors, nextBlacklist, in.node);
+                if (!total.contains(in.node)) {
+                    total.add(in.node);
+                    continueFactor(total, nextBlacklist, in.node);
                 }
             }
         }
@@ -305,8 +312,9 @@ public class Spell {
             transaction.commit();
             this.caster = caster;
             this.target = target;
-            start.type.apply(this, start, false);
+            start.type.apply(this, start);
             this.target = null;
+            checkForEnd();
             return true;
         } else if (events.containsKey(Event.TARGET)) {
             this.caster = caster;
@@ -317,6 +325,11 @@ public class Spell {
         return false;
     }
 
+    private void checkForEnd() {
+        // TODO: One tick delay?
+        if (events.isEmpty()) end();
+    }
+
     public void registerEvent(@NotNull Event event, @NotNull Node handler) {
         cancelEvents(handler);
         if (eventsThisTick.containsKey(event)) {
@@ -324,6 +337,10 @@ public class Spell {
         } else {
             events.put(event, handler);
         }
+    }
+
+    public boolean hasEvent(@NotNull Node handler) {
+        return events.values().contains(handler);
     }
 
     public void cancelEvents(@NotNull Node handler) {
@@ -339,6 +356,8 @@ public class Spell {
         } else {
             eventsThisTick.put(event, context);
         }
+
+        checkForEnd();
     }
 
     public void schedule(@NotNull Node handler) {
@@ -346,16 +365,24 @@ public class Spell {
     }
 
     public @NotNull Object[] getInput(@NotNull Node node) {
-        int parameters = node.type.getParameters().length;
-        Object[] ret = new Object[parameters];
-        for (int i = 0; i < parameters; i++) {
+        SpellType<?>[] parameters = node.type.getParameters();
+        Object[] ret = new Object[parameters.length];
+        for (int i = 0; i < parameters.length; i++) {
             ret[i] = output.get(inverse.get(new Socket(node, i)));
+            if (ret[i] != null && !exists(getActualInputType(new Socket(node, i)), ret[i])) {
+                ret[i] = null;
+            }
         }
         return ret;
     }
 
+    @SuppressWarnings("unchecked")
+    private static <T> boolean exists(SpellType<T> type, Object o) {
+        return type.exists((T) o);
+    }
+
     public void apply(@NotNull Node node, int index, @Nullable Object returnValue) {
-        SpellType<?> returnType = node.type.getReturnTypes()[index];
+        SpellType<?> returnType = node.type.getReturnTypes(this, node)[index];
 
         if (returnValue != null && !returnType.getValueClass().isInstance(returnValue)) {
             throw new IllegalArgumentException();
@@ -365,12 +392,12 @@ public class Spell {
         output.put(out, returnValue);
 
         for (Socket in : nodes.get(out)) {
-            in.node.type.apply(this, in.node, returnType == SpellType.TIME);
+            in.node.type.apply(this, in.node);
         }
     }
 
     public void apply(@NotNull Node node, @NotNull Object[] returnValues) {
-        SpellType<?>[] returnTypes = node.type.getReturnTypes();
+        SpellType<?>[] returnTypes = node.type.getReturnTypes(this, node);
         if (returnValues.length != returnTypes.length) {
             throw new IllegalArgumentException();
         }

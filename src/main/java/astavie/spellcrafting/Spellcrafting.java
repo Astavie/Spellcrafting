@@ -17,8 +17,7 @@ import astavie.spellcrafting.spell.node.CharmArrow;
 import astavie.spellcrafting.spell.node.CharmExplode;
 import astavie.spellcrafting.spell.node.CharmIgnite;
 import astavie.spellcrafting.spell.node.EventEntityInteract;
-import astavie.spellcrafting.spell.node.EventTarget;
-import astavie.spellcrafting.spell.node.NodeEnd;
+import astavie.spellcrafting.spell.node.EventWait;
 import astavie.spellcrafting.spell.node.NodeStart;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -48,6 +47,7 @@ public class Spellcrafting implements ModInitializer {
 
 	public static Spell ARROW_FIRE;
 	public static Spell LAND_EXPLODE;
+	public static Spell ARROW_EXPLODE;
 
 	@Override
 	public void onInitialize() {
@@ -58,30 +58,23 @@ public class Spellcrafting implements ModInitializer {
 
 		Registry.register(NodeType.REGISTRY, new Identifier("spellcrafting:hit"), new EventEntityInteract(Spell.Event.HIT_ID));
 		Registry.register(NodeType.REGISTRY, new Identifier("spellcrafting:land"), new EventEntityInteract(Spell.Event.LAND_ID));
-		Registry.register(NodeType.REGISTRY, new Identifier("spellcrafting:target"), new EventTarget());
+		Registry.register(NodeType.REGISTRY, new Identifier("spellcrafting:wait"), new EventWait());
 
 		Registry.register(NodeType.REGISTRY, new Identifier("spellcrafting:start"), new NodeStart());
-		Registry.register(NodeType.REGISTRY, new Identifier("spellcrafting:end"), new NodeEnd());
 
 		{
 			Spell.Node start  = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:start")));
 			Spell.Node arrow  = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:arrow")));
 			Spell.Node hit    = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:hit")));
 			Spell.Node ignite = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:ignite")));
-			Spell.Node end    = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:end")));
 
 			Multimap<Socket, Socket> nodes = HashMultimap.create();
 			nodes.put(new Socket(start, 0), new Socket(arrow, 0));
 			nodes.put(new Socket(start, 1), new Socket(arrow, 1));
-			nodes.put(new Socket(start, 2), new Socket(arrow, 2));
 
 			nodes.put(new Socket(arrow, 0), new Socket(hit, 0));
-			nodes.put(new Socket(arrow, 1), new Socket(hit, 1));
 
 			nodes.put(new Socket(hit, 0), new Socket(ignite, 0));
-			nodes.put(new Socket(hit, 1), new Socket(ignite, 1));
-
-			nodes.put(new Socket(ignite, 0), new Socket(end, 0));
 
 			ARROW_FIRE = new Spell(start, nodes);
 		}
@@ -89,21 +82,32 @@ public class Spellcrafting implements ModInitializer {
 			Spell.Node start   = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:start")));
 			Spell.Node land    = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:land")));
 			Spell.Node explode = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:explode")));
-			Spell.Node end     = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:end")));
 
 			Multimap<Socket, Socket> nodes = HashMultimap.create();
 			nodes.put(new Socket(start, 0), new Socket(land, 0));
-			nodes.put(new Socket(start, 1), new Socket(land, 1));
 
 			nodes.put(new Socket(land, 0), new Socket(explode, 0));
-			nodes.put(new Socket(land, 1), new Socket(explode, 1));
-
-			nodes.put(new Socket(explode, 0), new Socket(end, 0));
 
 			LAND_EXPLODE = new Spell(start, nodes);
 		}
+		{
+			Spell.Node start   = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:start")));
+			Spell.Node arrow   = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:arrow")));
+			Spell.Node wait    = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:wait")));
+			Spell.Node explode = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:explode")));
 
-		TEST_SPELL = LAND_EXPLODE;
+			Multimap<Socket, Socket> nodes = HashMultimap.create();
+			nodes.put(new Socket(start, 0), new Socket(arrow, 0));
+			nodes.put(new Socket(start, 1), new Socket(arrow, 1));
+
+			nodes.put(new Socket(arrow, 0), new Socket(wait, 0));
+
+			nodes.put(new Socket(wait, 0), new Socket(explode, 0));
+
+			ARROW_EXPLODE = new Spell(start, nodes);
+		}
+
+		TEST_SPELL = ARROW_EXPLODE;
 		
 		// Items
 		Registry.register(Registry.ITEM, new Identifier("spellcrafting", "test"), test);

@@ -1,6 +1,7 @@
 package astavie.spellcrafting.api.spell.node;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import astavie.spellcrafting.api.spell.Spell;
 import astavie.spellcrafting.api.spell.SpellType;
@@ -15,17 +16,13 @@ public interface NodeType {
 
     @NotNull SpellType<?>[] getParameters();
 
-    @NotNull SpellType<?>[] getReturnTypes();
+    @NotNull SpellType<?>[] getReturnTypes(@NotNull Spell spell, @NotNull Spell.Node node);
 
-    @NotNull ItemList getComponents();
+    @NotNull ItemList getComponents(@NotNull Spell spell, @NotNull Spell.Node node);
 
-    default int getComponentFactor(int ouputIndex) {
-        return 1;
-    }
+    void apply(@NotNull Spell spell, @NotNull Spell.Node node);
 
-    void apply(@NotNull Spell spell, @NotNull Spell.Node node, boolean timeSent);
-
-    default void onEvent(@NotNull Spell spell, @NotNull Spell.Node node, Spell.Event type, Object context) {
+    default void onEvent(@NotNull Spell spell, @NotNull Spell.Node node, @NotNull Spell.Event type, @Nullable Object context) {
     }
     
 }
