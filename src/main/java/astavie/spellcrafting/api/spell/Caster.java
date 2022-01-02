@@ -23,6 +23,8 @@ public interface Caster {
 
     @NotNull Storage<ItemVariant> getComponentStorage();
 
+    @NotNull Attunable asAttunable();
+
     double getRange();
 
     /**

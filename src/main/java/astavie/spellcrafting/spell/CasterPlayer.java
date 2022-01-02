@@ -2,6 +2,7 @@ package astavie.spellcrafting.spell;
 
 import org.jetbrains.annotations.NotNull;
 
+import astavie.spellcrafting.api.spell.Attunable;
 import astavie.spellcrafting.api.spell.Caster;
 import astavie.spellcrafting.api.spell.target.Target;
 import astavie.spellcrafting.api.spell.target.TargetEntity;
@@ -26,6 +27,11 @@ public record CasterPlayer(PlayerEntity player) implements Caster {
     @Override
     public double getRange() {
         return player.isCreative() ? 5.0 : 4.5;
+    }
+
+    @Override
+    public @NotNull Attunable asAttunable() {
+        return Attunable.ENTITY_ATTUNABLE.find(player, null);
     }
 
 }

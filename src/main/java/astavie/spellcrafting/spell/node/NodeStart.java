@@ -4,20 +4,20 @@ import org.jetbrains.annotations.NotNull;
 
 import astavie.spellcrafting.api.spell.Spell;
 import astavie.spellcrafting.api.spell.SpellType;
-import astavie.spellcrafting.api.spell.node.SpellNode;
+import astavie.spellcrafting.api.spell.node.NodeType;
 import astavie.spellcrafting.api.spell.target.DistancedTarget;
 import astavie.spellcrafting.api.util.ItemList;
 import net.minecraft.util.Unit;
 
-public class NodeStart implements SpellNode {
+public class NodeStart implements NodeType {
 
     @Override
-    public @NotNull SpellType[] getParameters() {
+    public @NotNull SpellType<?>[] getParameters() {
         return new SpellType[0];
     }
 
     @Override
-    public @NotNull SpellType[] getReturnTypes() {
+    public @NotNull SpellType<?>[] getReturnTypes() {
         return new SpellType[] { SpellType.TIME, SpellType.TARGET, SpellType.TARGET };
     }
 
@@ -27,8 +27,8 @@ public class NodeStart implements SpellNode {
     }
 
     @Override
-    public void apply(@NotNull Spell spell, boolean timeSent) {
-        spell.apply(this, new Object[] {
+    public void apply(@NotNull Spell spell, @NotNull Spell.Node node, boolean timeSent) {
+        spell.apply(node, new Object[] {
             Unit.INSTANCE,
             new DistancedTarget(spell.getCaster().asTarget(), spell.getCaster().asTarget()),
             new DistancedTarget(spell.getTarget(),            spell.getCaster().asTarget()),

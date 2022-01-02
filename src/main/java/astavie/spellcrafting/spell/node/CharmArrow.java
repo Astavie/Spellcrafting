@@ -28,12 +28,12 @@ public class CharmArrow implements NodeCharm {
     }
 
     @Override
-    public @NotNull SpellType[] getCharmParameters() {
+    public @NotNull SpellType<?>[] getCharmParameters() {
         return new SpellType[] { SpellType.TARGET, SpellType.TARGET };
     }
 
     @Override
-    public @NotNull SpellType[] getCharmReturnTypes() {
+    public @NotNull SpellType<?>[] getCharmReturnTypes() {
         return new SpellType[] { SpellType.TARGET };
     }
 
@@ -42,17 +42,17 @@ public class CharmArrow implements NodeCharm {
         DistancedTarget origin = (DistancedTarget) input[0];
         DistancedTarget target = (DistancedTarget) input[1];
 
-        if (origin.target().getWorld() != target.target().getWorld() || !spell.inRange(origin)) {
+        if (origin.getTarget().getWorld() != target.getTarget().getWorld() || !spell.inRange(origin)) {
             // TODO: Out of range particles
             return new Object[] { null };
         }
 
-        Vec3d dir = target.target().getPos().subtract(origin.target().getPos());
+        Vec3d dir = target.getTarget().getPos().subtract(origin.getTarget().getPos());
         float f = 1.0f;
 
         // Create arrow entity
         ItemStack arrowItem = new ItemStack(Items.ARROW);
-        ArrowEntity arrow = new ArrowEntity(origin.target().getWorld(), origin.target().getPos().x, origin.target().getPos().y, origin.target().getPos().z);
+        ArrowEntity arrow = new ArrowEntity(origin.getTarget().getWorld(), origin.getTarget().getPos().x, origin.getTarget().getPos().y, origin.getTarget().getPos().z);
         if (spell.getCaster().asTarget() instanceof TargetEntity) {
             arrow.setOwner(((TargetEntity) spell.getCaster().asTarget()).getEntity()); // set caster entity as owner
         }
@@ -64,13 +64,13 @@ public class CharmArrow implements NodeCharm {
         }
 
         // Attune arrow
-        Attunable.ENTITY_ATTUNABLE.find(arrow, null).attuneTo(spell.getCaster());
+        Attunable.ENTITY_ATTUNABLE.find(arrow, null).attuneTo(spell.getCaster().asAttunable());
 
         // Spawn arrow
-        origin.target().getWorld().spawnEntity(arrow);
-        origin.target().getWorld().playSound(null, origin.target().getPos().x, origin.target().getPos().y, origin.target().getPos().z, SoundEvents.ENTITY_ARROW_SHOOT, SoundCategory.PLAYERS, 1.0f, 1.0f / (origin.target().getWorld().getRandom().nextFloat() * 0.4f + 1.2f) + f * 0.5f);
+        origin.getTarget().getWorld().spawnEntity(arrow);
+        origin.getTarget().getWorld().playSound(null, origin.getTarget().getPos().x, origin.getTarget().getPos().y, origin.getTarget().getPos().z, SoundEvents.ENTITY_ARROW_SHOOT, SoundCategory.PLAYERS, 1.0f, 1.0f / (origin.getTarget().getWorld().getRandom().nextFloat() * 0.4f + 1.2f) + f * 0.5f);
 
-        Target arrowTarget = new TargetEntity(arrow, origin.target().getPos());
+        Target arrowTarget = new TargetEntity(arrow, origin.getTarget().getPos());
         return new Object[] { new DistancedTarget(arrowTarget, arrowTarget) };
     }
     

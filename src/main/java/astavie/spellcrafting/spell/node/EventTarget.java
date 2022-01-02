@@ -22,17 +22,17 @@ public class EventTarget implements NodeEvent<Target> {
     }
 
     @Override
-    public @NotNull SpellType[] getEventParameters() {
+    public @NotNull SpellType<?>[] getEventParameters() {
         return new SpellType[0];
     }
 
     @Override
-    public @NotNull SpellType[] getEventReturnTypes() {
+    public @NotNull SpellType<?>[] getEventReturnTypes() {
         return new SpellType[] { SpellType.TARGET };
     }
 
     @Override
-    public @NotNull Object[] onEvent(@NotNull Spell spell, Target context) {
+    public @NotNull Object[] onEvent(@NotNull Spell spell, @NotNull Spell.Node node, Target context) {
         return new Object[] { new DistancedTarget(context, spell.getCaster().asTarget()) };
     }
     

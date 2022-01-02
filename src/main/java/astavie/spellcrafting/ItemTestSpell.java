@@ -1,7 +1,6 @@
 package astavie.spellcrafting;
 
 import astavie.spellcrafting.api.spell.Spell;
-import astavie.spellcrafting.api.spell.SpellContainer;
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.EquipmentSlot;
@@ -21,7 +20,8 @@ public class ItemTestSpell extends Item {
 
     @Override
     public boolean hasGlint(ItemStack stack) {
-        return SpellContainer.ITEM_SPELL.find(stack, null).getSpell().isActive();
+        // TODO: This doesn't work on dedicated servers
+        return Spellcrafting.TEST_SPELL.isActive();
     }
     
     @Override
@@ -30,14 +30,12 @@ public class ItemTestSpell extends Item {
         ItemStack stack = user.getStackInHand(hand);
         TypedActionResult<ItemStack> result = TypedActionResult.pass(stack);
 
-        Spell spell = Spellcrafting.getSpell(user);
-        if (spell == null) {
-            return result;
-        }
-
         // Magic!
         if (user.isSneaking()) {
-            if (!world.isClient) spell.end();
+            if (!world.isClient) {
+                Spell spell = Spellcrafting.getSpell(user);
+                if (spell != null) spell.end();
+            }
         } else if (world.isClient) {
             HitResult hit = MinecraftClient.getInstance().crosshairTarget;
             Spellcrafting.cast(hit);

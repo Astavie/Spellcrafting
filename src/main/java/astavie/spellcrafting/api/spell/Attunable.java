@@ -1,5 +1,7 @@
 package astavie.spellcrafting.api.spell;
 
+import java.util.UUID;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -14,9 +16,13 @@ public interface Attunable {
     BlockApiLookup<Attunable, Direction> BLOCK_ATTUNABLE = BlockApiLookup.get(new Identifier("spellcrafting:attunable"), Attunable.class, Direction.class);
     EntityApiLookup<Attunable, Void> ENTITY_ATTUNABLE = EntityApiLookup.get(new Identifier("spellcrafting:attunable"), Attunable.class, Void.class);
 
-    boolean isAttunedTo(@NotNull Caster caster);
+    default boolean isAttunedTo(@NotNull Attunable attunable) {
+        return attunable.getAttunement().equals(getAttunement());
+    }
 
-    void attuneTo(@Nullable Caster caster);
+    void attuneTo(@Nullable Attunable attunable);
+
+    @NotNull UUID getAttunement();
 
     @NotNull
     Vec3d getCenter();

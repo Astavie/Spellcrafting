@@ -31,12 +31,12 @@ public class CharmIgnite implements NodeCharm {
     }
 
     @Override
-    public @NotNull SpellType[] getCharmParameters() {
+    public @NotNull SpellType<?>[] getCharmParameters() {
         return new SpellType[] { SpellType.TARGET };
     }
 
     @Override
-    public @NotNull SpellType[] getCharmReturnTypes() {
+    public @NotNull SpellType<?>[] getCharmReturnTypes() {
         return new SpellType[0];
     }
 
@@ -49,7 +49,7 @@ public class CharmIgnite implements NodeCharm {
             return new Object[0];
         }
 
-        Target target = d.target();
+        Target target = d.getTarget();
 
         // Entity
         if (target instanceof TargetEntity) {
