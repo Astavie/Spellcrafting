@@ -21,7 +21,7 @@ public class ItemTestSpell extends Item {
     @Override
     public boolean hasGlint(ItemStack stack) {
         // TODO: This doesn't work on dedicated servers
-        return Spellcrafting.TEST_SPELL.isActive();
+        return false;
     }
     
     @Override

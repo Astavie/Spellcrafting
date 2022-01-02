@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
@@ -11,6 +12,7 @@ import com.google.common.collect.Multimap;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import astavie.spellcrafting.Spellcrafting;
 import astavie.spellcrafting.api.spell.node.NodeType;
 import astavie.spellcrafting.api.spell.target.DistancedTarget;
 import astavie.spellcrafting.api.spell.target.Target;
@@ -53,6 +55,7 @@ public class Spell {
     private Target target;
     private final Map<Event, Object> eventsThisTick = new HashMap<>();
 
+    private final UUID uuid;
     private final Set<Node> start;
     private final Multimap<Socket, Socket> nodes;
     private final Map<Socket, Socket> inverse = new HashMap<>();
@@ -60,15 +63,17 @@ public class Spell {
     private final Multimap<Event, Node> events = HashMultimap.create();
     private final ItemList components = new ItemList();
 
-    private Spell() {
+    private Spell(UUID uuid) {
         this.start = new HashSet<>();
         this.nodes = HashMultimap.create();
+        this.uuid = uuid;
     }
 
     public Spell(Set<Node> start, Multimap<Socket, Socket> nodes) {
         if (start.stream().anyMatch(n -> n.type.getParameters().length > 0)) throw new IllegalArgumentException("Illegal start node");
         this.start = start;
         this.nodes = nodes;
+        this.uuid = UUID.randomUUID();
         
         for (Map.Entry<Socket, Socket> entry : nodes.entries()) {
             if (inverse.containsKey(entry.getValue())) throw new IllegalArgumentException("Spell has edges that combine");
@@ -170,6 +175,7 @@ public class Spell {
         }
 
         NbtCompound cmp = new NbtCompound();
+        cmp.putUuid("UUID", spell.uuid);
         cmp.put("nodes", nodeList);
         cmp.put("sockets", socketList);
         return cmp;
@@ -182,10 +188,10 @@ public class Spell {
         Node[] totalNodes = new Node[nodes.size()];
         Socket[] totalSockets = new Socket[sockets.size()];
 
-        Spell spell = new Spell();
+        Spell spell = new Spell(nbt.getUuid("UUID"));
 
         // Phase 0: get all nodes with events
-        for (int i = 1; i < nodes.size(); i++) {
+        for (int i = 0; i < nodes.size(); i++) {
             NbtCompound cmp = nodes.getCompound(i);
             Node node = new Node(NodeType.REGISTRY.get(new Identifier(cmp.getString("type"))));
             totalNodes[i] = node;
@@ -256,12 +262,16 @@ public class Spell {
         }
     }
 
+    public @NotNull UUID getUUID() {
+        return uuid;
+    }
+
     public @Nullable Object getOutput(@NotNull Socket socket) {
         return output.get(socket);
     }
 
     public boolean isActive() {
-        return caster != null;
+        return caster != null && caster.exists();
     }
 
     public long getTime() {
@@ -294,13 +304,26 @@ public class Spell {
     }
 
     public void end() {
+        // TODO: API breach
+        Spellcrafting.activeSpells.remove(this);
         output.clear();
         events.clear();
         eventsThisTick.clear();
-        caster = null;
+
+        if (caster != null) {
+            caster.removeSpell(uuid);
+            caster = null;
+        }
+    }
+
+    public void activate(@NotNull Caster caster) {
+        this.caster = caster;
+        // TODO: API breach
+        Spellcrafting.activeSpells.add(this);
     }
 
     public boolean onTarget(@NotNull Caster caster, @NotNull Target target) {
+        // TODO: Split caster and target again
         if (!isActive()) {
             // Use components
 			Transaction transaction = Transaction.openOuter();
@@ -312,13 +335,12 @@ public class Spell {
 
             // Cast spell!
             transaction.commit();
-            this.caster = caster;
             this.target = target;
 
+            activate(caster);
             for (Node node : start) node.type.apply(this, node);
 
             this.target = null;
-            checkForEnd();
             return true;
         } else if (events.containsKey(Event.TARGET)) {
             this.caster = caster;
@@ -327,11 +349,6 @@ public class Spell {
         }
 
         return false;
-    }
-
-    private void checkForEnd() {
-        // TODO: One tick delay?
-        if (events.isEmpty()) end();
     }
 
     public void registerEvent(@NotNull Event event, @NotNull Node handler) {
@@ -352,12 +369,16 @@ public class Spell {
     }
 
     public void onEvent(@NotNull Event event, Object context) {
+        if (!isActive() || event.eventType == Event.TICK_ID && events.isEmpty()) {
+            end();
+            return;
+        }
+        
         for (Node node : events.removeAll(event)) {
             node.type.onEvent(this, node, event, context);
         }
         if (event.eventType == Event.TICK_ID) {
             eventsThisTick.clear();
-            checkForEnd();
         } else {
             eventsThisTick.put(event, context);
         }
@@ -384,15 +405,15 @@ public class Spell {
         return type.exists((T) o);
     }
 
-    public void apply(@NotNull Node node, int index, @Nullable Object returnValue) {
-        SpellType<?> returnType = node.type.getReturnTypes(this, node)[index];
+    public void apply(@NotNull Socket out, @Nullable Object returnValue) {
+        SpellType<?> returnType = out.node.type.getReturnTypes(this, out.node)[out.index];
 
         if (returnValue != null && !returnType.getValueClass().isInstance(returnValue)) {
             throw new IllegalArgumentException();
         }
 
-        Socket out = new Socket(node, index);
-        output.put(out, returnValue);
+        if (returnValue == null) output.remove(out);
+        else output.put(out, returnValue);
 
         for (Socket in : nodes.get(out)) {
             in.node.type.apply(this, in.node);
@@ -406,7 +427,7 @@ public class Spell {
         }
 
         for (int i = 0; i < returnValues.length; i++) {
-            apply(node, i, returnValues[i]);
+            apply(new Socket(node, i), returnValues[i]);
         }
     }
 

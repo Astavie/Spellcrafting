@@ -1,5 +1,6 @@
 package astavie.spellcrafting.spell.node;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.jetbrains.annotations.NotNull;
 
 import astavie.spellcrafting.api.spell.Spell;
@@ -13,7 +14,8 @@ import net.minecraft.network.packet.s2c.play.EntityVelocityUpdateS2CPacket;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.Vec3d;
 
-public class CharmYeet implements NodeCharm {
+// TODO: Impetus?
+public class CharmMomentum implements NodeCharm {
 
     @Override
     public @NotNull SpellType<?>[] getParameters() {
@@ -46,10 +48,11 @@ public class CharmYeet implements NodeCharm {
         }
 
         Entity e = ((TargetEntity) t1.getTarget()).getEntity();
-        Vec3d dir = t2.getTarget().getPos().subtract(t1.getTarget().getPos());
+        Vec3d dir = t2.getTarget().getPos().subtract(t1.getTarget().getPos()).normalize().multiply(2); // TODO: Variable speed
 
-        e.setVelocity(dir.normalize().multiply(2)); // TODO: Variable speed
-        e.velocityDirty = true;
+        System.out.println(ExceptionUtils.getStackTrace(new Throwable()));
+
+        e.addVelocity(dir.x, dir.y, dir.z);
         ((ServerWorld) e.world).getChunkManager().sendToNearbyPlayers(e, new EntityVelocityUpdateS2CPacket(e));
         return new Object[0];
     }

@@ -1,10 +1,12 @@
 package astavie.spellcrafting;
 
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
-import com.google.common.collect.Sets;
 
 import astavie.spellcrafting.api.spell.Attunable;
 import astavie.spellcrafting.api.spell.Caster;
@@ -15,12 +17,11 @@ import astavie.spellcrafting.api.spell.node.NodeType;
 import astavie.spellcrafting.api.spell.target.Target;
 import astavie.spellcrafting.api.spell.target.TargetBlock;
 import astavie.spellcrafting.api.spell.target.TargetEntity;
-import astavie.spellcrafting.spell.CasterPlayer;
 import astavie.spellcrafting.spell.node.CharmAttune;
 import astavie.spellcrafting.spell.node.CharmExplode;
 import astavie.spellcrafting.spell.node.CharmIgnite;
 import astavie.spellcrafting.spell.node.CharmSummon;
-import astavie.spellcrafting.spell.node.CharmYeet;
+import astavie.spellcrafting.spell.node.CharmMomentum;
 import astavie.spellcrafting.spell.node.EventEntityInteract;
 import astavie.spellcrafting.spell.node.EventWait;
 import astavie.spellcrafting.spell.node.NodeStart;
@@ -33,8 +34,10 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtLong;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.hit.BlockHitResult;
@@ -50,12 +53,12 @@ public class Spellcrafting implements ModInitializer {
 	private static final ItemTestSpell test = new ItemTestSpell();
 	private static final Identifier CAST_PACKET_ID = new Identifier("spellcrafting", "cast");
 
-	public static Spell TEST_SPELL;
-
 	public static Spell BOMB;
 	public static Spell EXPLODING_KITTENS;
 	public static Spell HULK_SMASH;
 	public static Spell FIREWORK;
+
+	public static final Set<Spell> activeSpells = new HashSet<>();
 
 	@Override
 	public void onInitialize() {
@@ -64,7 +67,7 @@ public class Spellcrafting implements ModInitializer {
 		Registry.register(NodeType.REGISTRY, new Identifier("spellcrafting:ignite"), new CharmIgnite());
 		Registry.register(NodeType.REGISTRY, new Identifier("spellcrafting:attune"), new CharmAttune());
 		Registry.register(NodeType.REGISTRY, new Identifier("spellcrafting:cat"), new CharmSummon(EntityType.CAT));
-		Registry.register(NodeType.REGISTRY, new Identifier("spellcrafting:yeet"), new CharmYeet());
+		Registry.register(NodeType.REGISTRY, new Identifier("spellcrafting:momentum"), new CharmMomentum());
 
 		Registry.register(NodeType.REGISTRY, new Identifier("spellcrafting:hit"), new EventEntityInteract(Spell.Event.HIT_ID));
 		Registry.register(NodeType.REGISTRY, new Identifier("spellcrafting:land"), new EventEntityInteract(Spell.Event.LAND_ID));
@@ -97,12 +100,12 @@ public class Spellcrafting implements ModInitializer {
 			BOMB = new Spell(Collections.singleton(start), nodes);
 		}
 		{
-			Spell.Node start   = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:start")));
-			Spell.Node cat     = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:cat")));
-			Spell.Node attune  = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:attune")));
-			Spell.Node yeet    = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:yeet")));
-			Spell.Node land    = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:land")));
-			Spell.Node explode = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:explode")));
+			Spell.Node start    = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:start")));
+			Spell.Node cat      = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:cat")));
+			Spell.Node attune   = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:attune")));
+			Spell.Node momentum = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:momentum")));
+			Spell.Node land     = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:land")));
+			Spell.Node explode  = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:explode")));
 
 			Multimap<Socket, Socket> nodes = HashMultimap.create();
 			nodes.put(new Socket(start, 0), new Socket(cat, 0));
@@ -110,8 +113,8 @@ public class Spellcrafting implements ModInitializer {
 			nodes.put(new Socket(start, 0), new Socket(attune, 0));
 			nodes.put(new Socket(cat, 0), new Socket(attune, 1));
 
-			nodes.put(new Socket(cat, 0), new Socket(yeet, 0));
-			nodes.put(new Socket(start, 1), new Socket(yeet, 1));
+			nodes.put(new Socket(cat, 0), new Socket(momentum, 0));
+			nodes.put(new Socket(start, 1), new Socket(momentum, 1));
 
 			nodes.put(new Socket(attune, 0), new Socket(land, 0));
 
@@ -120,19 +123,19 @@ public class Spellcrafting implements ModInitializer {
 			EXPLODING_KITTENS = new Spell(Collections.singleton(start), nodes);
 		}
 		{
-			Spell.Node start   = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:start")));
+			Spell.Node start    = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:start")));
 			Spell.Node up1      = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:up")));
 			Spell.Node up2      = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:up")));
-			Spell.Node yeet    = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:yeet")));
-			Spell.Node land    = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:land")));
-			Spell.Node explode = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:explode")));
+			Spell.Node momentum = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:momentum")));
+			Spell.Node land     = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:land")));
+			Spell.Node explode  = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:explode")));
 
 			Multimap<Socket, Socket> nodes = HashMultimap.create();
 			nodes.put(new Socket(start, 1), new Socket(up1, 0));
 			nodes.put(new Socket(up1, 0), new Socket(up2, 0));
 
-			nodes.put(new Socket(start, 0), new Socket(yeet, 0));
-			nodes.put(new Socket(up2, 0), new Socket(yeet, 1));
+			nodes.put(new Socket(start, 0), new Socket(momentum, 0));
+			nodes.put(new Socket(up2, 0), new Socket(momentum, 1));
 
 			nodes.put(new Socket(start, 0), new Socket(land, 0));
 
@@ -141,13 +144,13 @@ public class Spellcrafting implements ModInitializer {
 			HULK_SMASH = new Spell(Collections.singleton(start), nodes);
 		}
 		{
-			Spell.Node start   = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:start")));
-			Spell.Node up      = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:up")));
-			Spell.Node yeet    = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:yeet")));
-			Spell.Node attune  = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:attune")));
-			Spell.Node wait1   = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:wait")));
-			Spell.Node wait2   = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:wait")));
-			Spell.Node explode = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:explode")));
+			Spell.Node start    = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:start")));
+			Spell.Node up       = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:up")));
+			Spell.Node momentum = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:momentum")));
+			Spell.Node attune   = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:attune")));
+			Spell.Node wait1    = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:wait")));
+			Spell.Node wait2    = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:wait")));
+			Spell.Node explode  = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:explode")));
 
 			Multimap<Socket, Socket> nodes = HashMultimap.create();
 			nodes.put(new Socket(start, 0), new Socket(attune, 0));
@@ -155,8 +158,8 @@ public class Spellcrafting implements ModInitializer {
 
 			nodes.put(new Socket(start, 1), new Socket(up, 0));
 
-			nodes.put(new Socket(start, 1), new Socket(yeet, 0));
-			nodes.put(new Socket(up, 0),    new Socket(yeet, 1));
+			nodes.put(new Socket(start, 1), new Socket(momentum, 0));
+			nodes.put(new Socket(up, 0),    new Socket(momentum, 1));
 
 			nodes.put(new Socket(attune, 0), new Socket(wait1, 0));
 			nodes.put(new Socket(wait1, 0), new Socket(wait2, 0));
@@ -166,20 +169,30 @@ public class Spellcrafting implements ModInitializer {
 			FIREWORK = new Spell(Collections.singleton(start), nodes);
 		}
 
-		TEST_SPELL = FIREWORK;
+		NbtCompound nbt = Spell.serialize(FIREWORK);
 		
 		// Items
 		Registry.register(Registry.ITEM, new Identifier("spellcrafting", "test"), test);
 
 		// APIs
-		Caster.ENTITY_CASTER.registerForType((player, context) -> new CasterPlayer(player), EntityType.PLAYER);
+		Caster.ENTITY_CASTER.registerForType((player, context) -> (Caster) player, EntityType.PLAYER);
 		Attunable.ENTITY_ATTUNABLE.registerFallback((entity, context) -> entity instanceof Attunable ? (Attunable) entity : null);
 
-		SpellContainer.ITEM_SPELL.registerForItems((stack, context) -> (caster) -> TEST_SPELL, test);
+		SpellContainer.ITEM_SPELL.registerForItems((stack, context) -> (caster) -> {
+			UUID uuid = nbt.getUuid("UUID");
+			Spell spell = caster.getSpell(uuid);
+			if (spell == null) {
+				spell = Spell.deserialize(nbt, (ServerWorld) caster.asTarget().getWorld());
+				caster.addSpell(spell);
+			}
+			return spell;
+		}, test);
 
 		// Events
         // TODO: This now only works on test spell
-		ServerTickEvents.END_SERVER_TICK.register(w -> TEST_SPELL.onEvent(new Spell.Event(Spell.Event.TICK_ID, NbtLong.of(w.getOverworld().getTime())), null));
+		ServerTickEvents.END_SERVER_TICK.register(w -> {
+			activeSpells.forEach(s -> s.onEvent(new Spell.Event(Spell.Event.TICK_ID, NbtLong.of(w.getOverworld().getTime())), null));
+		});
 
 		// Networking
 		ServerPlayNetworking.registerGlobalReceiver(CAST_PACKET_ID, (server, player, handler, buf, responseSender) -> {
@@ -236,7 +249,7 @@ public class Spellcrafting implements ModInitializer {
 			return null;
 		}
 		
-		return container.checkForSpell(Caster.ENTITY_CASTER.find(player, null));
+		return container.getOrCreateSpell(Caster.ENTITY_CASTER.find(player, null));
 	}
 
 	public static void cast(HitResult hit) {

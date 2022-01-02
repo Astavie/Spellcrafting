@@ -28,7 +28,7 @@ public class EntityMixin {
         Target block = new TargetBlock(e.world, landedPosition, e.getPos(), Direction.UP);
 
         // TODO: Only works with test spell
-        Spellcrafting.TEST_SPELL.onEvent(new Spell.Event(Spell.Event.LAND_ID, NbtString.of(e.getUuidAsString())), block);
+        Spellcrafting.activeSpells.forEach(s -> s.onEvent(new Spell.Event(Spell.Event.LAND_ID, NbtString.of(e.getUuidAsString())), block));
     }
 
 }

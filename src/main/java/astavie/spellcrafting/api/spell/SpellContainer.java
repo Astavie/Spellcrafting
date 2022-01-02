@@ -11,6 +11,6 @@ public interface SpellContainer {
 
     ItemApiLookup<SpellContainer, ContainerItemContext> ITEM_SPELL = ItemApiLookup.get(new Identifier("spellcrafting:spell"), SpellContainer.class, ContainerItemContext.class);
 
-    @Nullable Spell checkForSpell(@NotNull Caster caster);
+    @Nullable Spell getOrCreateSpell(@NotNull Caster caster);
 
 }

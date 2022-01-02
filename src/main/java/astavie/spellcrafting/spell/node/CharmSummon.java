@@ -48,7 +48,7 @@ public class CharmSummon implements NodeCharm {
         }
 
         BlockPos pos = t1.getTarget().getBlock();
-        if (t1.getTarget() instanceof TargetBlock) {
+        if (!t1.getTarget().getWorld().isAir(pos) && t1.getTarget() instanceof TargetBlock) {
             pos = pos.offset(((TargetBlock) t1.getTarget()).getDirection());
         }
 

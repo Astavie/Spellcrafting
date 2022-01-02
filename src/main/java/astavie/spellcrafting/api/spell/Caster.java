@@ -1,8 +1,10 @@
 package astavie.spellcrafting.api.spell;
 
+import java.util.UUID;
 import java.util.Map.Entry;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import astavie.spellcrafting.api.spell.target.Target;
 import astavie.spellcrafting.api.util.ItemList;
@@ -24,6 +26,14 @@ public interface Caster {
     @NotNull Storage<ItemVariant> getComponentStorage();
 
     @NotNull Attunable asAttunable();
+
+    @Nullable Spell getSpell(@NotNull UUID uuid);
+
+    boolean exists();
+
+    void addSpell(@NotNull Spell spell);
+
+    void removeSpell(@NotNull UUID uuid);
 
     double getRange();
 

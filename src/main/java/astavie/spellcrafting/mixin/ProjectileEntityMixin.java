@@ -23,7 +23,7 @@ public class ProjectileEntityMixin {
         Target hit = Spellcrafting.getTarget(entity.world, result);
 
         // TODO: This now only works on test spell
-        Spellcrafting.TEST_SPELL.onEvent(new Spell.Event(Spell.Event.HIT_ID, NbtString.of(entity.getUuidAsString())), hit);
+        Spellcrafting.activeSpells.forEach(s -> s.onEvent(new Spell.Event(Spell.Event.HIT_ID, NbtString.of(entity.getUuidAsString())), hit));
     }
     
 }

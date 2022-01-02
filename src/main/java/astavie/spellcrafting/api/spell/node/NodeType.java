@@ -20,6 +20,7 @@ public interface NodeType {
 
     @NotNull ItemList getComponents(@NotNull Spell spell, @NotNull Spell.Node node);
 
+    // TODO: Go back to the Object[] return type and do breadth first instead of depth first
     void apply(@NotNull Spell spell, @NotNull Spell.Node node);
 
     default void onEvent(@NotNull Spell spell, @NotNull Spell.Node node, @NotNull Spell.Event type, @Nullable Object context) {
