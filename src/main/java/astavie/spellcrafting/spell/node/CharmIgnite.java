@@ -46,7 +46,7 @@ public class CharmIgnite implements NodeCharm {
         DistancedTarget d = (DistancedTarget) input[0];
 
         if (!spell.inRange(d)) {
-            spell.onInvalidPosition(d.getTarget().getPos());
+            spell.onInvalidPosition(d.getTarget().getWorld(), d.getTarget().getPos());
             return new Object[0];
         }
 

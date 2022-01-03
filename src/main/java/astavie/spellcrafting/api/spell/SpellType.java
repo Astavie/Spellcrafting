@@ -7,7 +7,6 @@ import astavie.spellcrafting.api.spell.target.DistancedTarget;
 import astavie.spellcrafting.api.spell.target.Target;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
-import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.DyeColor;
 
 public interface SpellType<T> {
@@ -25,7 +24,7 @@ public interface SpellType<T> {
         }
 
         @Override
-        public @NotNull Object deserialize(@NotNull NbtElement nbt, ServerWorld world) {
+        public @NotNull Object deserialize(@NotNull NbtElement nbt) {
             throw new NotImplementedException();
         }
 
@@ -54,7 +53,7 @@ public interface SpellType<T> {
         }
 
         @Override
-        public @NotNull Void deserialize(@NotNull NbtElement nbt, ServerWorld world) {
+        public @NotNull Void deserialize(@NotNull NbtElement nbt) {
             throw new NotImplementedException();
         }
 
@@ -83,12 +82,12 @@ public interface SpellType<T> {
         }
 
         @Override
-        public @NotNull DistancedTarget deserialize(@NotNull NbtElement nbt, ServerWorld world) {
+        public @NotNull DistancedTarget deserialize(@NotNull NbtElement nbt) {
             NbtCompound cmp = (NbtCompound) nbt;
-            Target target = Target.deserialize(cmp.getCompound("target"), world);
+            Target target = Target.deserialize(cmp.getCompound("target"));
             Target origin = null;
             if (cmp.contains("origin")) {
-                origin = Target.deserialize(cmp.getCompound("origin"), world);
+                origin = Target.deserialize(cmp.getCompound("origin"));
             }
             return new DistancedTarget(target, origin);
         }
@@ -119,7 +118,7 @@ public interface SpellType<T> {
     boolean exists(@NotNull T t);
 
     @NotNull
-    T deserialize(@NotNull NbtElement nbt, ServerWorld world);
+    T deserialize(@NotNull NbtElement nbt);
 
     @NotNull
     NbtElement serialize(@NotNull T t);

@@ -31,9 +31,9 @@ public class EntityMixin {
         }
 
         prevOnGround = true;
-        Target block = new TargetBlock(e.world, landedPosition, e.getPos(), Direction.UP);
+        Target block = new TargetBlock((ServerWorld) e.world, landedPosition, e.getPos(), Direction.UP);
 
-        SpellState.of((ServerWorld) e.world).onEvent(new Spell.Event(Spell.Event.LAND_ID, NbtString.of(e.getUuidAsString())), block);
+        SpellState.getInstance().onEvent(new Spell.Event(Spell.Event.LAND_ID, NbtString.of(e.getUuidAsString())), block);
     }
 
     @Inject(method = "readNbt", at = @At("TAIL"))

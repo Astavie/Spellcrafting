@@ -5,6 +5,7 @@ import org.jetbrains.annotations.Nullable;
 
 import astavie.spellcrafting.api.spell.Attunable;
 import astavie.spellcrafting.api.spell.Caster;
+import astavie.spellcrafting.api.util.ServerUtils;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
@@ -12,11 +13,12 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.registry.Registry;
+import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.World;
 
 public class TargetBlock implements Target {
 
-    private final World world;
+    private final RegistryKey<World> dimension;
     private final BlockPos block;
     private final Vec3d pos;
     private final Direction facing;
@@ -24,16 +26,18 @@ public class TargetBlock implements Target {
     public static final TargetType<TargetBlock> TYPE = Registry.register(TargetType.REGISTRY, new Identifier("spellcrafting:block"), new TargetType<TargetBlock>() {
 
         @Override
-        public TargetBlock deserialize(NbtCompound nbt, ServerWorld world) {
+        public TargetBlock deserialize(NbtCompound nbt) {
+            RegistryKey<World> dimension = RegistryKey.of(Registry.WORLD_KEY, new Identifier(nbt.getString("dim")));
             BlockPos block = new BlockPos(nbt.getInt("x"), nbt.getInt("y"), nbt.getInt("z"));
             Vec3d pos = new Vec3d(nbt.getFloat("ox") + block.getX(), nbt.getFloat("oy") + block.getY(), nbt.getFloat("oz") + block.getZ());
             Direction facing = Direction.byId(nbt.getByte("side"));
-            return new TargetBlock(world, block, pos, facing);
+            return new TargetBlock(dimension, block, pos, facing);
         }
 
         @Override
         public NbtCompound serialize(TargetBlock target) {
             NbtCompound cmp = new NbtCompound();
+            cmp.putString("dim", target.dimension.getValue().toString());
             cmp.putInt("x", target.block.getX());
             cmp.putInt("y", target.block.getY());
             cmp.putInt("z", target.block.getZ());
@@ -46,8 +50,15 @@ public class TargetBlock implements Target {
         
     });
 
-    public TargetBlock(@NotNull World world, @NotNull BlockPos block, @NotNull Vec3d pos, @NotNull Direction facing) {
-        this.world = world;
+    public TargetBlock(@NotNull RegistryKey<World> world, @NotNull BlockPos block, @NotNull Vec3d pos, @NotNull Direction facing) {
+        this.dimension = world;
+        this.block = block;
+        this.pos = pos;
+        this.facing = facing;
+    }
+
+    public TargetBlock(@NotNull ServerWorld world, @NotNull BlockPos block, @NotNull Vec3d pos, @NotNull Direction facing) {
+        this.dimension = world.getRegistryKey();
         this.block = block;
         this.pos = pos;
         this.facing = facing;
@@ -64,8 +75,8 @@ public class TargetBlock implements Target {
     }
 
     @Override
-    public @NotNull World getWorld() {
-        return world;
+    public @NotNull ServerWorld getWorld() {
+        return ServerUtils.server.getWorld(dimension);
     }
 
     public Direction getSide() {
@@ -74,12 +85,12 @@ public class TargetBlock implements Target {
 
     @Override
     public @Nullable Caster asCaster() {
-        return Caster.BLOCK_CASTER.find(world, block, facing);
+        return Caster.BLOCK_CASTER.find(getWorld(), block, facing);
     }
 
     @Override
     public @Nullable Attunable asAttunable() {
-        return Attunable.BLOCK_ATTUNABLE.find(world, block, facing);
+        return Attunable.BLOCK_ATTUNABLE.find(getWorld(), block, facing);
     }
 
     @Override
@@ -94,7 +105,7 @@ public class TargetBlock implements Target {
 
     @Override
     public @NotNull Target withPos(Vec3d pos) {
-        return new TargetBlock(world, block, pos, facing);
+        return new TargetBlock(dimension, block, pos, facing);
     }
     
 }

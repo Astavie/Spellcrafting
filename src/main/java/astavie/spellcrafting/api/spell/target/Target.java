@@ -10,7 +10,6 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
 
 public interface Target {
 
@@ -23,7 +22,7 @@ public interface Target {
     BlockPos getBlock();
 
     @NotNull
-    World getWorld();
+    ServerWorld getWorld();
 
     @Nullable
     Caster asCaster();
@@ -43,9 +42,9 @@ public interface Target {
         return c;
     }
 
-    public static Target deserialize(NbtCompound c, ServerWorld world) {
+    public static Target deserialize(NbtCompound c) {
         TargetType<?> type = TargetType.REGISTRY.get(new Identifier(c.getString("type")));
-        return type.deserialize(c, world);
+        return type.deserialize(c);
     }
 
     @SuppressWarnings("unchecked")

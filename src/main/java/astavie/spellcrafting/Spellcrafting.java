@@ -15,6 +15,7 @@ import astavie.spellcrafting.api.spell.node.NodeType;
 import astavie.spellcrafting.api.spell.target.Target;
 import astavie.spellcrafting.api.spell.target.TargetBlock;
 import astavie.spellcrafting.api.spell.target.TargetEntity;
+import astavie.spellcrafting.api.util.ServerUtils;
 import astavie.spellcrafting.spell.CasterPlayer;
 import astavie.spellcrafting.spell.SpellState;
 import astavie.spellcrafting.spell.node.CharmAttune;
@@ -30,6 +31,7 @@ import astavie.spellcrafting.spell.node.NodeTarget;
 import astavie.spellcrafting.spell.node.TransmuterDirection;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
@@ -48,7 +50,6 @@ import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.registry.Registry;
-import net.minecraft.world.World;
 
 public class Spellcrafting implements ModInitializer {
 
@@ -181,23 +182,23 @@ public class Spellcrafting implements ModInitializer {
 		Attunable.ENTITY_ATTUNABLE.registerFallback((entity, context) -> entity instanceof Attunable ? (Attunable) entity : null);
 
 		SpellContainer.ITEM_SPELL.registerForItems((stack, context) -> (caster) -> {
-			ServerWorld world = (ServerWorld) caster.asTarget().getWorld();
-			SpellState state = SpellState.of(world);
+			SpellState state = SpellState.getInstance();
 
 			NbtCompound nbt = ((ItemTestSpell) stack.getItem()).spell;
 
 			UUID uuid = nbt.getUuid("UUID");
 			Spell spell = state.getSpell(uuid);
 			if (spell == null) {
-				spell = Spell.deserialize(nbt, (ServerWorld) caster.asTarget().getWorld());
+				spell = Spell.deserialize(nbt);
 				state.addSpell(spell);
 			}
 			return spell;
 		}, bomb, hulkSmash, explodingKittens, firework);
 
 		// Events
-		ServerTickEvents.END_WORLD_TICK.register(w -> {
-			SpellState.of(w).onEvent(new Spell.Event(Spell.Event.TICK_ID, NbtLong.of(w.getTime())), null);
+		ServerLifecycleEvents.SERVER_STARTING.register(s -> ServerUtils.server = s);
+		ServerTickEvents.END_SERVER_TICK.register(s -> {
+			SpellState.getInstance().onEvent(new Spell.Event(Spell.Event.TICK_ID, NbtLong.of(ServerUtils.getTime())), null);
 		});
 
 		// Networking
@@ -214,7 +215,7 @@ public class Spellcrafting implements ModInitializer {
 				target = new TargetEntity(e, pos);
 			} else {
 				BlockHitResult hit = buf.readBlockHitResult();
-				target = new TargetBlock(player.world, hit.getBlockPos(), hit.getPos(), hit.getSide());
+				target = new TargetBlock((ServerWorld) player.world, hit.getBlockPos(), hit.getPos(), hit.getSide());
 			}
 
 			server.execute(() -> {
@@ -235,7 +236,7 @@ public class Spellcrafting implements ModInitializer {
 		});
 	}
 
-	public static Target getTarget(World world, HitResult result) {
+	public static Target getTarget(ServerWorld world, HitResult result) {
 		if (result.getType() == HitResult.Type.ENTITY) {
 			return new TargetEntity(((EntityHitResult) result).getEntity(), result.getPos());
 		} else {

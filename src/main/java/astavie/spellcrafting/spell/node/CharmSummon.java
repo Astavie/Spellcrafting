@@ -43,7 +43,7 @@ public class CharmSummon implements NodeCharm {
         DistancedTarget t1 = (DistancedTarget) input[0];
 
         if (!spell.inRange(t1)) {
-            spell.onInvalidPosition(t1.getTarget().getPos());
+            spell.onInvalidPosition(t1.getTarget().getWorld(), t1.getTarget().getPos());
             return new Object[] { null };
         }
 

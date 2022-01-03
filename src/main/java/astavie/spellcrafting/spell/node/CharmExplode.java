@@ -38,7 +38,7 @@ public class CharmExplode implements NodeCharm {
         DistancedTarget origin = (DistancedTarget) input[0];
 
         if (!spell.inRange(origin)) {
-            spell.onInvalidPosition(origin.getTarget().getPos());
+            spell.onInvalidPosition(origin.getTarget().getWorld(), origin.getTarget().getPos());
             return new Object[0];
         }
 

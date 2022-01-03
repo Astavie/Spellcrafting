@@ -38,12 +38,12 @@ public class CharmMomentum implements NodeCharm {
 
         // TODO: this is a test. add ! afterwards
         if (!spell.inRange(t1)) {
-            spell.onInvalidPosition(t1.getTarget().getPos());
+            spell.onInvalidPosition(t1.getTarget().getWorld(), t1.getTarget().getPos());
             return new Object[0];
         }
 
         if (!(t1.getTarget() instanceof TargetEntity)) {
-            spell.onInvalidPosition(t1.getTarget().getPos());
+            spell.onInvalidPosition(t1.getTarget().getWorld(), t1.getTarget().getPos());
             return new Object[0];
         }
 

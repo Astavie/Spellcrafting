@@ -31,14 +31,14 @@ public class CharmAttune implements NodeCharm {
         DistancedTarget t2 = (DistancedTarget) input[1];
 
         if (!spell.inRange(t1) || !spell.inRange(t2)) {
-            spell.onInvalidPosition(t1.getTarget().getPos());
-            spell.onInvalidPosition(t2.getTarget().getPos());
+            spell.onInvalidPosition(t1.getTarget().getWorld(), t1.getTarget().getPos());
+            spell.onInvalidPosition(t2.getTarget().getWorld(), t2.getTarget().getPos());
             return new Object[] { null, null };
         }
 
         if (t1.getTarget().asAttunable() == null || t2.getTarget().asAttunable() == null) {
-            spell.onInvalidPosition(t1.getTarget().getPos());
-            spell.onInvalidPosition(t2.getTarget().getPos());
+            spell.onInvalidPosition(t1.getTarget().getWorld(), t1.getTarget().getPos());
+            spell.onInvalidPosition(t2.getTarget().getWorld(), t2.getTarget().getPos());
             return new Object[] { null, null };
         }
 

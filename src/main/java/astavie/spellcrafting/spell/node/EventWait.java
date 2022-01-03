@@ -7,6 +7,7 @@ import astavie.spellcrafting.api.spell.Spell;
 import astavie.spellcrafting.api.spell.SpellType;
 import astavie.spellcrafting.api.spell.node.NodeEvent;
 import astavie.spellcrafting.api.util.ItemList;
+import astavie.spellcrafting.api.util.ServerUtils;
 import net.minecraft.nbt.NbtLong;
 
 public class EventWait implements NodeEvent<Void> {
@@ -29,7 +30,7 @@ public class EventWait implements NodeEvent<Void> {
 
     @Override
     public @Nullable Spell.Event getEvent(@NotNull Spell spell, @NotNull Spell.Node node, @NotNull Object[] input) {
-        return new Spell.Event(Spell.Event.TICK_ID, NbtLong.of(spell.getTime() + 10)); // TODO: Variable time
+        return new Spell.Event(Spell.Event.TICK_ID, NbtLong.of(ServerUtils.getTime() + 10)); // TODO: Variable time
     }
 
     @Override

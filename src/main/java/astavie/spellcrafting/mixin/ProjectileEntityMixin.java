@@ -22,9 +22,9 @@ public class ProjectileEntityMixin {
         ProjectileEntity entity = (ProjectileEntity) (Object) this;
         if (entity.world.isClient || result.getType() == HitResult.Type.MISS) return;
 
-        Target hit = Spellcrafting.getTarget(entity.world, result);
+        Target hit = Spellcrafting.getTarget((ServerWorld) entity.world, result);
 
-        SpellState.of((ServerWorld) entity.world).onEvent(new Spell.Event(Spell.Event.HIT_ID, NbtString.of(entity.getUuidAsString())), hit);
+        SpellState.getInstance().onEvent(new Spell.Event(Spell.Event.HIT_ID, NbtString.of(entity.getUuidAsString())), hit);
     }
     
 }

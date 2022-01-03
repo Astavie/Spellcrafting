@@ -16,6 +16,7 @@ import astavie.spellcrafting.api.spell.node.NodeType;
 import astavie.spellcrafting.api.spell.target.DistancedTarget;
 import astavie.spellcrafting.api.spell.target.Target;
 import astavie.spellcrafting.api.util.ItemList;
+import astavie.spellcrafting.api.util.ServerUtils;
 import astavie.spellcrafting.spell.SpellState;
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 import net.minecraft.nbt.NbtCompound;
@@ -54,7 +55,6 @@ public class Spell {
         
     }
 
-    private ServerWorld world;
     private Target caster;
     private final Map<Event, Object> eventsThisTick = new HashMap<>();
 
@@ -66,11 +66,10 @@ public class Spell {
     private final Multimap<Event, Node> events = HashMultimap.create();
     private final ItemList components = new ItemList();
 
-    private Spell(ServerWorld world, UUID uuid) {
+    private Spell(UUID uuid) {
         this.start = new HashSet<>();
         this.nodes = HashMultimap.create();
         this.uuid = uuid;
-        this.world = world;
     }
 
     public Spell(Set<Node> start, Multimap<Socket, Socket> nodes) {
@@ -85,6 +84,10 @@ public class Spell {
         }
 
         calculateComponents();
+    }
+
+    public void markDirty() {
+        SpellState.getInstance().markDirty();
     }
 
     private void calculateComponents() {
@@ -186,17 +189,15 @@ public class Spell {
         return cmp;
     }
 
-    public static Spell deserialize(@NotNull NbtCompound nbt, ServerWorld world) {
-        // TODO: remove dependency on world
-
+    public static Spell deserialize(@NotNull NbtCompound nbt) {
         NbtList nodes = nbt.getList("nodes", NbtElement.COMPOUND_TYPE);
         NbtList sockets = nbt.getList("sockets", NbtElement.COMPOUND_TYPE);
 
         Node[] totalNodes = new Node[nodes.size()];
         Socket[] totalSockets = new Socket[sockets.size()];
 
-        Spell spell = new Spell(world, nbt.getUuid("UUID"));
-        if (nbt.contains("caster")) spell.caster = Target.deserialize(nbt.getCompound("caster"), world);
+        Spell spell = new Spell(nbt.getUuid("UUID"));
+        if (nbt.contains("caster")) spell.caster = Target.deserialize(nbt.getCompound("caster"));
 
         // Phase 0: get all nodes with events
         for (int i = 0; i < nodes.size(); i++) {
@@ -244,7 +245,7 @@ public class Spell {
             if (cmp.contains("value")) {
                 Socket socket = totalSockets[i];
                 SpellType<?> type = socket.node.type.getReturnTypes(spell, socket.node)[socket.index];
-                spell.output.put(socket, type.deserialize(cmp.get("value"), world));
+                spell.output.put(socket, type.deserialize(cmp.get("value")));
             }
         }
 
@@ -252,7 +253,7 @@ public class Spell {
         return spell;
     }
 
-    public void onInvalidPosition(Vec3d pos) {
+    public void onInvalidPosition(ServerWorld world, Vec3d pos) {
         world.spawnParticles(ParticleTypes.SMOKE, pos.x, pos.y, pos.z, 6, 0.2, 0.2, 0.2, 0.01);
     }
 
@@ -282,11 +283,6 @@ public class Spell {
         return output.get(socket);
     }
 
-    public long getTime() {
-        // TODO: Back to global time
-        return caster.getWorld().getTime();
-    }
-
     public boolean inRange(@NotNull DistancedTarget target) {
         // Is attuned
         if (
@@ -310,7 +306,7 @@ public class Spell {
 
     public void end() {
         // TODO: API breach
-        SpellState.of(world).removeSpell(uuid);
+        SpellState.getInstance().removeSpell(uuid);
         output.clear();
         events.clear();
         eventsThisTick.clear();
@@ -332,7 +328,7 @@ public class Spell {
             this.caster = caster.asTarget();
     
             // TODO: API breach
-            SpellState.of((ServerWorld) caster.asTarget().getWorld()).addSpell(this);
+            SpellState.getInstance().addSpell(this);
 
             for (Node node : start) node.type.apply(this, node);
             onEvent(Event.TARGET, target);
@@ -381,7 +377,7 @@ public class Spell {
     }
 
     public void schedule(@NotNull Node handler) {
-        registerEvent(new Event(Event.TICK_ID, NbtLong.of(getTime() + 1)), handler);
+        registerEvent(new Event(Event.TICK_ID, NbtLong.of(ServerUtils.getTime() + 1)), handler);
     }
 
     public @NotNull Object[] getInput(@NotNull Node node) {
@@ -402,6 +398,8 @@ public class Spell {
     }
 
     public void apply(@NotNull Socket out, @Nullable Object returnValue) {
+        markDirty();
+        
         SpellType<?> returnType = out.node.type.getReturnTypes(this, out.node)[out.index];
 
         if (returnValue != null && !returnType.getValueClass().isInstance(returnValue)) {
