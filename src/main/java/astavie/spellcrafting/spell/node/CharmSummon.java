@@ -49,7 +49,7 @@ public class CharmSummon implements NodeCharm {
 
         BlockPos pos = t1.getTarget().getBlock();
         if (!t1.getTarget().getWorld().isAir(pos) && t1.getTarget() instanceof TargetBlock) {
-            pos = pos.offset(((TargetBlock) t1.getTarget()).getDirection());
+            pos = pos.offset(((TargetBlock) t1.getTarget()).getSide());
         }
 
         Entity e = type.spawn((ServerWorld) t1.getTarget().getWorld(), null, null, null, pos, SpawnReason.MOB_SUMMONED, false, false);

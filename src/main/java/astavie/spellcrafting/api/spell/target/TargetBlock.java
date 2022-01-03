@@ -68,12 +68,7 @@ public class TargetBlock implements Target {
         return world;
     }
 
-    @Override
-    public @NotNull Vec3d getFacing() {
-        return Vec3d.of(facing.getVector());
-    }
-
-    public Direction getDirection() {
+    public Direction getSide() {
         return facing;
     }
 

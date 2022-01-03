@@ -8,7 +8,7 @@ import astavie.spellcrafting.api.spell.node.NodeType;
 import astavie.spellcrafting.api.spell.target.DistancedTarget;
 import astavie.spellcrafting.api.util.ItemList;
 
-public class NodeStart implements NodeType {
+public class NodeSelf implements NodeType {
 
     @Override
     public @NotNull SpellType<?>[] getParameters() {
@@ -17,7 +17,7 @@ public class NodeStart implements NodeType {
 
     @Override
     public @NotNull SpellType<?>[] getReturnTypes(@NotNull Spell spell, @NotNull Spell.Node node) {
-        return new SpellType[] { SpellType.TARGET, SpellType.TARGET };
+        return new SpellType[] { SpellType.TARGET };
     }
 
     @Override
@@ -29,7 +29,6 @@ public class NodeStart implements NodeType {
     public void apply(@NotNull Spell spell, @NotNull Spell.Node node) {
         spell.apply(node, new Object[] {
             new DistancedTarget(spell.getCaster(), spell.getCaster()),
-            new DistancedTarget(spell.getTarget(), spell.getCaster()),
         });
     }
     

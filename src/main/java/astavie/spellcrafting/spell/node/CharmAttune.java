@@ -17,7 +17,7 @@ public class CharmAttune implements NodeCharm {
 
     @Override
     public @NotNull SpellType<?>[] getReturnTypes(@NotNull Spell spell, @NotNull Spell.Node node) {
-        return new SpellType<?>[] { SpellType.TARGET };
+        return new SpellType<?>[] { SpellType.TARGET, SpellType.TARGET };
     }
 
     @Override
@@ -32,23 +32,22 @@ public class CharmAttune implements NodeCharm {
 
         if (!spell.inRange(t1) || !spell.inRange(t2)) {
             // TODO: Out of range particles
-            return new Object[] { null };
+            return new Object[] { null, null };
         }
 
         if (t1.getTarget().asAttunable() == null || t2.getTarget().asAttunable() == null) {
             // TODO: Not attunable particles
-            return new Object[] { null };
+            return new Object[] { null, null };
         }
 
         // Attune!
         t2.getTarget().asAttunable().attuneTo(t1.getTarget().asAttunable());
 
         // Return
-        if (t2.getTarget().asAttunable().isAttunedTo(spell.getCaster().asAttunable())) {
-            return new Object[] { new DistancedTarget(t2.getTarget(), t2.getTarget()) };
-        }
-
-        return new Object[] { null };
+        return new Object[] {
+            new DistancedTarget(t1.getTarget(), t1.getTarget()),
+            new DistancedTarget(t2.getTarget(), t2.getTarget())
+        };
     }
     
 }

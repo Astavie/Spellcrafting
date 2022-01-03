@@ -7,6 +7,7 @@ import astavie.spellcrafting.api.spell.SpellType;
 import astavie.spellcrafting.api.spell.node.NodeCharm;
 import astavie.spellcrafting.api.spell.target.DistancedTarget;
 import astavie.spellcrafting.api.spell.target.Target;
+import astavie.spellcrafting.api.spell.target.TargetBlock;
 import astavie.spellcrafting.api.spell.target.TargetEntity;
 import astavie.spellcrafting.api.util.ItemList;
 import net.minecraft.block.AbstractFireBlock;
@@ -71,11 +72,9 @@ public class CharmIgnite implements NodeCharm {
         }
 
         // Fire
-        BlockPos blockPos2;
-        if (target.getWorld().isAir(target.getBlock())) {
-            blockPos2 = target.getBlock();
-        } else {
-            blockPos2 = target.getBlock().offset(Direction.getFacing(target.getFacing().x, target.getFacing().y, target.getFacing().z));
+        BlockPos blockPos2 = target.getBlock();
+        if (!target.getWorld().isAir(target.getBlock()) && target instanceof TargetBlock) {
+            blockPos2 = target.getBlock().offset(((TargetBlock) target).getSide());
         }
 
         if (AbstractFireBlock.canPlaceAt(target.getWorld(), blockPos2, Direction.NORTH)) {

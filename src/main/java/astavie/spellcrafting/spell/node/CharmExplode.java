@@ -7,7 +7,9 @@ import astavie.spellcrafting.api.spell.SpellType;
 import astavie.spellcrafting.api.spell.node.NodeCharm;
 import astavie.spellcrafting.api.spell.target.DistancedTarget;
 import astavie.spellcrafting.api.spell.target.Target;
+import astavie.spellcrafting.api.spell.target.TargetEntity;
 import astavie.spellcrafting.api.util.ItemList;
+import net.minecraft.entity.Entity;
 import net.minecraft.item.Items;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.explosion.Explosion;
@@ -43,8 +45,11 @@ public class CharmExplode implements NodeCharm {
         Target target = origin.getTarget();
         Vec3d pos = target.getPos();
 
-        // TODO: Explosion.getCausingEntity -> Caster ?
-        target.getWorld().createExplosion(null, pos.x, pos.y, pos.z, 4.0f, Explosion.DestructionType.BREAK);
+        Entity source = null;
+        if (target instanceof TargetEntity) {
+            source = ((TargetEntity) target).getEntity();
+        }
+        target.getWorld().createExplosion(source, pos.x, pos.y, pos.z, 4.0f, Explosion.DestructionType.BREAK);
 
         return new Object[0];
     }

@@ -76,11 +76,6 @@ public class TargetEntity implements Target {
     }
 
     @Override
-    public @NotNull Vec3d getFacing() {
-        return Vec3d.fromPolar(getEntity().getPitch(), getEntity().getHeadYaw());
-    }
-
-    @Override
     public @Nullable Caster asCaster() {
         return Caster.ENTITY_CASTER.find(getEntity(), null);
     }

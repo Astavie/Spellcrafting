@@ -42,7 +42,7 @@ public class TransmuterDirection implements NodeTransmuter {
                 t1.getTarget().getWorld(),
                 t1.getTarget().getBlock().offset(direction),
                 t1.getTarget().getPos().add(direction.getOffsetX(), direction.getOffsetY(), direction.getOffsetZ()),
-                direction.getOpposite()
+                direction
             ), t1.getOrigin())
         };
     }

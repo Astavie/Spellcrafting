@@ -48,13 +48,12 @@ public class Spell {
         public static final @NotNull Identifier LAND_ID = new Identifier("spellcrafting:land");
         public static final @NotNull Identifier TICK_ID = new Identifier("spellcrafting:tick");
 
-        public static final @NotNull Event TARGET = new Event(TARGET_ID, NbtNull.INSTANCE);
+        public static final @NotNull Event TARGET = new Event(TARGET_ID, NbtNull.INSTANCE); // TODO: Argument will be DyeColor
         
     }
 
     private ServerWorld world;
     private Target caster;
-    private Target target;
     private final Map<Event, Object> eventsThisTick = new HashMap<>();
 
     private final UUID uuid;
@@ -299,10 +298,6 @@ public class Spell {
         return caster;
     }
 
-    public @Nullable Target getTarget() {
-        return target;
-    }
-
     public @NotNull ItemList components() {
         return components;
     }
@@ -317,7 +312,6 @@ public class Spell {
     }
 
     public boolean onTarget(@NotNull Caster caster, @NotNull Target target) {
-        // TODO: Split caster and target again
         if (events.isEmpty()) {
             // Use components
 			Transaction transaction = Transaction.openOuter();
@@ -329,15 +323,14 @@ public class Spell {
 
             // Cast spell!
             transaction.commit();
-            this.target = target;
             this.caster = caster.asTarget();
     
             // TODO: API breach
             SpellState.of((ServerWorld) caster.asTarget().getWorld()).addSpell(this);
 
             for (Node node : start) node.type.apply(this, node);
+            onEvent(Event.TARGET, target);
 
-            this.target = null;
             return true;
         } else if (events.containsKey(Event.TARGET)) {
             this.caster = caster.asTarget();

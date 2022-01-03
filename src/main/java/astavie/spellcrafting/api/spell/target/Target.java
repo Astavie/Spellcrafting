@@ -25,9 +25,6 @@ public interface Target {
     @NotNull
     World getWorld();
 
-    @NotNull
-    Vec3d getFacing();
-
     @Nullable
     Caster asCaster();
 

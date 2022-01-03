@@ -34,7 +34,7 @@ public class EventEntityInteract implements NodeEvent<Target> {
 
     @Override
     public @NotNull SpellType<?>[] getReturnTypes(@NotNull Spell spell, @NotNull Spell.Node node) {
-        return new SpellType[] { SpellType.TARGET };
+        return new SpellType[] { SpellType.TARGET, SpellType.TARGET };
     }
 
     @Override
@@ -49,9 +49,15 @@ public class EventEntityInteract implements NodeEvent<Target> {
     public @NotNull Object[] onEvent(@NotNull Spell spell, @NotNull Spell.Node node, Target context) {
         DistancedTarget input = (DistancedTarget) spell.getInput(node)[0];
         if (input == null) {
-            return new Object[] { new DistancedTarget(context, null) };
+            return new Object[] {
+                null,
+                new DistancedTarget(context, null)
+            };
         } else {
-            return new Object[] { new DistancedTarget(context, input.getOrigin()) };
+            return new Object[] {
+                input,
+                new DistancedTarget(context, input.getOrigin())
+            };
         }
     }
     
