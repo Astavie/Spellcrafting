@@ -295,8 +295,8 @@ public class Spell {
         return target.getOrigin().getPos().squaredDistanceTo(target.getTarget().getPos()) <= range * range + 0.1;
     }
 
-    public @Nullable Caster getCaster() {
-        return caster.asCaster();
+    public @Nullable Target getCaster() {
+        return caster;
     }
 
     public @Nullable Target getTarget() {

@@ -28,8 +28,8 @@ public class NodeStart implements NodeType {
     @Override
     public void apply(@NotNull Spell spell, @NotNull Spell.Node node) {
         spell.apply(node, new Object[] {
-            new DistancedTarget(spell.getCaster().asTarget(), spell.getCaster().asTarget()),
-            new DistancedTarget(spell.getTarget(),            spell.getCaster().asTarget()),
+            new DistancedTarget(spell.getCaster(), spell.getCaster()),
+            new DistancedTarget(spell.getTarget(), spell.getCaster()),
         });
     }
     
