@@ -8,6 +8,7 @@ import astavie.spellcrafting.api.spell.SpellType;
 import astavie.spellcrafting.api.spell.node.NodeEvent;
 import astavie.spellcrafting.api.util.ItemList;
 import astavie.spellcrafting.api.util.ServerUtils;
+import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtLong;
 
 public class EventWait implements NodeEvent<Void> {
@@ -25,7 +26,9 @@ public class EventWait implements NodeEvent<Void> {
 
     @Override
     public @NotNull ItemList getComponents(@NotNull Spell spell, @NotNull Spell.Node node) {
-        return new ItemList(); // TODO: Components
+        ItemList list = new ItemList();
+        list.addItem(Items.CLOCK, 0);
+        return list;
     }
 
     @Override

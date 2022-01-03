@@ -8,6 +8,7 @@ import astavie.spellcrafting.api.spell.node.NodeTransmuter;
 import astavie.spellcrafting.api.spell.target.DistancedTarget;
 import astavie.spellcrafting.api.spell.target.TargetBlock;
 import astavie.spellcrafting.api.util.ItemList;
+import net.minecraft.item.Items;
 import net.minecraft.util.math.Direction;
 
 public class TransmuterDirection implements NodeTransmuter {
@@ -30,7 +31,9 @@ public class TransmuterDirection implements NodeTransmuter {
 
     @Override
     public @NotNull ItemList getComponents(@NotNull Spell spell, @NotNull Spell.Node node) {
-        return new ItemList(); // TODO: Components?
+        ItemList list = new ItemList();
+        list.addItem(Items.COMPASS, 0);
+        return list;
     }
 
     @Override

@@ -36,7 +36,20 @@ public interface Caster {
         ItemList missing = new ItemList();
         Storage<ItemVariant> pouch = getComponentStorage();
 
+        // Size = 0
         for (Entry<ItemVariant, Long> entry : list) {
+            if (entry.getValue() != 0) continue;
+
+            long extracted = pouch.simulateExtract(entry.getKey(), 1, transaction);
+            if (extracted == 0) {
+                missing.addItem(entry.getKey(), 0);
+            }
+        }
+
+        // Size > 0
+        for (Entry<ItemVariant, Long> entry : list) {
+            if (entry.getValue() == 0) continue;
+            
             long extracted = pouch.extract(entry.getKey(), entry.getValue(), transaction);
             if (extracted < entry.getValue()) {
                 missing.addItem(entry.getKey(), entry.getValue() - extracted);
@@ -45,5 +58,5 @@ public interface Caster {
 
         return missing;
     }
-    
+
 }

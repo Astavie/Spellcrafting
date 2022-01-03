@@ -26,8 +26,10 @@ import astavie.spellcrafting.spell.node.CharmLaunch;
 import astavie.spellcrafting.spell.node.CharmBeam;
 import astavie.spellcrafting.spell.node.EventEntityInteract;
 import astavie.spellcrafting.spell.node.EventWait;
+import astavie.spellcrafting.spell.node.EventWaitFor;
 import astavie.spellcrafting.spell.node.NodeSelf;
 import astavie.spellcrafting.spell.node.NodeTarget;
+import astavie.spellcrafting.spell.node.TransmuterDesequencer;
 import astavie.spellcrafting.spell.node.TransmuterDirection;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -59,6 +61,7 @@ public class Spellcrafting implements ModInitializer {
 	public static Spell EXPLODING_KITTENS;
 	public static Spell HULK_SMASH;
 	public static Spell FIREWORK;
+	public static Spell YEET;
 
 	@Override
 	public void onInitialize() {
@@ -73,8 +76,10 @@ public class Spellcrafting implements ModInitializer {
 		Registry.register(NodeType.REGISTRY, new Identifier("spellcrafting:hit"), new EventEntityInteract(Spell.Event.HIT_ID));
 		Registry.register(NodeType.REGISTRY, new Identifier("spellcrafting:land"), new EventEntityInteract(Spell.Event.LAND_ID));
 		Registry.register(NodeType.REGISTRY, new Identifier("spellcrafting:wait"), new EventWait());
+		Registry.register(NodeType.REGISTRY, new Identifier("spellcrafting:waitfor"), new EventWaitFor());
 
 		Registry.register(NodeType.REGISTRY, new Identifier("spellcrafting:up"), new TransmuterDirection(Direction.UP));
+		Registry.register(NodeType.REGISTRY, new Identifier("spellcrafting:desequencer"), new TransmuterDesequencer());
 
 		Registry.register(NodeType.REGISTRY, new Identifier("spellcrafting:self"), new NodeSelf());
 		Registry.register(NodeType.REGISTRY, new Identifier("spellcrafting:target"), new NodeTarget());
@@ -95,25 +100,32 @@ public class Spellcrafting implements ModInitializer {
 		}
 		{
 			Spell.Node self    = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:self")));
+			Spell.Node deseq1  = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:desequencer")));
 			Spell.Node target  = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:target")));
+			Spell.Node deseq2  = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:desequencer")));
+			
 			Spell.Node cat     = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:cat")));
 			Spell.Node attune  = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:attune")));
 			Spell.Node launch  = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:launch")));
-			Spell.Node land    = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:land")));
+			Spell.Node waitfor = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:waitfor")));
 			Spell.Node explode = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:explode")));
 
 			Multimap<Socket, Socket> nodes = HashMultimap.create();
-			nodes.put(new Socket(self, 0), new Socket(cat, 0));
+			nodes.put(new Socket(self, 0), new Socket(deseq1, 0));
+			nodes.put(new Socket(target, 0), new Socket(deseq2, 0));
 
-			nodes.put(new Socket(self, 0), new Socket(attune, 0));
+			nodes.put(new Socket(deseq1, 0), new Socket(cat, 0));
+
+			nodes.put(new Socket(deseq1, 0), new Socket(attune, 0));
 			nodes.put(new Socket(cat, 0), new Socket(attune, 1));
 
 			nodes.put(new Socket(cat, 0), new Socket(launch, 0));
-			nodes.put(new Socket(target, 0), new Socket(launch, 1));
+			nodes.put(new Socket(deseq2, 0), new Socket(launch, 1));
 
-			nodes.put(new Socket(attune, 1), new Socket(land, 0));
+			nodes.put(new Socket(attune, 1), new Socket(waitfor, 0));
+			nodes.put(new Socket(deseq2, 1), new Socket(waitfor, 1));
 
-			nodes.put(new Socket(land, 0), new Socket(explode, 0));
+			nodes.put(new Socket(waitfor, 0), new Socket(explode, 0));
 
 			EXPLODING_KITTENS = new Spell(Sets.newHashSet(self, target), nodes);
 		}
@@ -165,17 +177,32 @@ public class Spellcrafting implements ModInitializer {
 
 			FIREWORK = new Spell(Sets.newHashSet(self, target), nodes);
 		}
+		{
+			Spell.Node target  = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:target")));
+			Spell.Node deseq   = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:desequencer")));
+			Spell.Node launch  = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:launch")));
+
+			Multimap<Socket, Socket> nodes = HashMultimap.create();
+			nodes.put(new Socket(target, 0), new Socket(deseq, 0));
+
+			nodes.put(new Socket(deseq, 0), new Socket(launch, 0));
+			nodes.put(new Socket(deseq, 1), new Socket(launch, 1));
+
+			YEET = new Spell(Sets.newHashSet(target), nodes);
+		}
 		
 		// Items
 		ItemTestSpell bomb = new ItemTestSpell(Spell.serialize(BOMB));
 		ItemTestSpell hulkSmash = new ItemTestSpell(Spell.serialize(HULK_SMASH));
 		ItemTestSpell explodingKittens = new ItemTestSpell(Spell.serialize(EXPLODING_KITTENS));
 		ItemTestSpell firework = new ItemTestSpell(Spell.serialize(FIREWORK));
+		ItemTestSpell yeet = new ItemTestSpell(Spell.serialize(YEET));
 
 		Registry.register(Registry.ITEM, new Identifier("spellcrafting", "bomb"), bomb);
-		Registry.register(Registry.ITEM, new Identifier("spellcrafting", "hulk_smasg"), hulkSmash);
+		Registry.register(Registry.ITEM, new Identifier("spellcrafting", "hulk_smash"), hulkSmash);
 		Registry.register(Registry.ITEM, new Identifier("spellcrafting", "exploding_kittens"), explodingKittens);
 		Registry.register(Registry.ITEM, new Identifier("spellcrafting", "firework"), firework);
+		Registry.register(Registry.ITEM, new Identifier("spellcrafting", "yeet"), yeet);
 
 		// APIs
 		Caster.ENTITY_CASTER.registerForType((player, context) -> new CasterPlayer(player), EntityType.PLAYER);
@@ -193,7 +220,7 @@ public class Spellcrafting implements ModInitializer {
 				state.addSpell(spell);
 			}
 			return spell;
-		}, bomb, hulkSmash, explodingKittens, firework);
+		}, bomb, hulkSmash, explodingKittens, firework, yeet);
 
 		// Events
 		ServerLifecycleEvents.SERVER_STARTING.register(s -> ServerUtils.server = s);

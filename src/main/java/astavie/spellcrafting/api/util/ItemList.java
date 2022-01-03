@@ -19,6 +19,10 @@ public class ItemList implements Iterable<Entry<ItemVariant, Long>> {
         addItem(ItemVariant.of(item), 1);
     }
     
+    public void addItem(@NotNull Item item, long amount) {
+        addItem(ItemVariant.of(item), amount);
+    }
+    
     public void addItem(@NotNull ItemStack stack) {
         addItem(ItemVariant.of(stack), stack.getCount());
     }

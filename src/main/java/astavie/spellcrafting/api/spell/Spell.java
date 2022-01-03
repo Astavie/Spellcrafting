@@ -336,13 +336,15 @@ public class Spell {
 
             // Cast spell!
             transaction.commit();
-    
+
             // TODO: API breach
             SpellState.getInstance().addSpell(this);
 
             for (Node node : start) node.type.apply(this, new ChannelNode(node, color));
-            onEvent(new Event(Event.SELF_ID, NbtByte.of((byte) color.ordinal())), new DistancedTarget(caster.asTarget(), caster.asTarget(), caster.asTarget()));
-            onEvent(new Event(Event.TARGET_ID, NbtByte.of((byte) color.ordinal())), new DistancedTarget(target, caster.asTarget(), caster.asTarget()));
+
+            Target ct = caster.asTarget();
+            onEvent(new Event(Event.SELF_ID, NbtByte.of((byte) color.ordinal())), new DistancedTarget(ct, ct, ct));
+            onEvent(new Event(Event.TARGET_ID, NbtByte.of((byte) color.ordinal())), new DistancedTarget(target, ct, ct));
 
             return true;
         }
@@ -369,7 +371,7 @@ public class Spell {
 
     public void onEvent(@NotNull Event event, Object context) {
         if (event.eventType == Event.TICK_ID && events.isEmpty()) {
-            end();
+            // end();
             return;
         }
         
