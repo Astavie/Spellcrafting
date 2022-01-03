@@ -12,8 +12,8 @@ import net.minecraft.util.math.Direction;
 
 public interface Attunable {
 
-    BlockApiLookup<Attunable, Direction> BLOCK_ATTUNABLE = BlockApiLookup.get(new Identifier("spellcrafting:attunable"), Attunable.class, Direction.class);
-    EntityApiLookup<Attunable, Void> ENTITY_ATTUNABLE = EntityApiLookup.get(new Identifier("spellcrafting:attunable"), Attunable.class, Void.class);
+    BlockApiLookup<Attunable, Direction> BLOCK_ATTUNABLE = BlockApiLookup.get(new Identifier("spellcrafting", "attunable"), Attunable.class, Direction.class);
+    EntityApiLookup<Attunable, Void> ENTITY_ATTUNABLE = EntityApiLookup.get(new Identifier("spellcrafting", "attunable"), Attunable.class, Void.class);
 
     default boolean isAttunedTo(@NotNull Attunable attunable) {
         return attunable.getAttunement().equals(getAttunement());

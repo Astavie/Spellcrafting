@@ -9,7 +9,7 @@ import astavie.spellcrafting.api.spell.Spell;
 public interface NodeEvent<T> extends NodeType {
 
     @Override
-    default void apply(@NotNull Spell spell, @NotNull Spell.Node node) {
+    default void apply(@NotNull Spell spell, @NotNull Spell.ChannelNode node) {
         Object[] input = spell.getInput(node);
         if (!ArrayUtils.contains(input, null)) {
             Spell.Event event = getEvent(spell, node, input);
@@ -22,16 +22,16 @@ public interface NodeEvent<T> extends NodeType {
             spell.cancelEvents(node);
         }
 
-        spell.apply(node, new Object[getReturnTypes(spell, node).length]);
+        spell.apply(node, new Object[getReturnTypes(spell, node.node()).length]);
     }
 
-    @Nullable Spell.Event getEvent(@NotNull Spell spell, @NotNull Spell.Node node, @NotNull Object[] input);
+    @Nullable Spell.Event getEvent(@NotNull Spell spell, @NotNull Spell.ChannelNode node, @NotNull Object[] input);
 
-    @NotNull Object[] onEvent(@NotNull Spell spell, @NotNull Spell.Node node, @Nullable T context);
+    @NotNull Object[] onEvent(@NotNull Spell spell, @NotNull Spell.ChannelNode node, @Nullable T context);
 
     @Override
     @SuppressWarnings("unchecked")
-    default void onEvent(@NotNull Spell spell, @NotNull Spell.Node node, @NotNull Spell.Event type, @Nullable Object context) {
+    default void onEvent(@NotNull Spell spell, @NotNull Spell.ChannelNode node, @NotNull Spell.Event type, @Nullable Object context) {
         Object[] ret = onEvent(spell, node, (T) context);
         spell.apply(node, ret);
     };

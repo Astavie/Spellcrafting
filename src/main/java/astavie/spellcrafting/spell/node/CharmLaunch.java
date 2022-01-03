@@ -14,7 +14,7 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.Vec3d;
 
 // TODO: Impetus?
-public class CharmMomentum implements NodeCharm {
+public class CharmLaunch implements NodeCharm {
 
     @Override
     public @NotNull SpellType<?>[] getParameters() {
@@ -32,12 +32,12 @@ public class CharmMomentum implements NodeCharm {
     }
 
     @Override
-    public @NotNull Object[] cast(@NotNull Spell spell, @NotNull Spell.Node node, @NotNull Object[] input) {
+    public @NotNull Object[] cast(@NotNull Spell spell, @NotNull Spell.ChannelNode node, @NotNull Object[] input) {
         DistancedTarget t1 = (DistancedTarget) input[0];
         DistancedTarget t2 = (DistancedTarget) input[1];
 
         // TODO: this is a test. add ! afterwards
-        if (!spell.inRange(t1)) {
+        if (!t1.inRange()) {
             spell.onInvalidPosition(t1.getTarget().getWorld(), t1.getTarget().getPos());
             return new Object[0];
         }
@@ -48,6 +48,13 @@ public class CharmMomentum implements NodeCharm {
         }
 
         Entity e = ((TargetEntity) t1.getTarget()).getEntity();
+
+        // Only allow on ground or low velocity
+        if (!e.isOnGround() && e.getVelocity().lengthSquared() > 0.1) {
+            spell.onInvalidPosition(t1.getTarget().getWorld(), t1.getTarget().getPos());
+            return new Object[0];
+        }
+
         Vec3d dir = t2.getTarget().getPos().subtract(t1.getTarget().getPos()).normalize().multiply(2); // TODO: Variable speed
 
         e.addVelocity(dir.x, dir.y, dir.z);

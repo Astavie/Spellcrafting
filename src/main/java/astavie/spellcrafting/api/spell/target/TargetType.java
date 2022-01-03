@@ -12,7 +12,7 @@ import net.minecraft.util.registry.SimpleRegistry;
 public interface TargetType<T extends Target> {
 
     public static final Registry<TargetType<?>> REGISTRY = FabricRegistryBuilder.from(
-        new SimpleRegistry<TargetType<?>>(RegistryKey.ofRegistry(new Identifier("spellcrafting:target")), Lifecycle.stable())
+        new SimpleRegistry<TargetType<?>>(RegistryKey.ofRegistry(new Identifier("spellcrafting", "target")), Lifecycle.stable())
     ).buildAndRegister();
 
     T deserialize(NbtCompound nbt);

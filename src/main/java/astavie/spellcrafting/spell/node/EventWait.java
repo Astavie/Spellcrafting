@@ -29,12 +29,12 @@ public class EventWait implements NodeEvent<Void> {
     }
 
     @Override
-    public @Nullable Spell.Event getEvent(@NotNull Spell spell, @NotNull Spell.Node node, @NotNull Object[] input) {
+    public @Nullable Spell.Event getEvent(@NotNull Spell spell, @NotNull Spell.ChannelNode node, @NotNull Object[] input) {
         return new Spell.Event(Spell.Event.TICK_ID, NbtLong.of(ServerUtils.getTime() + 10)); // TODO: Variable time
     }
 
     @Override
-    public @NotNull Object[] onEvent(@NotNull Spell spell, @NotNull Spell.Node node, @Nullable Void context) {
+    public @NotNull Object[] onEvent(@NotNull Spell spell, @NotNull Spell.ChannelNode node, @Nullable Void context) {
         return spell.getInput(node);
     }
     

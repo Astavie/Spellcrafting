@@ -39,11 +39,11 @@ public class CharmBeam implements NodeCharm {
 
     @Override
     @SuppressWarnings("resource")
-    public @NotNull Object[] cast(@NotNull Spell spell, @NotNull Spell.Node node, @NotNull Object[] input) {
+    public @NotNull Object[] cast(@NotNull Spell spell, @NotNull Spell.ChannelNode node, @NotNull Object[] input) {
         DistancedTarget t1 = (DistancedTarget) input[0];
         DistancedTarget t2 = (DistancedTarget) input[1];
 
-        if (!spell.inRange(t1)) {
+        if (!t1.inRange()) {
             spell.onInvalidPosition(t1.getTarget().getWorld(), t1.getTarget().getPos());
             return new Object[] { null };
         }
@@ -70,11 +70,11 @@ public class CharmBeam implements NodeCharm {
         Target target = Spellcrafting.getTarget(t1.getTarget().getWorld(), result);
         spell.schedule(node);
 
-        return new Object[] { new DistancedTarget(target, t1.getOrigin().withPos(target.getPos())) };
+        return new Object[] { new DistancedTarget(target, t1.getOrigin().withPos(target.getPos()), t1.getCaster()) };
     }
 
     @Override
-    public void onEvent(@NotNull Spell spell, @NotNull Spell.Node node, @NotNull Spell.Event type, @Nullable Object context) {
+    public void onEvent(@NotNull Spell spell, @NotNull Spell.ChannelNode node, @NotNull Spell.Event type, @Nullable Object context) {
         // Reset after one tick
         spell.apply(node, new Object[] { null });
     }

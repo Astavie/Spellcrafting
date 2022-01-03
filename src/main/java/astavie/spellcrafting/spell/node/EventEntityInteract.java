@@ -38,7 +38,7 @@ public class EventEntityInteract implements NodeEvent<Target> {
     }
 
     @Override
-    public @Nullable Spell.Event getEvent(@NotNull Spell spell, @NotNull Spell.Node node, @NotNull Object[] input) {
+    public @Nullable Spell.Event getEvent(@NotNull Spell spell, @NotNull Spell.ChannelNode node, @NotNull Object[] input) {
         if (!(input[0] instanceof DistancedTarget) || !(((DistancedTarget) input[0]).getTarget() instanceof TargetEntity)) return null;
         
         Entity entity = ((TargetEntity) ((DistancedTarget) input[0]).getTarget()).getEntity();
@@ -46,17 +46,17 @@ public class EventEntityInteract implements NodeEvent<Target> {
     }
 
     @Override
-    public @NotNull Object[] onEvent(@NotNull Spell spell, @NotNull Spell.Node node, Target context) {
+    public @NotNull Object[] onEvent(@NotNull Spell spell, @NotNull Spell.ChannelNode node, Target context) {
         DistancedTarget input = (DistancedTarget) spell.getInput(node)[0];
         if (input == null) {
             return new Object[] {
                 null,
-                new DistancedTarget(context, null)
+                null
             };
         } else {
             return new Object[] {
                 input,
-                new DistancedTarget(context, input.getOrigin())
+                new DistancedTarget(context, input.getOrigin(), input.getCaster())
             };
         }
     }

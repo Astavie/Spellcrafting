@@ -85,20 +85,17 @@ public interface SpellType<T> {
         public @NotNull DistancedTarget deserialize(@NotNull NbtElement nbt) {
             NbtCompound cmp = (NbtCompound) nbt;
             Target target = Target.deserialize(cmp.getCompound("target"));
-            Target origin = null;
-            if (cmp.contains("origin")) {
-                origin = Target.deserialize(cmp.getCompound("origin"));
-            }
-            return new DistancedTarget(target, origin);
+            Target origin = Target.deserialize(cmp.getCompound("origin"));
+            Target caster = Target.deserialize(cmp.getCompound("caster"));
+            return new DistancedTarget(target, origin, caster);
         }
 
         @Override
         public @NotNull NbtElement serialize(@NotNull DistancedTarget t) {
             NbtCompound cmp = new NbtCompound();
             cmp.put("target", Target.serialize(t.getTarget()));
-            if (t.getOrigin() != null) {
-                cmp.put("origin", Target.serialize(t.getOrigin()));
-            }
+            cmp.put("origin", Target.serialize(t.getOrigin()));
+            cmp.put("caster", Target.serialize(t.getCaster()));
             return cmp;
         }
 

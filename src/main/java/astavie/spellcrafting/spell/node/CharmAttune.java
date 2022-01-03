@@ -26,11 +26,11 @@ public class CharmAttune implements NodeCharm {
     }
 
     @Override
-    public @NotNull Object[] cast(@NotNull Spell spell, @NotNull Spell.Node node, @NotNull Object[] input) {
+    public @NotNull Object[] cast(@NotNull Spell spell, @NotNull Spell.ChannelNode node, @NotNull Object[] input) {
         DistancedTarget t1 = (DistancedTarget) input[0];
         DistancedTarget t2 = (DistancedTarget) input[1];
 
-        if (!spell.inRange(t1) || !spell.inRange(t2)) {
+        if (!t1.inRange() || !t2.inRange()) {
             spell.onInvalidPosition(t1.getTarget().getWorld(), t1.getTarget().getPos());
             spell.onInvalidPosition(t2.getTarget().getWorld(), t2.getTarget().getPos());
             return new Object[] { null, null };
@@ -47,8 +47,8 @@ public class CharmAttune implements NodeCharm {
 
         // Return
         return new Object[] {
-            new DistancedTarget(t1.getTarget(), t1.getTarget()),
-            new DistancedTarget(t2.getTarget(), t2.getTarget())
+            new DistancedTarget(t1.getTarget(), t1.getTarget(), t1.getCaster()),
+            new DistancedTarget(t2.getTarget(), t2.getTarget(), t2.getCaster())
         };
     }
     

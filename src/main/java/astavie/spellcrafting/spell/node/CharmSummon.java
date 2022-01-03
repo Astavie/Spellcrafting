@@ -39,10 +39,10 @@ public class CharmSummon implements NodeCharm {
     }
 
     @Override
-    public @NotNull Object[] cast(@NotNull Spell spell, @NotNull Spell.Node node, @NotNull Object[] input) {
+    public @NotNull Object[] cast(@NotNull Spell spell, @NotNull Spell.ChannelNode node, @NotNull Object[] input) {
         DistancedTarget t1 = (DistancedTarget) input[0];
 
-        if (!spell.inRange(t1)) {
+        if (!t1.inRange()) {
             spell.onInvalidPosition(t1.getTarget().getWorld(), t1.getTarget().getPos());
             return new Object[] { null };
         }
@@ -54,7 +54,7 @@ public class CharmSummon implements NodeCharm {
 
         Entity e = type.spawn((ServerWorld) t1.getTarget().getWorld(), null, null, null, pos, SpawnReason.MOB_SUMMONED, false, false);
         
-        return new Object[] { e == null ? null : new DistancedTarget(new TargetEntity(e, t1.getTarget().getPos()), t1.getOrigin()) };
+        return new Object[] { e == null ? null : new DistancedTarget(new TargetEntity(e, t1.getTarget().getPos()), t1.getOrigin(), t1.getCaster()) };
     }
     
 }

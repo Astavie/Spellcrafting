@@ -34,10 +34,10 @@ public class CharmExplode implements NodeCharm {
     }
 
     @Override
-    public @NotNull Object[] cast(@NotNull Spell spell, @NotNull Spell.Node node, @NotNull Object[] input) {
+    public @NotNull Object[] cast(@NotNull Spell spell, @NotNull Spell.ChannelNode node, @NotNull Object[] input) {
         DistancedTarget origin = (DistancedTarget) input[0];
 
-        if (!spell.inRange(origin)) {
+        if (!origin.inRange()) {
             spell.onInvalidPosition(origin.getTarget().getWorld(), origin.getTarget().getPos());
             return new Object[0];
         }

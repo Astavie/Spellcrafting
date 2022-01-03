@@ -16,8 +16,8 @@ import net.minecraft.util.math.Direction;
 
 public interface Caster {
 
-    BlockApiLookup<Caster, Direction> BLOCK_CASTER = BlockApiLookup.get(new Identifier("spellcrafting:caster"), Caster.class, Direction.class);
-    EntityApiLookup<Caster, Void> ENTITY_CASTER = EntityApiLookup.get(new Identifier("spellcrafting:caster"), Caster.class, Void.class);
+    BlockApiLookup<Caster, Direction> BLOCK_CASTER = BlockApiLookup.get(new Identifier("spellcrafting", "caster"), Caster.class, Direction.class);
+    EntityApiLookup<Caster, Void> ENTITY_CASTER = EntityApiLookup.get(new Identifier("spellcrafting", "caster"), Caster.class, Void.class);
 
     @NotNull Target asTarget();
 
