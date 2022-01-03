@@ -5,13 +5,14 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import astavie.spellcrafting.Spellcrafting;
 import astavie.spellcrafting.api.spell.Spell;
 import astavie.spellcrafting.api.spell.target.Target;
 import astavie.spellcrafting.api.spell.target.TargetBlock;
+import astavie.spellcrafting.spell.SpellState;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NbtString;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 
@@ -27,8 +28,7 @@ public class EntityMixin {
 
         Target block = new TargetBlock(e.world, landedPosition, e.getPos(), Direction.UP);
 
-        // TODO: Only works with test spell
-        Spellcrafting.activeSpells.forEach(s -> s.onEvent(new Spell.Event(Spell.Event.LAND_ID, NbtString.of(e.getUuidAsString())), block));
+        SpellState.of((ServerWorld) e.world).onEvent(new Spell.Event(Spell.Event.LAND_ID, NbtString.of(e.getUuidAsString())), block);
     }
 
 }

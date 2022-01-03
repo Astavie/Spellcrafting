@@ -1,8 +1,6 @@
 package astavie.spellcrafting;
 
 import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.UUID;
 
 import com.google.common.collect.HashMultimap;
@@ -17,6 +15,8 @@ import astavie.spellcrafting.api.spell.node.NodeType;
 import astavie.spellcrafting.api.spell.target.Target;
 import astavie.spellcrafting.api.spell.target.TargetBlock;
 import astavie.spellcrafting.api.spell.target.TargetEntity;
+import astavie.spellcrafting.spell.CasterPlayer;
+import astavie.spellcrafting.spell.SpellState;
 import astavie.spellcrafting.spell.node.CharmAttune;
 import astavie.spellcrafting.spell.node.CharmExplode;
 import astavie.spellcrafting.spell.node.CharmIgnite;
@@ -57,8 +57,6 @@ public class Spellcrafting implements ModInitializer {
 	public static Spell EXPLODING_KITTENS;
 	public static Spell HULK_SMASH;
 	public static Spell FIREWORK;
-
-	public static final Set<Spell> activeSpells = new HashSet<>();
 
 	@Override
 	public void onInitialize() {
@@ -175,23 +173,25 @@ public class Spellcrafting implements ModInitializer {
 		Registry.register(Registry.ITEM, new Identifier("spellcrafting", "test"), test);
 
 		// APIs
-		Caster.ENTITY_CASTER.registerForType((player, context) -> (Caster) player, EntityType.PLAYER);
+		Caster.ENTITY_CASTER.registerForType((player, context) -> new CasterPlayer(player), EntityType.PLAYER);
 		Attunable.ENTITY_ATTUNABLE.registerFallback((entity, context) -> entity instanceof Attunable ? (Attunable) entity : null);
 
 		SpellContainer.ITEM_SPELL.registerForItems((stack, context) -> (caster) -> {
+			ServerWorld world = (ServerWorld) caster.asTarget().getWorld();
+			SpellState state = SpellState.of(world);
+
 			UUID uuid = nbt.getUuid("UUID");
-			Spell spell = caster.getSpell(uuid);
+			Spell spell = state.getSpell(uuid);
 			if (spell == null) {
 				spell = Spell.deserialize(nbt, (ServerWorld) caster.asTarget().getWorld());
-				caster.addSpell(spell);
+				state.addSpell(spell);
 			}
 			return spell;
 		}, test);
 
 		// Events
-        // TODO: This now only works on test spell
-		ServerTickEvents.END_SERVER_TICK.register(w -> {
-			activeSpells.forEach(s -> s.onEvent(new Spell.Event(Spell.Event.TICK_ID, NbtLong.of(w.getOverworld().getTime())), null));
+		ServerTickEvents.END_WORLD_TICK.register(w -> {
+			SpellState.of(w).onEvent(new Spell.Event(Spell.Event.TICK_ID, NbtLong.of(w.getTime())), null);
 		});
 
 		// Networking

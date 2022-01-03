@@ -12,11 +12,11 @@ import com.google.common.collect.Multimap;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import astavie.spellcrafting.Spellcrafting;
 import astavie.spellcrafting.api.spell.node.NodeType;
 import astavie.spellcrafting.api.spell.target.DistancedTarget;
 import astavie.spellcrafting.api.spell.target.Target;
 import astavie.spellcrafting.api.util.ItemList;
+import astavie.spellcrafting.spell.SpellState;
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
@@ -28,6 +28,7 @@ import net.minecraft.nbt.NbtNull;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 
+// TODO: Turn this into an interface with an Impl
 public class Spell {
 
     public static class Node {
@@ -51,7 +52,8 @@ public class Spell {
         
     }
 
-    private Caster caster;
+    private ServerWorld world;
+    private Target caster;
     private Target target;
     private final Map<Event, Object> eventsThisTick = new HashMap<>();
 
@@ -63,10 +65,11 @@ public class Spell {
     private final Multimap<Event, Node> events = HashMultimap.create();
     private final ItemList components = new ItemList();
 
-    private Spell(UUID uuid) {
+    private Spell(ServerWorld world, UUID uuid) {
         this.start = new HashSet<>();
         this.nodes = HashMultimap.create();
         this.uuid = uuid;
+        this.world = world;
     }
 
     public Spell(Set<Node> start, Multimap<Socket, Socket> nodes) {
@@ -178,17 +181,21 @@ public class Spell {
         cmp.putUuid("UUID", spell.uuid);
         cmp.put("nodes", nodeList);
         cmp.put("sockets", socketList);
+        if (spell.caster != null) cmp.put("caster", Target.serialize(spell.caster));
         return cmp;
     }
 
     public static Spell deserialize(@NotNull NbtCompound nbt, ServerWorld world) {
+        // TODO: remove dependency on world
+
         NbtList nodes = nbt.getList("nodes", NbtElement.COMPOUND_TYPE);
         NbtList sockets = nbt.getList("sockets", NbtElement.COMPOUND_TYPE);
 
         Node[] totalNodes = new Node[nodes.size()];
         Socket[] totalSockets = new Socket[sockets.size()];
 
-        Spell spell = new Spell(nbt.getUuid("UUID"));
+        Spell spell = new Spell(world, nbt.getUuid("UUID"));
+        if (nbt.contains("caster")) spell.caster = Target.deserialize(nbt.getCompound("caster"), world);
 
         // Phase 0: get all nodes with events
         for (int i = 0; i < nodes.size(); i++) {
@@ -270,12 +277,9 @@ public class Spell {
         return output.get(socket);
     }
 
-    public boolean isActive() {
-        return caster != null && caster.exists();
-    }
-
     public long getTime() {
-        return caster.asTarget().getWorld().getServer().getOverworld().getTime();
+        // TODO: Back to global time
+        return caster.getWorld().getTime();
     }
 
     public boolean inRange(@NotNull DistancedTarget target) {
@@ -287,12 +291,12 @@ public class Spell {
         ) return false;
 
         // Check range
-        double range = caster.getRange();
+        double range = caster.asCaster().getRange();
         return target.getOrigin().getPos().squaredDistanceTo(target.getTarget().getPos()) <= range * range + 0.1;
     }
 
     public @Nullable Caster getCaster() {
-        return caster;
+        return caster.asCaster();
     }
 
     public @Nullable Target getTarget() {
@@ -305,26 +309,16 @@ public class Spell {
 
     public void end() {
         // TODO: API breach
-        Spellcrafting.activeSpells.remove(this);
+        SpellState.of(world).removeSpell(uuid);
         output.clear();
         events.clear();
         eventsThisTick.clear();
-
-        if (caster != null) {
-            caster.removeSpell(uuid);
-            caster = null;
-        }
-    }
-
-    public void activate(@NotNull Caster caster) {
-        this.caster = caster;
-        // TODO: API breach
-        Spellcrafting.activeSpells.add(this);
+        caster = null;
     }
 
     public boolean onTarget(@NotNull Caster caster, @NotNull Target target) {
         // TODO: Split caster and target again
-        if (!isActive()) {
+        if (events.isEmpty()) {
             // Use components
 			Transaction transaction = Transaction.openOuter();
             ItemList missing = caster.useComponents(components, transaction);
@@ -336,14 +330,17 @@ public class Spell {
             // Cast spell!
             transaction.commit();
             this.target = target;
+            this.caster = caster.asTarget();
+    
+            // TODO: API breach
+            SpellState.of((ServerWorld) caster.asTarget().getWorld()).addSpell(this);
 
-            activate(caster);
             for (Node node : start) node.type.apply(this, node);
 
             this.target = null;
             return true;
         } else if (events.containsKey(Event.TARGET)) {
-            this.caster = caster;
+            this.caster = caster.asTarget();
             onEvent(Event.TARGET, target);
             return true;
         }
@@ -369,7 +366,7 @@ public class Spell {
     }
 
     public void onEvent(@NotNull Event event, Object context) {
-        if (!isActive() || event.eventType == Event.TICK_ID && events.isEmpty()) {
+        if (event.eventType == Event.TICK_ID && events.isEmpty()) {
             end();
             return;
         }

@@ -8,8 +8,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import astavie.spellcrafting.Spellcrafting;
 import astavie.spellcrafting.api.spell.Spell;
 import astavie.spellcrafting.api.spell.target.Target;
+import astavie.spellcrafting.spell.SpellState;
 import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.nbt.NbtString;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.hit.HitResult;
 
 @Mixin(ProjectileEntity.class)
@@ -22,8 +24,7 @@ public class ProjectileEntityMixin {
 
         Target hit = Spellcrafting.getTarget(entity.world, result);
 
-        // TODO: This now only works on test spell
-        Spellcrafting.activeSpells.forEach(s -> s.onEvent(new Spell.Event(Spell.Event.HIT_ID, NbtString.of(entity.getUuidAsString())), hit));
+        SpellState.of((ServerWorld) entity.world).onEvent(new Spell.Event(Spell.Event.HIT_ID, NbtString.of(entity.getUuidAsString())), hit);
     }
     
 }

@@ -1,6 +1,5 @@
 package astavie.spellcrafting.spell.node;
 
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.jetbrains.annotations.NotNull;
 
 import astavie.spellcrafting.api.spell.Spell;
@@ -49,8 +48,6 @@ public class CharmMomentum implements NodeCharm {
 
         Entity e = ((TargetEntity) t1.getTarget()).getEntity();
         Vec3d dir = t2.getTarget().getPos().subtract(t1.getTarget().getPos()).normalize().multiply(2); // TODO: Variable speed
-
-        System.out.println(ExceptionUtils.getStackTrace(new Throwable()));
 
         e.addVelocity(dir.x, dir.y, dir.z);
         ((ServerWorld) e.world).getChunkManager().sendToNearbyPlayers(e, new EntityVelocityUpdateS2CPacket(e));

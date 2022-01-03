@@ -97,7 +97,7 @@ public class TargetEntity implements Target {
 
     @Override
     public boolean exists() {
-        return world.getEntity(uuid) != null;
+        return getEntity() != null;
     }
     
 }
