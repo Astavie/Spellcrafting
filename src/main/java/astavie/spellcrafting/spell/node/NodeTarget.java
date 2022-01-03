@@ -1,13 +1,14 @@
 package astavie.spellcrafting.spell.node;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import astavie.spellcrafting.api.spell.Spell;
 import astavie.spellcrafting.api.spell.SpellType;
 import astavie.spellcrafting.api.spell.node.NodeType;
 import astavie.spellcrafting.api.spell.target.DistancedTarget;
-import astavie.spellcrafting.api.spell.target.Target;
 import astavie.spellcrafting.api.util.ItemList;
+import net.minecraft.nbt.NbtByte;
 
 public class NodeTarget implements NodeType {
 
@@ -28,10 +29,12 @@ public class NodeTarget implements NodeType {
 
     @Override
     public void apply(@NotNull Spell spell, @NotNull Spell.ChannelNode node) {
-        Target caster = spell.getCaster(node.channel());
-        spell.apply(node, new Object[] {
-            new DistancedTarget(spell.getTarget(), caster, caster),
-        });
+        spell.registerEvent(new Spell.Event(Spell.Event.TARGET_ID, NbtByte.of((byte) node.channel().ordinal())), node);
+    }
+
+    @Override
+    public void onEvent(@NotNull Spell spell, @NotNull Spell.ChannelNode node, @NotNull Spell.Event type, @Nullable Object context) {
+        spell.apply(node, new Object[] { (DistancedTarget) context });
     }
     
 }

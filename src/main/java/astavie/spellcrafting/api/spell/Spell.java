@@ -13,11 +13,13 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import astavie.spellcrafting.api.spell.node.NodeType;
+import astavie.spellcrafting.api.spell.target.DistancedTarget;
 import astavie.spellcrafting.api.spell.target.Target;
 import astavie.spellcrafting.api.util.ItemList;
 import astavie.spellcrafting.api.util.ServerUtils;
 import astavie.spellcrafting.spell.SpellState;
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
+import net.minecraft.nbt.NbtByte;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtInt;
@@ -51,14 +53,15 @@ public class Spell {
 
     public static record Event(@NotNull Identifier eventType, @NotNull NbtElement argument) {
 
+        public static final @NotNull Identifier SELF_ID = new Identifier("spellcrafting:self");
+        public static final @NotNull Identifier TARGET_ID = new Identifier("spellcrafting:target");
+
         public static final @NotNull Identifier HIT_ID = new Identifier("spellcrafting:hit");
         public static final @NotNull Identifier LAND_ID = new Identifier("spellcrafting:land");
         public static final @NotNull Identifier TICK_ID = new Identifier("spellcrafting:tick");
         
     }
 
-    private Target target;
-    private Map<DyeColor, Target> caster = new HashMap<>();
     private final Map<Event, Object> eventsThisTick = new HashMap<>();
 
     private final UUID uuid;
@@ -91,14 +94,6 @@ public class Spell {
 
     public void markDirty() {
         SpellState.getInstance().markDirty();
-    }
-
-    public Target getCaster(DyeColor channel) {
-        return caster.get(channel);
-    }
-
-    public Target getTarget() {
-        return target;
     }
 
     private void calculateComponents() {
@@ -204,12 +199,6 @@ public class Spell {
         cmp.putUuid("UUID", spell.uuid);
         cmp.put("nodes", nodeList);
         cmp.put("sockets", socketList);
-
-        for (DyeColor color : DyeColor.values()) {
-            if (spell.caster.get(color) != null) {
-                cmp.put(color.getName() + "_caster", Target.serialize(spell.caster.get(color)));
-            }
-        }
         return cmp;
     }
 
@@ -221,11 +210,6 @@ public class Spell {
         Socket[] totalSockets = new Socket[sockets.size()];
 
         Spell spell = new Spell(nbt.getUuid("UUID"));
-        for (DyeColor color : DyeColor.values()) {
-            if (nbt.contains(color.getName() + "_caster")) {
-                spell.caster.put(color, Target.deserialize(nbt.getCompound(color.getName() + "_caster")));
-            }
-        }
 
         // Phase 0: get all nodes with events
         for (int i = 0; i < nodes.size(); i++) {
@@ -326,12 +310,21 @@ public class Spell {
         output.clear();
         events.clear();
         eventsThisTick.clear();
-        caster.clear();
     }
 
     public boolean onTarget(@NotNull Caster caster, @NotNull Target target) {
         for (DyeColor color : DyeColor.values()) {
-            if (this.caster.containsKey(color)) continue;
+            // Check if any starting nodes already contain output on this channel
+            // TODO: This is horrible
+            if (start.stream().anyMatch(s -> {
+                int returnTypes = s.type.getReturnTypes(this, s).length;
+                for (int i = 0; i < returnTypes; i++) {
+                    if (output.containsKey(new ChannelSocket(new Socket(s, i), color))) {
+                        return true;
+                    }
+                }
+                return false;
+            })) continue;
 
             // Use components
             Transaction transaction = Transaction.openOuter();
@@ -347,10 +340,9 @@ public class Spell {
             // TODO: API breach
             SpellState.getInstance().addSpell(this);
 
-            this.caster.put(color, caster.asTarget());
-            this.target = target;
             for (Node node : start) node.type.apply(this, new ChannelNode(node, color));
-            this.target = null;
+            onEvent(new Event(Event.SELF_ID, NbtByte.of((byte) color.ordinal())), new DistancedTarget(caster.asTarget(), caster.asTarget(), caster.asTarget()));
+            onEvent(new Event(Event.TARGET_ID, NbtByte.of((byte) color.ordinal())), new DistancedTarget(target, caster.asTarget(), caster.asTarget()));
 
             return true;
         }

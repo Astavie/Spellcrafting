@@ -36,7 +36,6 @@ public class CharmLaunch implements NodeCharm {
         DistancedTarget t1 = (DistancedTarget) input[0];
         DistancedTarget t2 = (DistancedTarget) input[1];
 
-        // TODO: this is a test. add ! afterwards
         if (!t1.inRange()) {
             spell.onInvalidPosition(t1.getTarget().getWorld(), t1.getTarget().getPos());
             return new Object[0];
