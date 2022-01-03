@@ -1,4 +1,4 @@
-package astavie.spellcrafting.spell.util;
+package astavie.spellcrafting.util;
 
 import java.util.Optional;
 
@@ -47,6 +47,7 @@ public final class RaycastUtils {
             return BlockHitResult.createMissed(max, Direction.getFacing(dir.x, dir.y, dir.z), new BlockPos(max));
         });
 
+        // Entity
         Vec3d max2 = result.getPos();
 
         double e = min.squaredDistanceTo(max2);
@@ -77,6 +78,7 @@ public final class RaycastUtils {
             e = f;
         }
         if (entity2 == null) {
+            // Block
             return result;
         }
 

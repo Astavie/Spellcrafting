@@ -91,5 +91,10 @@ public class TargetBlock implements Target {
     public boolean exists() {
         return true;
     }
+
+    @Override
+    public @NotNull Target withPos(Vec3d pos) {
+        return new TargetBlock(world, block, pos, facing);
+    }
     
 }

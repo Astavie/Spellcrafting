@@ -34,6 +34,9 @@ public interface Target {
     @NotNull
     TargetType<?> getType();
 
+    @NotNull
+    Target withPos(Vec3d pos);
+
     public static NbtCompound serialize(Target t) {
         NbtCompound c = serialize(t.getType(), t);
         c.putString("type", TargetType.REGISTRY.getId(t.getType()).toString());

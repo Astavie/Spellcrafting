@@ -46,7 +46,7 @@ public class CharmIgnite implements NodeCharm {
         DistancedTarget d = (DistancedTarget) input[0];
 
         if (!spell.inRange(d)) {
-            // TODO: "Too far away" particle effect
+            spell.onInvalidPosition(d.getTarget().getPos());
             return new Object[0];
         }
 

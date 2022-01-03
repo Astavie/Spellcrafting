@@ -43,7 +43,7 @@ public class CharmSummon implements NodeCharm {
         DistancedTarget t1 = (DistancedTarget) input[0];
 
         if (!spell.inRange(t1)) {
-            // TODO: Out of range particles
+            spell.onInvalidPosition(t1.getTarget().getPos());
             return new Object[] { null };
         }
 

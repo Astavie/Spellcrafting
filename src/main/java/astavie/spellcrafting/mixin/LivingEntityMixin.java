@@ -2,7 +2,6 @@ package astavie.spellcrafting.mixin;
 
 import java.util.UUID;
 
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -10,10 +9,8 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import astavie.spellcrafting.api.spell.Attunable;
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.util.math.Vec3d;
 
 @Mixin(LivingEntity.class)
 public class LivingEntityMixin implements Attunable {
@@ -40,11 +37,6 @@ public class LivingEntityMixin implements Attunable {
     @Override
     public UUID getAttunement() {
         return attunement;
-    }
-
-    @Override
-    public @NotNull Vec3d getCenter() {
-        return ((Entity) (Object) this).getEyePos();
     }
     
 }

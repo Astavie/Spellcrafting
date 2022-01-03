@@ -25,8 +25,10 @@ import net.minecraft.nbt.NbtIntArray;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtLong;
 import net.minecraft.nbt.NbtNull;
+import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.Vec3d;
 
 // TODO: Turn this into an interface with an Impl
 public class Spell {
@@ -248,6 +250,10 @@ public class Spell {
 
         spell.calculateComponents();
         return spell;
+    }
+
+    public void onInvalidPosition(Vec3d pos) {
+        world.spawnParticles(ParticleTypes.SMOKE, pos.x, pos.y, pos.z, 6, 0.2, 0.2, 0.2, 0.01);
     }
 
     private void continueFactor(Set<Node> total, Set<Node> blacklist, Node node) {

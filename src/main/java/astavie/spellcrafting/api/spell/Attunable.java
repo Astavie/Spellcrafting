@@ -9,7 +9,6 @@ import net.fabricmc.fabric.api.lookup.v1.block.BlockApiLookup;
 import net.fabricmc.fabric.api.lookup.v1.entity.EntityApiLookup;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Vec3d;
 
 public interface Attunable {
 
@@ -23,8 +22,5 @@ public interface Attunable {
     void attuneTo(@Nullable Attunable attunable);
 
     @NotNull UUID getAttunement();
-
-    @NotNull
-    Vec3d getCenter();
     
 }

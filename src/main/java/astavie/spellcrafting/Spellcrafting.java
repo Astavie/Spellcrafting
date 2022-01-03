@@ -22,7 +22,7 @@ import astavie.spellcrafting.spell.node.CharmExplode;
 import astavie.spellcrafting.spell.node.CharmIgnite;
 import astavie.spellcrafting.spell.node.CharmSummon;
 import astavie.spellcrafting.spell.node.CharmMomentum;
-import astavie.spellcrafting.spell.node.CharmRaycast;
+import astavie.spellcrafting.spell.node.CharmBeam;
 import astavie.spellcrafting.spell.node.EventEntityInteract;
 import astavie.spellcrafting.spell.node.EventWait;
 import astavie.spellcrafting.spell.node.NodeSelf;
@@ -67,7 +67,7 @@ public class Spellcrafting implements ModInitializer {
 		Registry.register(NodeType.REGISTRY, new Identifier("spellcrafting:attune"), new CharmAttune());
 		Registry.register(NodeType.REGISTRY, new Identifier("spellcrafting:cat"), new CharmSummon(EntityType.CAT));
 		Registry.register(NodeType.REGISTRY, new Identifier("spellcrafting:momentum"), new CharmMomentum());
-		Registry.register(NodeType.REGISTRY, new Identifier("spellcrafting:raycast"), new CharmRaycast());
+		Registry.register(NodeType.REGISTRY, new Identifier("spellcrafting:beam"), new CharmBeam());
 
 		Registry.register(NodeType.REGISTRY, new Identifier("spellcrafting:hit"), new EventEntityInteract(Spell.Event.HIT_ID));
 		Registry.register(NodeType.REGISTRY, new Identifier("spellcrafting:land"), new EventEntityInteract(Spell.Event.LAND_ID));
@@ -81,14 +81,14 @@ public class Spellcrafting implements ModInitializer {
 		{
 			Spell.Node start   = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:self")));
 			Spell.Node target  = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:target")));
-			Spell.Node raycast = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:raycast")));
+			Spell.Node beam    = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:beam")));
 			Spell.Node explode = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:explode")));
 
 			Multimap<Socket, Socket> nodes = HashMultimap.create();
-			nodes.put(new Socket(start, 0), new Socket(raycast, 0));
-			nodes.put(new Socket(target, 0), new Socket(raycast, 1));
+			nodes.put(new Socket(start, 0), new Socket(beam, 0));
+			nodes.put(new Socket(target, 0), new Socket(beam, 1));
 
-			nodes.put(new Socket(raycast, 0), new Socket(explode, 0));
+			nodes.put(new Socket(beam, 0), new Socket(explode, 0));
 
 			BOMB = new Spell(Sets.newHashSet(start, target), nodes);
 		}

@@ -94,5 +94,10 @@ public class TargetEntity implements Target {
     public boolean exists() {
         return getEntity() != null;
     }
+
+    @Override
+    public @NotNull Target withPos(Vec3d pos) {
+        return new TargetEntity(getEntity(), pos);
+    }
     
 }

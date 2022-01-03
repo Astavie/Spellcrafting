@@ -38,7 +38,7 @@ public class CharmExplode implements NodeCharm {
         DistancedTarget origin = (DistancedTarget) input[0];
 
         if (!spell.inRange(origin)) {
-            // TODO: Out of range particles
+            spell.onInvalidPosition(origin.getTarget().getPos());
             return new Object[0];
         }
 

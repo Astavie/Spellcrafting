@@ -36,13 +36,14 @@ public class CharmMomentum implements NodeCharm {
         DistancedTarget t1 = (DistancedTarget) input[0];
         DistancedTarget t2 = (DistancedTarget) input[1];
 
+        // TODO: this is a test. add ! afterwards
         if (!spell.inRange(t1)) {
-            // TODO: Out of range particles
+            spell.onInvalidPosition(t1.getTarget().getPos());
             return new Object[0];
         }
 
         if (!(t1.getTarget() instanceof TargetEntity)) {
-            // TODO: Not entity particles
+            spell.onInvalidPosition(t1.getTarget().getPos());
             return new Object[0];
         }
 
