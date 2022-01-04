@@ -6,7 +6,6 @@ import astavie.spellcrafting.api.spell.Spell;
 import astavie.spellcrafting.api.spell.SpellType;
 import astavie.spellcrafting.api.spell.node.NodeCharm;
 import astavie.spellcrafting.api.util.ItemList;
-import net.minecraft.item.Items;
 
 public class EventWaitFor implements NodeCharm {
 
@@ -31,9 +30,7 @@ public class EventWaitFor implements NodeCharm {
 
     @Override
     public @NotNull ItemList getComponents(@NotNull Spell.Node node) {
-        ItemList list = new ItemList();
-        list.addItem(Items.CLOCK, 0);
-        return list;
+        return new ItemList();
     }
 
     @Override

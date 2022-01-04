@@ -17,6 +17,7 @@ import net.minecraft.util.math.Vec3d;
 
 public class CharmAttract implements NodeCharm {
 
+    // TODO: Cooldown
     // TODO: Variable range
     private static final double RANGE = 10;
 

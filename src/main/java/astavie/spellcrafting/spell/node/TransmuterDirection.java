@@ -40,12 +40,17 @@ public class TransmuterDirection implements NodeTransmuter {
     public @NotNull Object[] transmute(@NotNull Spell spell, @NotNull Spell.ChannelNode node, @NotNull Object[] input) {
         DistancedTarget t1 = (DistancedTarget) input[0];
 
+        Direction dir = direction;
+        if (t1.getTarget() instanceof TargetBlock) {
+            dir = ((TargetBlock) t1.getTarget()).getSide();
+        }
+
         return new Object[] {
             new DistancedTarget(new TargetBlock(
                 t1.getTarget().getWorld(),
                 t1.getTarget().getBlock().offset(direction),
                 t1.getTarget().getPos().add(direction.getOffsetX(), direction.getOffsetY(), direction.getOffsetZ()),
-                direction
+                dir
             ), t1.getOrigin(), t1.getCaster())
         };
     }
