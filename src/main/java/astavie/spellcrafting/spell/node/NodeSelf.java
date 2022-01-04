@@ -29,8 +29,12 @@ public class NodeSelf implements NodeType {
     }
 
     @Override
-    public void apply(@NotNull Spell spell, @NotNull Spell.ChannelNode node) {
+    public void onOn(@NotNull Spell spell, @NotNull Spell.ChannelNode node) {
         spell.registerEvent(new Spell.Event(Spell.Event.SELF_ID, NbtByte.of((byte) node.channel().ordinal())), node);
+    }
+
+    @Override
+    public void onOff(@NotNull Spell spell, @NotNull Spell.ChannelNode node) {
     }
 
     @Override

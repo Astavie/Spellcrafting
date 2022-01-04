@@ -356,7 +356,7 @@ public class Spell {
             // TODO: API breach
             SpellState.getInstance().addSpell(this);
 
-            for (Node node : start) node.type.apply(this, new ChannelNode(node, color));
+            for (Node node : start) node.type.onOn(this, new ChannelNode(node, color));
             onEvent(new Event(Event.SELF_ID, NbtByte.of((byte) color.ordinal())), caster.asTarget());
             onEvent(event, target);
 
@@ -434,7 +434,11 @@ public class Spell {
         else output.put(out, returnValue);
 
         for (Socket in : nodes.get(new Socket(out.node, out.index))) {
-            in.node.type.apply(this, new ChannelNode(in.node, out.channel));
+            if (returnValue == null) {
+                in.node.type.onOff(this, new ChannelNode(in.node, out.channel));
+            } else {
+                in.node.type.onOn(this, new ChannelNode(in.node, out.channel));
+            }
         }
     }
 

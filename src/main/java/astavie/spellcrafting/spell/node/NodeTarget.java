@@ -34,15 +34,22 @@ public class NodeTarget implements NodeType {
     }
 
     @Override
-    public void apply(@NotNull Spell spell, @NotNull Spell.ChannelNode node) {
+    public void onOn(@NotNull Spell spell, @NotNull Spell.ChannelNode node) {
         DistancedTarget target = (DistancedTarget) spell.getInput(node)[0];
         if (target != null) {
             Caster caster = target.getTarget().asCaster();
             if (caster != null) {
-                spell.registerEvent(new Spell.Event(Spell.Event.TARGET_ID, NbtHelper.fromUuid(caster.getUUID())), node);
+               spell.registerEvent(new Spell.Event(Spell.Event.TARGET_ID, NbtHelper.fromUuid(caster.getUUID())), node);
             }
         }
 
+        spell.cancelEvents(node);
+        spell.apply(node, new Object[node.node().getSize()]);
+    }
+
+    @Override
+    public void onOff(@NotNull Spell spell, @NotNull Spell.ChannelNode node) {
+        spell.cancelEvents(node);
         spell.apply(node, new Object[node.node().getSize()]);
     }
 

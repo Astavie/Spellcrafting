@@ -20,9 +20,11 @@ import net.minecraft.util.math.BlockPos;
 public class CharmSummon implements NodeCharm {
 
     private final EntityType<?> type;
+    private final ItemList components;
 
-    public CharmSummon(EntityType<?> type) {
+    public CharmSummon(EntityType<?> type, ItemList components) {
         this.type = type;
+        this.components = components;
     }
 
     @Override
@@ -37,7 +39,7 @@ public class CharmSummon implements NodeCharm {
 
     @Override
     public @NotNull ItemList getComponents(@NotNull Spell.Node node) {
-        return new ItemList(); // TODO: Components
+        return components;
     }
 
     @Override
@@ -61,6 +63,7 @@ public class CharmSummon implements NodeCharm {
 
         Target target = new TargetEntity(e, t1.getTarget().getPos());
 
+        // Attune if attunable
         Attunable attunable = Attunable.ENTITY_ATTUNABLE.find(e, null);
         Attunable caster = t1.getCaster().asAttunable();
         if (attunable != null && caster != null) {

@@ -9,7 +9,7 @@ import astavie.spellcrafting.api.spell.Spell;
 public interface NodeEvent<T> extends NodeType {
 
     @Override
-    default void apply(@NotNull Spell spell, @NotNull Spell.ChannelNode node) {
+    default void onOn(@NotNull Spell spell, @NotNull Spell.ChannelNode node) {
         Object[] input = spell.getInput(node);
         if (!ArrayUtils.contains(input, null)) {
             Spell.Event event = getEvent(spell, node, input);
@@ -22,6 +22,12 @@ public interface NodeEvent<T> extends NodeType {
             spell.cancelEvents(node);
         }
 
+        spell.apply(node, new Object[getReturnTypes(spell, node.node()).length]);
+    }
+
+    @Override
+    default void onOff(@NotNull Spell spell, @NotNull Spell.ChannelNode node) {
+        spell.cancelEvents(node);
         spell.apply(node, new Object[getReturnTypes(spell, node.node()).length]);
     }
 

@@ -17,6 +17,8 @@ import net.minecraft.block.CampfireBlock;
 import net.minecraft.block.CandleBlock;
 import net.minecraft.block.CandleCakeBlock;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.projectile.ArrowEntity;
+import net.minecraft.item.Items;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.state.property.Properties;
@@ -28,7 +30,7 @@ public class CharmIgnite implements NodeCharm {
 
     @Override
     public @NotNull ItemList getComponents(@NotNull Spell.Node node) {
-        return new ItemList(); // TODO: Components
+        return new ItemList().addItem(Items.BLAZE_POWDER, 1);
     }
 
     @Override
@@ -52,9 +54,15 @@ public class CharmIgnite implements NodeCharm {
 
         Target target = d.getTarget();
 
-        // Entity
         if (target instanceof TargetEntity) {
             Entity entity = ((TargetEntity) target).getEntity();
+            // Arrow
+            if (entity instanceof ArrowEntity) {
+                ((ArrowEntity) entity).setOnFireFor(100);
+                return new Object[0];
+            }
+
+            // Entity
             if (!entity.isFireImmune()) {
                 target.getWorld().playSoundFromEntity(null, entity, SoundEvents.ITEM_FIRECHARGE_USE, SoundCategory.BLOCKS, 1.0f, (target.getWorld().getRandom().nextFloat() - target.getWorld().getRandom().nextFloat()) * 0.2f + 1.0f);
                 entity.setOnFireFor(5);

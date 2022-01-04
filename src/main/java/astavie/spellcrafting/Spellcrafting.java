@@ -30,6 +30,7 @@ import astavie.spellcrafting.spell.node.CharmSummon;
 import astavie.spellcrafting.spell.node.CharmLaunch;
 import astavie.spellcrafting.spell.node.CharmBeam;
 import astavie.spellcrafting.spell.node.EventEntityInteract;
+import astavie.spellcrafting.spell.node.EventRepeat;
 import astavie.spellcrafting.spell.node.EventWait;
 import astavie.spellcrafting.spell.node.EventWaitFor;
 import astavie.spellcrafting.spell.node.NodeSelf;
@@ -70,6 +71,7 @@ public class Spellcrafting implements ModInitializer {
 	public static Spell HULK_SMASH;
 	public static Spell FIREWORK;
 	public static Spell ATTRACTIVE_CAT;
+	public static Spell ARROW_STORM;
 
 	@Override
 	public void onInitialize() {
@@ -77,7 +79,7 @@ public class Spellcrafting implements ModInitializer {
 		Registry.register(NodeType.REGISTRY, new Identifier("spellcrafting:explode"), new CharmExplode());
 		Registry.register(NodeType.REGISTRY, new Identifier("spellcrafting:ignite"), new CharmIgnite());
 		Registry.register(NodeType.REGISTRY, new Identifier("spellcrafting:attune"), new CharmAttune());
-		Registry.register(NodeType.REGISTRY, new Identifier("spellcrafting:cat"), new CharmSummon(EntityType.CAT));
+		Registry.register(NodeType.REGISTRY, new Identifier("spellcrafting:cat"), new CharmSummon(EntityType.CAT, new ItemList().addItem(Items.STRING, 2)));
 		Registry.register(NodeType.REGISTRY, new Identifier("spellcrafting:launch"), new CharmLaunch());
 		Registry.register(NodeType.REGISTRY, new Identifier("spellcrafting:beam"), new CharmBeam());
 		Registry.register(NodeType.REGISTRY, new Identifier("spellcrafting:arrow"), new CharmArrow());
@@ -87,6 +89,7 @@ public class Spellcrafting implements ModInitializer {
 		Registry.register(NodeType.REGISTRY, new Identifier("spellcrafting:land"), new EventEntityInteract(Spell.Event.LAND_ID, new ItemList().addItem(Items.FEATHER)));
 		Registry.register(NodeType.REGISTRY, new Identifier("spellcrafting:wait"), new EventWait());
 		Registry.register(NodeType.REGISTRY, new Identifier("spellcrafting:waitfor"), new EventWaitFor());
+		Registry.register(NodeType.REGISTRY, new Identifier("spellcrafting:repeat"), new EventRepeat());
 
 		Registry.register(NodeType.REGISTRY, new Identifier("spellcrafting:up"), new TransmuterDirection(Direction.UP));
 
@@ -201,6 +204,25 @@ public class Spellcrafting implements ModInitializer {
 
 			ATTRACTIVE_CAT = new Spell(Sets.newHashSet(self), nodes);
 		}
+		{
+			Spell.Node self    = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:self")));
+			Spell.Node repeat  = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:repeat")));
+			Spell.Node target  = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:target")));
+			Spell.Node arrow   = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:arrow")));
+			Spell.Node ignite  = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:ignite")));
+
+			Multimap<Socket, Socket> nodes = HashMultimap.create();
+			nodes.put(new Socket(self, 0), new Socket(repeat, 0));
+
+			nodes.put(new Socket(repeat, 0), new Socket(target, 0));
+
+			nodes.put(new Socket(repeat, 0), new Socket(arrow, 0));
+			nodes.put(new Socket(target, 0), new Socket(arrow, 1));
+
+			nodes.put(new Socket(arrow, 0), new Socket(ignite, 0));
+
+			ARROW_STORM = new Spell(Sets.newHashSet(self), nodes);
+		}
 		
 		// Items
 		ItemTestSpell bomb = new ItemTestSpell(Spell.serialize(BOMB));
@@ -208,12 +230,14 @@ public class Spellcrafting implements ModInitializer {
 		ItemTestSpell explodingKittens = new ItemTestSpell(Spell.serialize(EXPLODING_KITTENS));
 		ItemTestSpell firework = new ItemTestSpell(Spell.serialize(FIREWORK));
 		ItemTestSpell attractiveCat = new ItemTestSpell(Spell.serialize(ATTRACTIVE_CAT));
+		ItemTestSpell arrowStorm = new ItemTestSpell(Spell.serialize(ARROW_STORM));
 
 		Registry.register(Registry.ITEM, new Identifier("spellcrafting", "bomb"), bomb);
 		Registry.register(Registry.ITEM, new Identifier("spellcrafting", "hulk_smash"), hulkSmash);
 		Registry.register(Registry.ITEM, new Identifier("spellcrafting", "exploding_kittens"), explodingKittens);
 		Registry.register(Registry.ITEM, new Identifier("spellcrafting", "firework"), firework);
 		Registry.register(Registry.ITEM, new Identifier("spellcrafting", "attractive_cat"), attractiveCat);
+		Registry.register(Registry.ITEM, new Identifier("spellcrafting", "arrow_storm"), arrowStorm);
 
 		Item mirror = new ItemMirror();
 
@@ -237,7 +261,7 @@ public class Spellcrafting implements ModInitializer {
 				state.addSpell(spell);
 			}
 			return spell;
-		}, bomb, hulkSmash, explodingKittens, firework, attractiveCat);
+		}, bomb, hulkSmash, explodingKittens, firework, attractiveCat, arrowStorm);
 
 		// Events
 		ServerLifecycleEvents.SERVER_STARTING.register(s -> ServerUtils.server = s);

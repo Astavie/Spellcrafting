@@ -20,7 +20,9 @@ public interface NodeType {
 
     @NotNull ItemList getComponents(@NotNull Spell.Node node);
 
-    void apply(@NotNull Spell spell, @NotNull Spell.ChannelNode node);
+    void onOn(@NotNull Spell spell, @NotNull Spell.ChannelNode node);
+
+    void onOff(@NotNull Spell spell, @NotNull Spell.ChannelNode node);
 
     default void onEvent(@NotNull Spell spell, @NotNull Spell.ChannelNode node, @NotNull Spell.Event type, @Nullable Object context) {
     }
