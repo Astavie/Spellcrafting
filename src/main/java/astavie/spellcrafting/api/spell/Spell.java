@@ -405,15 +405,16 @@ public class Spell {
             })) continue;
 
             // Use components
-            Transaction transaction = Transaction.openOuter();
-            ItemList missing = caster.useComponents(components, transaction);
-            if (!missing.isEmpty()) {
-                transaction.abort();
-                return false;
-            }
+            if (!caster.isCreative()) try(Transaction transaction = Transaction.openOuter()) {
+                ItemList missing = caster.useComponents(components, transaction);
+                if (!missing.isEmpty()) {
+                    transaction.abort();
+                    return false;
+                }
 
-            // Cast spell!
-            transaction.commit();
+                // Cast spell!
+                transaction.commit();
+            }
 
             // TODO: API breach
             SpellState.getInstance().addSpell(this);

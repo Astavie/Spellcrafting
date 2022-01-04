@@ -24,6 +24,8 @@ public interface Caster {
 
     @NotNull Storage<ItemVariant> getComponentStorage();
 
+    boolean isCreative();
+
     @NotNull Attunable asAttunable();
 
     double getRange();

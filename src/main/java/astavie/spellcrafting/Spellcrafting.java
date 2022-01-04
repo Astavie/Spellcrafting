@@ -34,8 +34,8 @@ import astavie.spellcrafting.spell.node.EventEntityInteract;
 import astavie.spellcrafting.spell.node.EventRepeat;
 import astavie.spellcrafting.spell.node.EventWait;
 import astavie.spellcrafting.spell.node.EventWaitFor;
-import astavie.spellcrafting.spell.node.NodeSelf;
-import astavie.spellcrafting.spell.node.NodeTarget;
+import astavie.spellcrafting.spell.node.EventCast;
+import astavie.spellcrafting.spell.node.EventTarget;
 import astavie.spellcrafting.spell.node.TransmuterDirection;
 import astavie.spellcrafting.spell.node.TransmuterView;
 import net.fabricmc.api.ModInitializer;
@@ -86,6 +86,8 @@ public class Spellcrafting implements ModInitializer {
 		Registry.register(NodeType.REGISTRY, new Identifier("spellcrafting:arrow"), new CharmArrow());
 		Registry.register(NodeType.REGISTRY, new Identifier("spellcrafting:attract"), new CharmAttract());
 
+		Registry.register(NodeType.REGISTRY, new Identifier("spellcrafting:cast"), new EventCast());
+		Registry.register(NodeType.REGISTRY, new Identifier("spellcrafting:target"), new EventTarget());
 		Registry.register(NodeType.REGISTRY, new Identifier("spellcrafting:hit"), new EventEntityInteract(Spell.Event.HIT_ID, new ItemList().addItem(Items.TARGET)));
 		Registry.register(NodeType.REGISTRY, new Identifier("spellcrafting:land"), new EventEntityInteract(Spell.Event.LAND_ID, new ItemList().addItem(Items.FEATHER)));
 		Registry.register(NodeType.REGISTRY, new Identifier("spellcrafting:wait"), new EventWait());
@@ -95,27 +97,24 @@ public class Spellcrafting implements ModInitializer {
 		Registry.register(NodeType.REGISTRY, new Identifier("spellcrafting:up"), new TransmuterDirection(Direction.UP));
 		Registry.register(NodeType.REGISTRY, new Identifier("spellcrafting:view"), new TransmuterView());
 
-		Registry.register(NodeType.REGISTRY, new Identifier("spellcrafting:self"), new NodeSelf());
-		Registry.register(NodeType.REGISTRY, new Identifier("spellcrafting:target"), new NodeTarget());
-
 		{
-			Spell.Node self    = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:self")));
+			Spell.Node cast    = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:cast")));
 			Spell.Node target  = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:target")));
 			Spell.Node beam    = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:beam")));
 			Spell.Node explode = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:explode")));
 
 			Multimap<Socket, Socket> nodes = HashMultimap.create();
-			nodes.put(new Socket(self, 0), new Socket(target, 0));
+			nodes.put(new Socket(cast, 0), new Socket(target, 0));
 
-			nodes.put(new Socket(self, 0), new Socket(beam, 0));
+			nodes.put(new Socket(cast, 0), new Socket(beam, 0));
 			nodes.put(new Socket(target, 0), new Socket(beam, 1));
 
 			nodes.put(new Socket(beam, 0), new Socket(explode, 0));
 
-			BOMB = new Spell(Sets.newHashSet(self), nodes);
+			BOMB = new Spell(Sets.newHashSet(cast), nodes);
 		}
 		{
-			Spell.Node self    = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:self")));
+			Spell.Node cast    = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:cast")));
 			Spell.Node target  = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:target")), 2);
 			
 			Spell.Node cat     = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:cat")));
@@ -124,9 +123,9 @@ public class Spellcrafting implements ModInitializer {
 			Spell.Node explode = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:explode")));
 
 			Multimap<Socket, Socket> nodes = HashMultimap.create();
-			nodes.put(new Socket(self, 0), new Socket(target, 0));
+			nodes.put(new Socket(cast, 0), new Socket(target, 0));
 
-			nodes.put(new Socket(self, 0), new Socket(cat, 0));
+			nodes.put(new Socket(cast, 0), new Socket(cat, 0));
 
 			nodes.put(new Socket(cat, 0), new Socket(launch, 0));
 			nodes.put(new Socket(target, 0), new Socket(launch, 1));
@@ -136,10 +135,10 @@ public class Spellcrafting implements ModInitializer {
 
 			nodes.put(new Socket(waitfor, 0), new Socket(explode, 0));
 
-			EXPLODING_KITTENS = new Spell(Sets.newHashSet(self), nodes);
+			EXPLODING_KITTENS = new Spell(Sets.newHashSet(cast), nodes);
 		}
 		{
-			Spell.Node self    = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:self")));
+			Spell.Node cast    = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:cast")));
 			Spell.Node target  = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:target")));
 			Spell.Node up      = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:up")));
 			Spell.Node launch  = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:launch")));
@@ -149,9 +148,9 @@ public class Spellcrafting implements ModInitializer {
 			Spell.Node explode = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:explode")));
 
 			Multimap<Socket, Socket> nodes = HashMultimap.create();
-			nodes.put(new Socket(self, 0), new Socket(target, 0));
+			nodes.put(new Socket(cast, 0), new Socket(target, 0));
 
-			nodes.put(new Socket(self, 0), new Socket(attune, 0));
+			nodes.put(new Socket(cast, 0), new Socket(attune, 0));
 			nodes.put(new Socket(target, 0), new Socket(attune, 1));
 
 			nodes.put(new Socket(target, 0), new Socket(up, 0));
@@ -164,33 +163,33 @@ public class Spellcrafting implements ModInitializer {
 
 			nodes.put(new Socket(wait2, 0), new Socket(explode, 0));
 
-			FIREWORK = new Spell(Sets.newHashSet(self), nodes);
+			FIREWORK = new Spell(Sets.newHashSet(cast), nodes);
 		}
 		{
-			Spell.Node self    = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:self")));
+			Spell.Node cast    = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:cast")));
 			Spell.Node target  = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:target")), 2);
 			Spell.Node cat     = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:cat")));
 			Spell.Node attract = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:attract")));
 
 			Multimap<Socket, Socket> nodes = HashMultimap.create();
-			nodes.put(new Socket(self, 0), new Socket(target, 0));
+			nodes.put(new Socket(cast, 0), new Socket(target, 0));
 
 			nodes.put(new Socket(target, 1), new Socket(cat, 0));
 
 			nodes.put(new Socket(cat, 0), new Socket(attract, 0));
 			nodes.put(new Socket(target, 0), new Socket(attract, 1));
 
-			ATTRACTIVE_CAT = new Spell(Sets.newHashSet(self), nodes);
+			ATTRACTIVE_CAT = new Spell(Sets.newHashSet(cast), nodes);
 		}
 		{
-			Spell.Node self    = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:self")));
+			Spell.Node cast    = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:cast")));
 			Spell.Node repeat  = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:repeat")));
 			Spell.Node view    = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:view")));
 			Spell.Node arrow   = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:arrow")));
 			Spell.Node ignite  = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:ignite")));
 
 			Multimap<Socket, Socket> nodes = HashMultimap.create();
-			nodes.put(new Socket(self, 0), new Socket(repeat, 0));
+			nodes.put(new Socket(cast, 0), new Socket(repeat, 0));
 
 			nodes.put(new Socket(repeat, 0), new Socket(view, 0));
 
@@ -199,7 +198,7 @@ public class Spellcrafting implements ModInitializer {
 
 			nodes.put(new Socket(arrow, 0), new Socket(ignite, 0));
 
-			ARROW_STORM = new Spell(Sets.newHashSet(self), nodes);
+			ARROW_STORM = new Spell(Sets.newHashSet(cast), nodes);
 		}
 		
 		// Items

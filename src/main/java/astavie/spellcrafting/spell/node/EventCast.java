@@ -11,7 +11,7 @@ import astavie.spellcrafting.api.spell.target.Target;
 import astavie.spellcrafting.api.util.ItemList;
 import net.minecraft.nbt.NbtByte;
 
-public class NodeSelf implements NodeType {
+public class EventCast implements NodeType {
 
     @Override
     public @NotNull SpellType<?>[] getParameters(@NotNull Spell.Node node) {

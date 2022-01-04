@@ -11,8 +11,10 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.LiteralText;
+import net.minecraft.text.Style;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Pair;
+import net.minecraft.util.Rarity;
 import net.minecraft.util.TypedActionResult;
 import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.hit.HitResult;
@@ -21,7 +23,7 @@ import net.minecraft.world.World;
 public class ItemSpell extends Item {
 
     public ItemSpell() {
-        super(new FabricItemSettings().group(ItemGroup.MISC).equipmentSlot(stack -> EquipmentSlot.OFFHAND).maxCount(1));
+        super(new FabricItemSettings().group(ItemGroup.MISC).rarity(Rarity.RARE).equipmentSlot(stack -> EquipmentSlot.OFFHAND).maxCount(1));
     }
 
     @Override
@@ -44,7 +46,7 @@ public class ItemSpell extends Item {
     private ItemStack getStack(Spell spell, String name) {
         ItemStack stack = new ItemStack(this);
         stack.setSubNbt("spellcrafting:spell", Spell.serialize(spell));
-        stack.setCustomName(new LiteralText(name));
+        stack.setCustomName(new LiteralText(name).setStyle(Style.EMPTY.withItalic(false)));
         return stack;
     }
     

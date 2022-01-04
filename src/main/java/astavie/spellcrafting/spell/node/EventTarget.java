@@ -12,7 +12,7 @@ import astavie.spellcrafting.api.spell.target.Target;
 import astavie.spellcrafting.api.util.ItemList;
 import net.minecraft.nbt.NbtHelper;
 
-public class NodeTarget implements NodeType {
+public class EventTarget implements NodeType {
 
     // TODO: Targets of other entities
 

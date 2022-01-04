@@ -22,6 +22,11 @@ public record CasterPlayer(PlayerEntity player) implements Caster {
     }
 
     @Override
+    public boolean isCreative() {
+        return player.isCreative();
+    }
+
+    @Override
     public @NotNull Storage<ItemVariant> getComponentStorage() {
         return PlayerInventoryStorage.of(player);
     }
