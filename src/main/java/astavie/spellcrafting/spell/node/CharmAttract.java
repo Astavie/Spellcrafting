@@ -17,8 +17,11 @@ import net.minecraft.util.math.Vec3d;
 
 public class CharmAttract implements NodeCharm {
 
-    // TODO: Cooldown
+    // TODO: Variable time
     // TODO: Variable range
+    // TODO: Variable speed
+
+    private static final int TICKS = 40;
     private static final double RANGE = 10;
 
     @Override
@@ -38,28 +41,14 @@ public class CharmAttract implements NodeCharm {
 
     @Override
     public @NotNull Object[] cast(@NotNull Spell spell, @NotNull Spell.ChannelNode node, @NotNull Object[] input) {
-        DistancedTarget t1 = (DistancedTarget) input[0];
-        DistancedTarget t2 = (DistancedTarget) input[1];
-
-        if (!t1.inRange()) {
-            spell.onInvalidPosition(t1.getTarget().getWorld(), t1.getTarget().getPos());
-            return new Object[0];
-        }
-
-        if (!(t2.getTarget() instanceof TargetEntity) || t2.getTarget().getPos().squaredDistanceTo(t1.getTarget().getPos()) > RANGE * RANGE) {
-            spell.onInvalidPosition(t2.getTarget().getWorld(), t2.getTarget().getPos());
-            return new Object[0];
-        }
-
-        effect(((TargetEntity) t2.getTarget()).getEntity(), t1.getTarget().getPos());
-        spell.schedule(node);
+        spell.scheduleFor(node, TICKS);
         return new Object[0];
     }
 
     private void effect(Entity e, Vec3d target) {
         double existingVel = e.getVelocity().length();
 
-        Vec3d dir = target.subtract(e.getPos()).normalize().multiply(Math.max(0.2 - existingVel, 0)); // TODO: Variable speed
+        Vec3d dir = target.subtract(e.getPos()).normalize().multiply(Math.max(0.2 - existingVel, 0));
 
         e.addVelocity(dir.x, dir.y, dir.z);
         ((ServerWorld) e.world).getChunkManager().sendToNearbyPlayers(e, new EntityVelocityUpdateS2CPacket(e));
@@ -73,21 +62,25 @@ public class CharmAttract implements NodeCharm {
         DistancedTarget t2 = (DistancedTarget) input[1];
 
         if (t1 == null || t2 == null) {
+            spell.cancelEvents(node);
             return;
         }
 
-        if (!t1.inRange()) {
+        if (!spell.existsAndFirstInRange(t1, t2, true)) {
+            return;
+        }
+
+        if (
+            !(t2.getTarget() instanceof TargetEntity) ||
+            t2.getTarget().getPos().squaredDistanceTo(t1.getTarget().getPos()) > RANGE * RANGE
+        ) {
             spell.onInvalidPosition(t1.getTarget().getWorld(), t1.getTarget().getPos());
-            return;
-        }
-
-        if (!(t2.getTarget() instanceof TargetEntity) || t2.getTarget().getPos().squaredDistanceTo(t1.getTarget().getPos()) > RANGE * RANGE) {
             spell.onInvalidPosition(t2.getTarget().getWorld(), t2.getTarget().getPos());
+            spell.cancelEvents(node);
             return;
         }
 
         effect(((TargetEntity) t2.getTarget()).getEntity(), t1.getTarget().getPos());
-        spell.schedule(node);
     }
     
 }

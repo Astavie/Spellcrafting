@@ -16,6 +16,7 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.entity.SpawnReason;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
 
 public class CharmSummon implements NodeCharm {
 
@@ -46,15 +47,17 @@ public class CharmSummon implements NodeCharm {
     public @NotNull Object[] cast(@NotNull Spell spell, @NotNull Spell.ChannelNode node, @NotNull Object[] input) {
         DistancedTarget t1 = (DistancedTarget) input[0];
 
-        if (!t1.inRange()) {
-            spell.onInvalidPosition(t1.getTarget().getWorld(), t1.getTarget().getPos());
-            return new Object[] { null };
+        if (!spell.existsAndInRange(t1)) {
+            return new Object[1];
         }
 
         BlockPos pos = t1.getTarget().getBlock();
         if (!t1.getTarget().getWorld().isAir(pos) && t1.getTarget() instanceof TargetBlock) {
-            pos = pos.offset(((TargetBlock) t1.getTarget()).getSide());
+            Direction dir = ((TargetBlock) t1.getTarget()).getSide();
+            if (dir != null) pos = pos.offset(dir);
         }
+
+        // TODO: Particles
 
         Entity e = type.spawn((ServerWorld) t1.getTarget().getWorld(), null, null, null, pos, SpawnReason.MOB_SUMMONED, false, false);
         if (e == null) {

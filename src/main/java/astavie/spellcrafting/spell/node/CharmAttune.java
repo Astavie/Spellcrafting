@@ -30,17 +30,11 @@ public class CharmAttune implements NodeCharm {
         DistancedTarget t1 = (DistancedTarget) input[0];
         DistancedTarget t2 = (DistancedTarget) input[1];
 
-        if (!t1.inRange() || !t2.inRange()) {
-            spell.onInvalidPosition(t1.getTarget().getWorld(), t1.getTarget().getPos());
-            spell.onInvalidPosition(t2.getTarget().getWorld(), t2.getTarget().getPos());
-            return new Object[] { null, null };
+        if (!spell.existsAndInRange(t1, t2)) {
+            return new Object[2];
         }
 
-        if (t1.getTarget().asAttunable() == null || t2.getTarget().asAttunable() == null) {
-            spell.onInvalidPosition(t1.getTarget().getWorld(), t1.getTarget().getPos());
-            spell.onInvalidPosition(t2.getTarget().getWorld(), t2.getTarget().getPos());
-            return new Object[] { null, null };
-        }
+        // TODO: Particles
 
         // Attune!
         t2.getTarget().asAttunable().attuneTo(t1.getTarget().asAttunable());

@@ -14,6 +14,8 @@ public class EventRepeat implements NodeCharm {
     // TODO: Variable amount
     // TODO: Component factor
 
+    private static final int AMOUNT = 4;
+
     @Override
     public @NotNull SpellType<?>[] getParameters(@NotNull Spell.Node node) {
         return new SpellType<?>[] { SpellType.ANY };
@@ -32,18 +34,16 @@ public class EventRepeat implements NodeCharm {
 
     @Override
     public @NotNull Object[] cast(@NotNull Spell spell, @NotNull Spell.ChannelNode node, @NotNull Object[] input) {
-        spell.schedule(node);
-        return input;
+        spell.scheduleFor(node, AMOUNT * 2 - 1);
+        return new Object[1];
     }
 
     @Override
     public void onEvent(@NotNull Spell spell, @NotNull Spell.ChannelNode node, @NotNull Spell.Event type, @Nullable Object context) {
-        spell.schedule(node);
-        
         if (spell.getOutput(new Spell.ChannelSocket(node.node(), 0, node.channel())) == null) {
             spell.apply(node, spell.getInput(node));
         } else {
-            spell.apply(node, new Object[] { null });
+            spell.apply(node, new Object[1]);
         }
     }
     

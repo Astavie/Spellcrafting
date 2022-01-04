@@ -2,6 +2,7 @@ package astavie.spellcrafting.api.spell;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -13,6 +14,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import astavie.spellcrafting.api.spell.node.NodeType;
+import astavie.spellcrafting.api.spell.target.DistancedTarget;
 import astavie.spellcrafting.api.spell.target.Target;
 import astavie.spellcrafting.api.util.ItemList;
 import astavie.spellcrafting.api.util.ServerUtils;
@@ -81,6 +83,7 @@ public class Spell {
     private final Map<Socket, Socket> inverse = new HashMap<>();
     private final Map<ChannelSocket, Object> output = new HashMap<>();
     private final Multimap<Event, ChannelNode> events = HashMultimap.create();
+    private final Map<ChannelNode, Long> ticking = new HashMap<>();
     private final ItemList components = new ItemList();
 
     private Spell(UUID uuid) {
@@ -103,7 +106,7 @@ public class Spell {
         calculateComponents();
     }
 
-    public void markDirty() {
+    private void markDirty() {
         SpellState.getInstance().markDirty();
     }
 
@@ -163,6 +166,9 @@ public class Spell {
                     if (inverseEvents.containsKey(channel)) {
                         cmp.putString(color.getName() + "_event", inverseEvents.get(channel).eventType.toString());
                         cmp.put(color.getName() + "_arg", inverseEvents.get(channel).argument);
+                    }
+                    if (spell.ticking.containsKey(channel)) {
+                        cmp.putLong(color.getName() + "_ticks", spell.ticking.get(channel));
                     }
                 }
 
@@ -235,9 +241,13 @@ public class Spell {
             }
 
             for (DyeColor color : DyeColor.values()) {
+                ChannelNode channel = new ChannelNode(node, color);
                 if (cmp.contains(color.getName() + "_event")) {
                     Event event = new Event(new Identifier(cmp.getString(color.getName() + "_event")), cmp.get(color.getName() + "_arg"));
-                    spell.events.put(event, new ChannelNode(node, color));
+                    spell.events.put(event, channel);
+                }
+                if (cmp.contains(color.getName() + "_ticks")) {
+                    spell.ticking.put(channel, cmp.getLong(color.getName() + "_ticks"));
                 }
             }
         }
@@ -284,6 +294,55 @@ public class Spell {
 
     public void onInvalidPosition(ServerWorld world, Vec3d pos) {
         world.spawnParticles(ParticleTypes.SMOKE, pos.x, pos.y, pos.z, 6, 0.2, 0.2, 0.2, 0.01);
+    }
+
+    public boolean existsAndInRange(DistancedTarget target) {
+        if (!target.getTarget().exists()) {
+            return false;
+        }
+
+        if (!target.inRange()) {
+            onInvalidPosition(target.getTarget().getWorld(), target.getTarget().getPos());
+            return false;
+        }
+
+        return true;
+    }
+
+    public boolean existsAndInRange(DistancedTarget a, DistancedTarget b) {
+        if (!existsAndInRange(a)) {
+            if (existsAndInRange(b)) {
+                onInvalidPosition(b.getTarget().getWorld(), b.getTarget().getPos());
+            }
+            return false;
+        }
+
+        if (!existsAndInRange(b)) {
+            onInvalidPosition(a.getTarget().getWorld(), a.getTarget().getPos());
+            return false;
+        }
+
+        return true;
+    }
+
+    public boolean existsAndFirstInRange(DistancedTarget origin, DistancedTarget target, boolean particleOnTarget) {
+        if (!origin.getTarget().exists()) {
+            if (particleOnTarget && target.getTarget().exists()) {
+                onInvalidPosition(target.getTarget().getWorld(), target.getTarget().getPos());
+            }
+            return false;
+        } else if (!target.getTarget().exists()) {
+            onInvalidPosition(origin.getTarget().getWorld(), origin.getTarget().getPos());
+            return false;
+        }
+
+        if (!origin.inRange() || origin.getTarget().getWorld() != target.getTarget().getWorld()) {
+            onInvalidPosition(origin.getTarget().getWorld(), origin.getTarget().getPos());
+            if (particleOnTarget) onInvalidPosition(target.getTarget().getWorld(), target.getTarget().getPos());
+            return false;
+        }
+
+        return true;
     }
 
     private void continueFactor(Set<Node> total, Set<Node> blacklist, Node node) {
@@ -386,10 +445,11 @@ public class Spell {
 
     public void cancelEvents(@NotNull ChannelNode handler) {
         events.values().remove(handler);
+        ticking.remove(handler);
     }
 
     public void onEvent(@NotNull Event event, Object context) {
-        if (event.eventType == Event.TICK_ID && events.isEmpty()) {
+        if (event.eventType == Event.TICK_ID && events.isEmpty() && ticking.isEmpty()) {
             end();
             return;
         }
@@ -398,6 +458,18 @@ public class Spell {
             node.node.type.onEvent(this, node, event, context);
         }
         if (event.eventType == Event.TICK_ID) {
+            long time = ((NbtLong) event.argument).longValue();
+
+            for (Iterator<Map.Entry<ChannelNode, Long>> it = ticking.entrySet().iterator(); it.hasNext();) {
+                Map.Entry<ChannelNode, Long> e = it.next();
+                if (time >= e.getValue()) it.remove();
+
+                // 2 because redstone ticks
+                if ((time & 1) == (e.getValue() & 1)) {
+                    e.getKey().node.type.onEvent(this, e.getKey(), event, context);
+                }
+            }
+
             eventsThisTick.clear();
         } else {
             eventsThisTick.put(event, context);
@@ -411,22 +483,55 @@ public class Spell {
         registerEvent(new Event(Event.TICK_ID, NbtLong.of(ServerUtils.getTime() + 2)), handler);
     }
 
+    public void scheduleFor(@NotNull ChannelNode handler, long amount) {
+        // 2 because redstone ticks
+        cancelEvents(handler);
+        ticking.put(handler, ServerUtils.getTime() + amount * 2);
+    }
+
     public @NotNull Object[] getInput(@NotNull ChannelNode node) {
         SpellType<?>[] parameters = node.node.type.getParameters(node.node);
         Object[] ret = new Object[parameters.length];
         for (int i = 0; i < parameters.length; i++) {
             Socket out = inverse.get(new Socket(node.node, i));
             ret[i] = out == null ? null : output.get(new ChannelSocket(out.node, out.index, node.channel));
-            if (ret[i] != null && !exists(getActualInputType(new Socket(node.node, i)), ret[i])) {
-                ret[i] = null;
-            }
         }
         return ret;
     }
 
-    @SuppressWarnings("unchecked")
-    private static <T> boolean exists(SpellType<T> type, Object o) {
-        return type.exists((T) o);
+    private void processPending() {
+        while (!pendingOn.isEmpty() || !pendingOff.isEmpty()) {
+            Set<ChannelNode> current = new HashSet<>();
+            current.addAll(pendingOn);
+            current.addAll(pendingOff);
+
+            outer:
+            for (ChannelNode node : current) {
+                // check if dependencies are not pending
+                int parameters = node.node.type.getParameters(node.node).length;
+                for (int i = 0; i < parameters; i++) {
+                    Socket out = inverse.get(new Socket(node.node, i));
+                    if (out != null) {
+                        ChannelNode prev = new ChannelNode(out.node, node.channel);
+                        // TODO: If nodes output on multiple channels this does not work
+                        if (pendingOn.contains(prev) || pendingOff.contains(prev)) {
+                            continue outer;
+                        }
+                    }
+                }
+
+                // start!
+                if (pendingOn.contains(node)) {
+                    node.node.type.onOn(this, node);
+                } else {
+                    node.node.type.onOff(this, node);
+                }
+
+                // remove
+                pendingOn.remove(node);
+                pendingOff.remove(node);
+            }
+        }
     }
 
     public void apply(@NotNull ChannelSocket out, @Nullable Object returnValue) {
@@ -447,40 +552,6 @@ public class Spell {
                 pendingOff.add(node);
             } else {
                 pendingOn.add(node);
-            }
-        }
-    }
-
-    private void processPending() {
-        while (!pendingOn.isEmpty() || !pendingOff.isEmpty()) {
-            Set<ChannelNode> current = new HashSet<>();
-            current.addAll(pendingOn);
-            current.addAll(pendingOff);
-
-            outer:
-            for (ChannelNode node : current) {
-                // check if dependencies are not pending
-                int parameters = node.node.type.getParameters(node.node).length;
-                for (int i = 0; i < parameters; i++) {
-                    Socket out = inverse.get(new Socket(node.node, i));
-                    if (out != null) {
-                        ChannelNode prev = new ChannelNode(out.node, node.channel);
-                        if (pendingOn.contains(prev) || pendingOff.contains(prev)) {
-                            continue outer;
-                        }
-                    }
-                }
-
-                // start!
-                if (pendingOn.contains(node)) {
-                    node.node.type.onOn(this, node);
-                } else {
-                    node.node.type.onOff(this, node);
-                }
-
-                // remove
-                pendingOn.remove(node);
-                pendingOff.remove(node);
             }
         }
     }

@@ -36,7 +36,7 @@ public class NodeTarget implements NodeType {
     @Override
     public void onOn(@NotNull Spell spell, @NotNull Spell.ChannelNode node) {
         DistancedTarget target = (DistancedTarget) spell.getInput(node)[0];
-        if (target != null) {
+        if (target != null && target.getTarget().exists()) {
             Caster caster = target.getTarget().asCaster();
             if (caster != null) {
                spell.registerEvent(new Spell.Event(Spell.Event.TARGET_ID, NbtHelper.fromUuid(caster.getUUID())), node);

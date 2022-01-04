@@ -41,7 +41,7 @@ public class EventEntityInteract implements NodeEvent<Target> {
 
     @Override
     public @Nullable Spell.Event getEvent(@NotNull Spell spell, @NotNull Spell.ChannelNode node, @NotNull Object[] input) {
-        if (!(input[0] instanceof DistancedTarget) || !(((DistancedTarget) input[0]).getTarget() instanceof TargetEntity)) return null;
+        if (!(input[0] instanceof DistancedTarget) || !(((DistancedTarget) input[0]).getTarget() instanceof TargetEntity) || !((DistancedTarget) input[0]).getTarget().exists()) return null;
         
         Entity entity = ((TargetEntity) ((DistancedTarget) input[0]).getTarget()).getEntity();
         return new Spell.Event(eventType, NbtHelper.fromUuid(entity.getUuid()));

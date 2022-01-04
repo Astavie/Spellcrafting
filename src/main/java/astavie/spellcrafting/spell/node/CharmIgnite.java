@@ -47,12 +47,13 @@ public class CharmIgnite implements NodeCharm {
     public @NotNull Object[] cast(@NotNull Spell spell, @NotNull Spell.ChannelNode node, @NotNull Object[] input) {
         DistancedTarget d = (DistancedTarget) input[0];
 
-        if (!d.inRange()) {
-            spell.onInvalidPosition(d.getTarget().getWorld(), d.getTarget().getPos());
+        if (!spell.existsAndInRange(d)) {
             return new Object[0];
         }
 
         Target target = d.getTarget();
+
+        // TODO: Particles
 
         if (target instanceof TargetEntity) {
             Entity entity = ((TargetEntity) target).getEntity();
@@ -82,7 +83,8 @@ public class CharmIgnite implements NodeCharm {
         // Fire
         BlockPos blockPos2 = target.getBlock();
         if (!target.getWorld().isAir(target.getBlock()) && target instanceof TargetBlock) {
-            blockPos2 = target.getBlock().offset(((TargetBlock) target).getSide());
+            Direction dir = ((TargetBlock) target).getSide();
+            if (dir != null) blockPos2 = blockPos2.offset(dir);
         }
 
         if (AbstractFireBlock.canPlaceAt(target.getWorld(), blockPos2, Direction.NORTH)) {

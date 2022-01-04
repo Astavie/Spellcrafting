@@ -39,9 +39,8 @@ public class CharmArrow implements NodeCharm {
         DistancedTarget origin = (DistancedTarget) input[0];
         DistancedTarget target = (DistancedTarget) input[1];
 
-        if (origin.getTarget().getWorld() != target.getTarget().getWorld() || !origin.inRange()) {
-            spell.onInvalidPosition(origin.getTarget().getWorld(), origin.getTarget().getPos());
-            return new Object[] { null };
+        if (!spell.existsAndFirstInRange(origin, target, false)) {
+            return new Object[1];
         }
 
         Vec3d dir = target.getTarget().getPos().subtract(origin.getTarget().getPos());

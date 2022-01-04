@@ -19,7 +19,7 @@ public class CharmExplode implements NodeCharm {
     @Override
     public @NotNull ItemList getComponents(@NotNull Spell.Node node) {
         ItemList list = new ItemList();
-        list.addItem(Items.GUNPOWDER); // TODO: More components for bigger explosio?
+        list.addItem(Items.GUNPOWDER, 5); // TODO: More components for bigger explosio?
         return list;
     }
 
@@ -37,8 +37,7 @@ public class CharmExplode implements NodeCharm {
     public @NotNull Object[] cast(@NotNull Spell spell, @NotNull Spell.ChannelNode node, @NotNull Object[] input) {
         DistancedTarget origin = (DistancedTarget) input[0];
 
-        if (!origin.inRange()) {
-            spell.onInvalidPosition(origin.getTarget().getWorld(), origin.getTarget().getPos());
+        if (!spell.existsAndInRange(origin)) {
             return new Object[0];
         }
 

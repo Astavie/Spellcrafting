@@ -30,7 +30,7 @@ public class TargetBlock implements Target {
             RegistryKey<World> dimension = RegistryKey.of(Registry.WORLD_KEY, new Identifier(nbt.getString("dim")));
             BlockPos block = new BlockPos(nbt.getInt("x"), nbt.getInt("y"), nbt.getInt("z"));
             Vec3d pos = new Vec3d(nbt.getFloat("ox") + block.getX(), nbt.getFloat("oy") + block.getY(), nbt.getFloat("oz") + block.getZ());
-            Direction facing = Direction.byId(nbt.getByte("side"));
+            Direction facing = nbt.contains("side") ? Direction.byId(nbt.getByte("side")) : null;
             return new TargetBlock(dimension, block, pos, facing);
         }
 
@@ -41,7 +41,7 @@ public class TargetBlock implements Target {
             cmp.putInt("x", target.block.getX());
             cmp.putInt("y", target.block.getY());
             cmp.putInt("z", target.block.getZ());
-            cmp.putByte("side", (byte) target.facing.ordinal());
+            if (target.facing != null) cmp.putByte("side", (byte) target.facing.ordinal());
             cmp.putFloat("ox", (float) (target.pos.x - target.block.getX()));
             cmp.putFloat("oy", (float) (target.pos.y - target.block.getY()));
             cmp.putFloat("oz", (float) (target.pos.z - target.block.getZ()));
@@ -50,14 +50,14 @@ public class TargetBlock implements Target {
         
     });
 
-    public TargetBlock(@NotNull RegistryKey<World> world, @NotNull BlockPos block, @NotNull Vec3d pos, @NotNull Direction facing) {
+    public TargetBlock(@NotNull RegistryKey<World> world, @NotNull BlockPos block, @NotNull Vec3d pos, @Nullable Direction facing) {
         this.dimension = world;
         this.block = block;
         this.pos = pos;
         this.facing = facing;
     }
 
-    public TargetBlock(@NotNull ServerWorld world, @NotNull BlockPos block, @NotNull Vec3d pos, @NotNull Direction facing) {
+    public TargetBlock(@NotNull ServerWorld world, @NotNull BlockPos block, @NotNull Vec3d pos, @Nullable Direction facing) {
         this.dimension = world.getRegistryKey();
         this.block = block;
         this.pos = pos;
@@ -79,7 +79,7 @@ public class TargetBlock implements Target {
         return ServerUtils.server.getWorld(dimension);
     }
 
-    public Direction getSide() {
+    public @Nullable Direction getSide() {
         return facing;
     }
 

@@ -33,11 +33,6 @@ public interface SpellType<T> {
             throw new NotImplementedException();
         }
 
-        @Override
-        public boolean exists(@NotNull Object t) {
-            throw new NotImplementedException();
-        }
-
     };
 
     public static final @NotNull SpellType<Void> NONE = new SpellType<Void>() {
@@ -59,11 +54,6 @@ public interface SpellType<T> {
 
         @Override
         public @NotNull NbtElement serialize(@NotNull Void t) {
-            throw new NotImplementedException();
-        }
-
-        @Override
-        public boolean exists(@NotNull Void t) {
             throw new NotImplementedException();
         }
 
@@ -99,11 +89,6 @@ public interface SpellType<T> {
             return cmp;
         }
 
-        @Override
-        public boolean exists(@NotNull DistancedTarget t) {
-            return t.getTarget().exists();
-        }
-
     };
 
     @NotNull
@@ -111,8 +96,6 @@ public interface SpellType<T> {
 
     @NotNull
     DyeColor getColor();
-
-    boolean exists(@NotNull T t);
 
     @NotNull
     T deserialize(@NotNull NbtElement nbt);

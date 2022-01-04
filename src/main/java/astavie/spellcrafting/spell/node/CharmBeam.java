@@ -43,9 +43,8 @@ public class CharmBeam implements NodeCharm {
         DistancedTarget t1 = (DistancedTarget) input[0];
         DistancedTarget t2 = (DistancedTarget) input[1];
 
-        if (!t1.inRange()) {
-            spell.onInvalidPosition(t1.getTarget().getWorld(), t1.getTarget().getPos());
-            return new Object[] { null };
+        if (!spell.existsAndFirstInRange(t1, t2, false)) {
+            return new Object[1];
         }
 
         // Get target
