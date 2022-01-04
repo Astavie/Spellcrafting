@@ -20,6 +20,9 @@
   "entrypoints": {
     "main": [
       "astavie.spellcrafting.Spellcrafting"
+    ],
+    "client": [
+      "astavie.spellcrafting.Spellcrafting"
     ]
   },
   "mixins": [

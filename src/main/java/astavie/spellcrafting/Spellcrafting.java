@@ -18,6 +18,7 @@ import astavie.spellcrafting.api.spell.target.TargetBlock;
 import astavie.spellcrafting.api.spell.target.TargetEntity;
 import astavie.spellcrafting.api.util.ItemList;
 import astavie.spellcrafting.api.util.ServerUtils;
+import astavie.spellcrafting.block.BlockMagicLine;
 import astavie.spellcrafting.item.ItemMirror;
 import astavie.spellcrafting.item.ItemSpell;
 import astavie.spellcrafting.spell.CasterPlayer;
@@ -38,17 +39,25 @@ import astavie.spellcrafting.spell.node.event.EventWait;
 import astavie.spellcrafting.spell.node.event.EventWaitFor;
 import astavie.spellcrafting.spell.node.transmuter.TransmuterDirection;
 import astavie.spellcrafting.spell.node.transmuter.TransmuterView;
+import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.fabricmc.fabric.api.client.rendering.v1.ColorProviderRegistry;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
+import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.fabric.api.transfer.v1.context.ContainerItemContext;
+import net.minecraft.block.Block;
+import net.minecraft.client.render.RenderLayer;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemGroup;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtLong;
@@ -64,7 +73,7 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.registry.Registry;
 
-public class Spellcrafting implements ModInitializer {
+public class Spellcrafting implements ModInitializer, ClientModInitializer {
 
 	private static final Identifier CAST_PACKET_ID = new Identifier("spellcrafting", "cast");
 
@@ -73,6 +82,11 @@ public class Spellcrafting implements ModInitializer {
 	public static Spell FIREWORK;
 	public static Spell ATTRACTIVE_CAT;
 	public static Spell ARROW_STORM;
+
+	public static Item spell = new ItemSpell();
+	public static Item mirror = new ItemMirror();
+
+	public static Block magicLine = new BlockMagicLine();
 
 	@Override
 	public void onInitialize() {
@@ -201,10 +215,11 @@ public class Spellcrafting implements ModInitializer {
 			ARROW_STORM = new Spell(Sets.newHashSet(cast), nodes);
 		}
 
-		// Items
-		ItemSpell spell = new ItemSpell();
-		Item mirror = new ItemMirror();
+		// Blocks
+		Registry.register(Registry.BLOCK, new Identifier("spellcrafting", "magic_line"), magicLine);
+		Registry.register(Registry.ITEM, new Identifier("spellcrafting", "magic_line"), new BlockItem(magicLine, new FabricItemSettings().group(ItemGroup.MISC)));
 
+		// Items
 		Registry.register(Registry.ITEM, new Identifier("spellcrafting", "spell"), spell);
 		Registry.register(Registry.ITEM, new Identifier("spellcrafting", "mirror"), mirror);
 
@@ -310,6 +325,12 @@ public class Spellcrafting implements ModInitializer {
 		}
 
 		ClientPlayNetworking.send(CAST_PACKET_ID, packet);
+	}
+
+	@Override
+	public void onInitializeClient() {
+		ColorProviderRegistry.BLOCK.register((state, world, pos, i) -> 0x7EF9FF, magicLine);
+		BlockRenderLayerMap.INSTANCE.putBlock(magicLine, RenderLayer.getTranslucent());
 	}
 
 }
