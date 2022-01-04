@@ -11,7 +11,7 @@ import astavie.spellcrafting.api.util.ItemList;
 public class CharmAttune implements NodeCharm {
 
     @Override
-    public @NotNull SpellType<?>[] getParameters() {
+    public @NotNull SpellType<?>[] getParameters(@NotNull Spell.Node node) {
         return new SpellType<?>[] { SpellType.TARGET, SpellType.TARGET };
     }
 
@@ -21,7 +21,7 @@ public class CharmAttune implements NodeCharm {
     }
 
     @Override
-    public @NotNull ItemList getComponents(@NotNull Spell spell, @NotNull Spell.Node node) {
+    public @NotNull ItemList getComponents(@NotNull Spell.Node node) {
         return new ItemList(); // TODO: Components
     }
 

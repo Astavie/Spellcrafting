@@ -14,7 +14,7 @@ import net.minecraft.nbt.NbtLong;
 public class EventWait implements NodeEvent<Void> {
 
     @Override
-    public @NotNull SpellType<?>[] getParameters() {
+    public @NotNull SpellType<?>[] getParameters(@NotNull Spell.Node node) {
         return new SpellType<?>[] { SpellType.ANY };
     }
 
@@ -25,7 +25,7 @@ public class EventWait implements NodeEvent<Void> {
     }
 
     @Override
-    public @NotNull ItemList getComponents(@NotNull Spell spell, @NotNull Spell.Node node) {
+    public @NotNull ItemList getComponents(@NotNull Spell.Node node) {
         ItemList list = new ItemList();
         list.addItem(Items.CLOCK, 0);
         return list;

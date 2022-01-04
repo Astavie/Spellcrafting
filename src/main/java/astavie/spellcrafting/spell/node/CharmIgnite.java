@@ -27,12 +27,12 @@ import net.minecraft.world.event.GameEvent;
 public class CharmIgnite implements NodeCharm {
 
     @Override
-    public @NotNull ItemList getComponents(@NotNull Spell spell, @NotNull Spell.Node node) {
+    public @NotNull ItemList getComponents(@NotNull Spell.Node node) {
         return new ItemList(); // TODO: Components
     }
 
     @Override
-    public @NotNull SpellType<?>[] getParameters() {
+    public @NotNull SpellType<?>[] getParameters(@NotNull Spell.Node node) {
         return new SpellType[] { SpellType.TARGET };
     }
 

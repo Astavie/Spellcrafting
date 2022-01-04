@@ -11,24 +11,26 @@ import astavie.spellcrafting.api.spell.target.Target;
 import astavie.spellcrafting.api.spell.target.TargetEntity;
 import astavie.spellcrafting.api.util.ItemList;
 import net.minecraft.entity.Entity;
-import net.minecraft.nbt.NbtString;
+import net.minecraft.nbt.NbtHelper;
 import net.minecraft.util.Identifier;
 
 public class EventEntityInteract implements NodeEvent<Target> {
 
     private final Identifier eventType;
+    private final ItemList components;
 
-    public EventEntityInteract(Identifier eventType) {
+    public EventEntityInteract(Identifier eventType, ItemList components) {
         this.eventType = eventType;
+        this.components = components;
     }
 
     @Override
-    public @NotNull ItemList getComponents(@NotNull Spell spell, @NotNull Spell.Node node) {
-        return new ItemList(); // TODO: Components?
+    public @NotNull ItemList getComponents(@NotNull Spell.Node node) {
+        return components; // TODO: Components?
     }
 
     @Override
-    public @NotNull SpellType<?>[] getParameters() {
+    public @NotNull SpellType<?>[] getParameters(@NotNull Spell.Node node) {
         return new SpellType[] { SpellType.TARGET };
     }
 
@@ -42,7 +44,7 @@ public class EventEntityInteract implements NodeEvent<Target> {
         if (!(input[0] instanceof DistancedTarget) || !(((DistancedTarget) input[0]).getTarget() instanceof TargetEntity)) return null;
         
         Entity entity = ((TargetEntity) ((DistancedTarget) input[0]).getTarget()).getEntity();
-        return new Spell.Event(eventType, NbtString.of(entity.getUuidAsString()));
+        return new Spell.Event(eventType, NbtHelper.fromUuid(entity.getUuid()));
     }
 
     @Override

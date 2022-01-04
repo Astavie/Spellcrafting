@@ -17,14 +17,14 @@ import net.minecraft.world.explosion.Explosion;
 public class CharmExplode implements NodeCharm {
 
     @Override
-    public @NotNull ItemList getComponents(@NotNull Spell spell, @NotNull Spell.Node node) {
+    public @NotNull ItemList getComponents(@NotNull Spell.Node node) {
         ItemList list = new ItemList();
         list.addItem(Items.GUNPOWDER); // TODO: More components for bigger explosio?
         return list;
     }
 
     @Override
-    public @NotNull SpellType<?>[] getParameters() {
+    public @NotNull SpellType<?>[] getParameters(@NotNull Spell.Node node) {
         return new SpellType[] { SpellType.TARGET };
     }
 

@@ -9,6 +9,7 @@ import astavie.spellcrafting.api.spell.target.DistancedTarget;
 import astavie.spellcrafting.api.spell.target.TargetEntity;
 import astavie.spellcrafting.api.util.ItemList;
 import net.minecraft.entity.Entity;
+import net.minecraft.item.Items;
 import net.minecraft.network.packet.s2c.play.EntityVelocityUpdateS2CPacket;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.Vec3d;
@@ -17,7 +18,7 @@ import net.minecraft.util.math.Vec3d;
 public class CharmLaunch implements NodeCharm {
 
     @Override
-    public @NotNull SpellType<?>[] getParameters() {
+    public @NotNull SpellType<?>[] getParameters(@NotNull Spell.Node node) {
         return new SpellType<?>[] { SpellType.TARGET, SpellType.TARGET };
     }
 
@@ -27,8 +28,8 @@ public class CharmLaunch implements NodeCharm {
     }
 
     @Override
-    public @NotNull ItemList getComponents(@NotNull Spell spell, @NotNull Spell.Node node) {
-        return new ItemList(); // TODO: Components
+    public @NotNull ItemList getComponents(@NotNull Spell.Node node) {
+        return new ItemList().addItem(Items.GUNPOWDER);
     }
 
     @Override

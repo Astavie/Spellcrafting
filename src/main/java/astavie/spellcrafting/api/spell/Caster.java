@@ -1,5 +1,6 @@
 package astavie.spellcrafting.api.spell;
 
+import java.util.UUID;
 import java.util.Map.Entry;
 
 import org.jetbrains.annotations.NotNull;
@@ -26,6 +27,8 @@ public interface Caster {
     @NotNull Attunable asAttunable();
 
     double getRange();
+
+    @NotNull UUID getUUID();
 
     /**
      * @param list The list of items to extract

@@ -14,11 +14,11 @@ public interface NodeType {
 
     public static final Registry<NodeType> REGISTRY = FabricRegistryBuilder.createSimple(NodeType.class, new Identifier("spellcrafting:node")).buildAndRegister();
 
-    @NotNull SpellType<?>[] getParameters();
+    @NotNull SpellType<?>[] getParameters(@NotNull Spell.Node node);
 
     @NotNull SpellType<?>[] getReturnTypes(@NotNull Spell spell, @NotNull Spell.Node node);
 
-    @NotNull ItemList getComponents(@NotNull Spell spell, @NotNull Spell.Node node);
+    @NotNull ItemList getComponents(@NotNull Spell.Node node);
 
     void apply(@NotNull Spell spell, @NotNull Spell.ChannelNode node);
 

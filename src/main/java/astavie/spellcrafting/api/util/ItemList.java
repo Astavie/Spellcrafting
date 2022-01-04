@@ -3,7 +3,6 @@ package astavie.spellcrafting.api.util;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -11,35 +10,39 @@ import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 
-public class ItemList implements Iterable<Entry<ItemVariant, Long>> {
+public class ItemList implements Iterable<Map.Entry<ItemVariant, Long>> {
 
     private final Map<ItemVariant, Long> items = new LinkedHashMap<>();
     
-    public void addItem(@NotNull Item item) {
+    public ItemList addItem(@NotNull Item item) {
         addItem(ItemVariant.of(item), 1);
+        return this;
     }
     
-    public void addItem(@NotNull Item item, long amount) {
+    public ItemList addItem(@NotNull Item item, long amount) {
         addItem(ItemVariant.of(item), amount);
+        return this;
     }
     
-    public void addItem(@NotNull ItemStack stack) {
+    public ItemList addItem(@NotNull ItemStack stack) {
         addItem(ItemVariant.of(stack), stack.getCount());
+        return this;
     }
 
-    public void addItem(@NotNull ItemVariant variant, long amount) {
+    public ItemList addItem(@NotNull ItemVariant variant, long amount) {
         long l = items.getOrDefault(variant, 0L);
         items.put(variant, l + amount);
+        return this;
     }
 
     public void addItemList(@NotNull ItemList list) {
-        for (Entry<ItemVariant, Long> entry : list) {
+        for (Map.Entry<ItemVariant, Long> entry : list) {
             addItem(entry.getKey(), entry.getValue());
         }
     }
 
     public void addItemList(@NotNull ItemList list, int factor) {
-        for (Entry<ItemVariant, Long> entry : list) {
+        for (Map.Entry<ItemVariant, Long> entry : list) {
             addItem(entry.getKey(), entry.getValue() * factor);
         }
     }
@@ -49,7 +52,7 @@ public class ItemList implements Iterable<Entry<ItemVariant, Long>> {
     }
 
     @Override
-    public @NotNull Iterator<Entry<ItemVariant, Long>> iterator() {
+    public @NotNull Iterator<Map.Entry<ItemVariant, Long>> iterator() {
         return items.entrySet().iterator();
     }
 

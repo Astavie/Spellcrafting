@@ -2,10 +2,12 @@ package astavie.spellcrafting.spell.node;
 
 import org.jetbrains.annotations.NotNull;
 
+import astavie.spellcrafting.api.spell.Attunable;
 import astavie.spellcrafting.api.spell.Spell;
 import astavie.spellcrafting.api.spell.SpellType;
 import astavie.spellcrafting.api.spell.node.NodeCharm;
 import astavie.spellcrafting.api.spell.target.DistancedTarget;
+import astavie.spellcrafting.api.spell.target.Target;
 import astavie.spellcrafting.api.spell.target.TargetBlock;
 import astavie.spellcrafting.api.spell.target.TargetEntity;
 import astavie.spellcrafting.api.util.ItemList;
@@ -24,7 +26,7 @@ public class CharmSummon implements NodeCharm {
     }
 
     @Override
-    public @NotNull SpellType<?>[] getParameters() {
+    public @NotNull SpellType<?>[] getParameters(@NotNull Spell.Node node) {
         return new SpellType<?> [] { SpellType.TARGET };
     }
 
@@ -34,7 +36,7 @@ public class CharmSummon implements NodeCharm {
     }
 
     @Override
-    public @NotNull ItemList getComponents(@NotNull Spell spell, @NotNull Spell.Node node) {
+    public @NotNull ItemList getComponents(@NotNull Spell.Node node) {
         return new ItemList(); // TODO: Components
     }
 
@@ -53,8 +55,21 @@ public class CharmSummon implements NodeCharm {
         }
 
         Entity e = type.spawn((ServerWorld) t1.getTarget().getWorld(), null, null, null, pos, SpawnReason.MOB_SUMMONED, false, false);
-        
-        return new Object[] { e == null ? null : new DistancedTarget(new TargetEntity(e, t1.getTarget().getPos()), t1.getOrigin(), t1.getCaster()) };
+        if (e == null) {
+            return new Object[] { null };
+        }
+
+        Target target = new TargetEntity(e, t1.getTarget().getPos());
+
+        Attunable attunable = Attunable.ENTITY_ATTUNABLE.find(e, null);
+        Attunable caster = t1.getCaster().asAttunable();
+        if (attunable != null && caster != null) {
+            attunable.attuneTo(caster);
+
+            return new Object[] { new DistancedTarget(target, target, t1.getCaster()) };
+        }
+
+        return new Object[] { new DistancedTarget(target, t1.getOrigin(), t1.getCaster()) };
     }
     
 }

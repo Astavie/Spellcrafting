@@ -6,28 +6,39 @@ import astavie.spellcrafting.api.spell.Spell;
 import astavie.spellcrafting.api.spell.SpellType;
 import astavie.spellcrafting.api.spell.node.NodeCharm;
 import astavie.spellcrafting.api.util.ItemList;
+import net.minecraft.item.Items;
 
 public class EventWaitFor implements NodeCharm {
 
     @Override
-    public @NotNull SpellType<?>[] getParameters() {
-        return new SpellType<?>[] { SpellType.ANY, SpellType.ANY };
+    public @NotNull SpellType<?>[] getParameters(@NotNull Spell.Node node) {
+        SpellType<?>[] types = new SpellType<?>[node.getSize()];
+        for (int i = 0; i < node.getSize(); i++) types[i] = SpellType.ANY;
+        return types;
     }
 
     @Override
     public @NotNull SpellType<?>[] getReturnTypes(@NotNull Spell spell, @NotNull Spell.Node node) {
-        SpellType<?> out = spell.getActualInputType(new Spell.Socket(node, 0));
-        return new SpellType<?>[] { out == null ? SpellType.NONE : out };
+        SpellType<?>[] types = new SpellType<?>[getParameters(node).length];
+
+        for (int i = 0; i < types.length; i++) {
+            SpellType<?> out = spell.getActualInputType(new Spell.Socket(node, i));
+            types[i] = out == null ? SpellType.NONE : out;
+        }
+
+        return types;
     }
 
     @Override
-    public @NotNull ItemList getComponents(@NotNull Spell spell, @NotNull Spell.Node node) {
-        return new ItemList(); // TODO: Components?
+    public @NotNull ItemList getComponents(@NotNull Spell.Node node) {
+        ItemList list = new ItemList();
+        list.addItem(Items.CLOCK, 0);
+        return list;
     }
 
     @Override
     public @NotNull Object[] cast(@NotNull Spell spell, @NotNull Spell.ChannelNode node, @NotNull Object[] input) {
-        return new Object[] { input[0] };
+        return input;
     }
     
 }

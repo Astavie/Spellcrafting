@@ -12,7 +12,7 @@ import astavie.spellcrafting.spell.SpellState;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtString;
+import net.minecraft.nbt.NbtHelper;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
@@ -33,7 +33,7 @@ public class EntityMixin {
         prevOnGround = true;
         Target block = new TargetBlock((ServerWorld) e.world, landedPosition, e.getPos(), Direction.UP);
 
-        SpellState.getInstance().onEvent(new Spell.Event(Spell.Event.LAND_ID, NbtString.of(e.getUuidAsString())), block);
+        SpellState.getInstance().onEvent(new Spell.Event(Spell.Event.LAND_ID, NbtHelper.fromUuid(e.getUuid())), block);
     }
 
     @Inject(method = "readNbt", at = @At("TAIL"))

@@ -20,7 +20,7 @@ public class TransmuterDirection implements NodeTransmuter {
     }
 
     @Override
-    public @NotNull SpellType<?>[] getParameters() {
+    public @NotNull SpellType<?>[] getParameters(@NotNull Spell.Node node) {
         return new SpellType<?>[] { SpellType.TARGET };
     }
 
@@ -30,7 +30,7 @@ public class TransmuterDirection implements NodeTransmuter {
     }
 
     @Override
-    public @NotNull ItemList getComponents(@NotNull Spell spell, @NotNull Spell.Node node) {
+    public @NotNull ItemList getComponents(@NotNull Spell.Node node) {
         ItemList list = new ItemList();
         list.addItem(Items.COMPASS, 0);
         return list;

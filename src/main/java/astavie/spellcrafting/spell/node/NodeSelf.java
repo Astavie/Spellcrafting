@@ -7,13 +7,14 @@ import astavie.spellcrafting.api.spell.Spell;
 import astavie.spellcrafting.api.spell.SpellType;
 import astavie.spellcrafting.api.spell.node.NodeType;
 import astavie.spellcrafting.api.spell.target.DistancedTarget;
+import astavie.spellcrafting.api.spell.target.Target;
 import astavie.spellcrafting.api.util.ItemList;
 import net.minecraft.nbt.NbtByte;
 
 public class NodeSelf implements NodeType {
 
     @Override
-    public @NotNull SpellType<?>[] getParameters() {
+    public @NotNull SpellType<?>[] getParameters(@NotNull Spell.Node node) {
         return new SpellType[0];
     }
 
@@ -23,8 +24,8 @@ public class NodeSelf implements NodeType {
     }
 
     @Override
-    public @NotNull ItemList getComponents(@NotNull Spell spell, @NotNull Spell.Node node) {
-        return new ItemList(); // TODO: Initial components?
+    public @NotNull ItemList getComponents(@NotNull Spell.Node node) {
+        return new ItemList();
     }
 
     @Override
@@ -34,7 +35,7 @@ public class NodeSelf implements NodeType {
 
     @Override
     public void onEvent(@NotNull Spell spell, @NotNull Spell.ChannelNode node, @NotNull Spell.Event type, @Nullable Object context) {
-        spell.apply(node, new Object[] { (DistancedTarget) context });
+        spell.apply(node, new Object[] { new DistancedTarget((Target) context, (Target) context, (Target) context) });
     }
 
 }

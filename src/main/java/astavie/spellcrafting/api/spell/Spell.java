@@ -13,7 +13,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import astavie.spellcrafting.api.spell.node.NodeType;
-import astavie.spellcrafting.api.spell.target.DistancedTarget;
 import astavie.spellcrafting.api.spell.target.Target;
 import astavie.spellcrafting.api.util.ItemList;
 import astavie.spellcrafting.api.util.ServerUtils;
@@ -22,6 +21,7 @@ import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 import net.minecraft.nbt.NbtByte;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.NbtHelper;
 import net.minecraft.nbt.NbtInt;
 import net.minecraft.nbt.NbtIntArray;
 import net.minecraft.nbt.NbtList;
@@ -37,15 +37,23 @@ public class Spell {
 
     public static class Node {
         private final NodeType type;
-        public Node(@NotNull NodeType type) {
+        private final int size;
+        public Node(@NotNull NodeType type, int size) {
             this.type = type;
+            this.size = size;
+        }
+        public Node(@NotNull NodeType type) {
+            this(type, 1);
+        }
+        public int getSize() {
+            return size;
         }
     }
 
     public static record Socket(@NotNull Node node, int index) {
     }
 
-    public static record ChannelSocket(@NotNull Socket socket, DyeColor channel) {
+    public static record ChannelSocket(@NotNull Node node, int index, DyeColor channel) {
     }
 
     public static record ChannelNode(@NotNull Node node, DyeColor channel) {
@@ -79,7 +87,7 @@ public class Spell {
     }
 
     public Spell(Set<Node> start, Multimap<Socket, Socket> nodes) {
-        if (start.stream().anyMatch(n -> n.type.getParameters().length > 0)) throw new IllegalArgumentException("Illegal start node");
+        if (start.stream().anyMatch(n -> n.type.getParameters(n).length > 0)) throw new IllegalArgumentException("Illegal start node");
         this.start = start;
         this.nodes = nodes;
         this.uuid = UUID.randomUUID();
@@ -106,7 +114,7 @@ public class Spell {
 
         // Add components
         for (Node node : nodes) {
-            components.addItemList(node.type.getComponents(this, node));
+            components.addItemList(node.type.getComponents(node));
         }
     }
 
@@ -134,6 +142,7 @@ public class Spell {
 
             NbtCompound cmp = new NbtCompound();
             cmp.putString("type", NodeType.REGISTRY.getId(node.type).toString());
+            cmp.putInt("size", node.size);
             nodeList.add(cmp);
         }
 
@@ -144,6 +153,7 @@ public class Spell {
 
                 NbtCompound cmp = new NbtCompound();
                 cmp.putString("type", NodeType.REGISTRY.getId(in.node.type).toString());
+                cmp.putInt("size", in.node.size);
 
                 for (DyeColor color : DyeColor.values()) {
                     ChannelNode channel = new ChannelNode(in.node, color);
@@ -167,7 +177,7 @@ public class Spell {
             cmp.putInt("index", out.index);
             
             for (DyeColor color : DyeColor.values()) {
-                ChannelSocket channel = new ChannelSocket(out, color);
+                ChannelSocket channel = new ChannelSocket(out.node, out.index, color);
                 if (spell.output.containsKey(channel)) {
                     SpellType<?> type = out.node.type.getReturnTypes(spell, out.node)[out.index];
                     cmp.put(color.getName() + "_value", SpellType.serialize(type, spell.output.get(channel)));
@@ -179,7 +189,7 @@ public class Spell {
 
         // Pass 2: add all node connections
         for (Node node : nodes.keySet()) {
-            int parameters = node.type.getParameters().length;
+            int parameters = node.type.getParameters(node).length;
             NbtIntArray connections = new NbtIntArray(new int[parameters]);
 
             for (int i = 0; i < parameters; i++) {
@@ -214,10 +224,10 @@ public class Spell {
         // Phase 0: get all nodes with events
         for (int i = 0; i < nodes.size(); i++) {
             NbtCompound cmp = nodes.getCompound(i);
-            Node node = new Node(NodeType.REGISTRY.get(new Identifier(cmp.getString("type"))));
+            Node node = new Node(NodeType.REGISTRY.get(new Identifier(cmp.getString("type"))), cmp.getInt("size"));
             totalNodes[i] = node;
 
-            if (node.type.getParameters().length == 0) {
+            if (node.type.getParameters(node).length == 0) {
                 spell.start.add(node);
             }
 
@@ -241,7 +251,7 @@ public class Spell {
         for (int i = 1; i < nodes.size(); i++) {
             int[] from = nodes.getCompound(i).getIntArray("from");
             Node node = totalNodes[i];
-            int parameters = node.type.getParameters().length;
+            int parameters = node.type.getParameters(node).length;
 
             for (int j = 0; j < Math.min(from.length, parameters); j++) {
                 if (from[j] == -1) continue;
@@ -260,7 +270,7 @@ public class Spell {
                 if (cmp.contains(color.getName() + "_value")) {
                     Socket socket = totalSockets[i];
                     SpellType<?> type = socket.node.type.getReturnTypes(spell, socket.node)[socket.index];
-                    spell.output.put(new ChannelSocket(socket, color), type.deserialize(cmp.get(color.getName() + "_value")));
+                    spell.output.put(new ChannelSocket(socket.node, socket.index, color), type.deserialize(cmp.get(color.getName() + "_value")));
                 }
             }
         }
@@ -281,7 +291,7 @@ public class Spell {
         for (int i = 0; i < returnTypes; i++) {
             for (Socket in : nodes.get(new Socket(node, i))) {
                 if (nextBlacklist.contains(in.node)) throw new IllegalArgumentException("Cyclic spell");
-                if (!in.node.type.getParameters()[in.index].getValueClass().isAssignableFrom(node.type.getReturnTypes(this, node)[i].getValueClass())) throw new IllegalArgumentException("Spell has illegal connections");
+                if (!in.node.type.getParameters(in.node)[in.index].getValueClass().isAssignableFrom(node.type.getReturnTypes(this, node)[i].getValueClass())) throw new IllegalArgumentException("Spell has illegal connections");
 
                 if (!total.contains(in.node)) {
                     total.add(in.node);
@@ -313,13 +323,19 @@ public class Spell {
     }
 
     public boolean onTarget(@NotNull Caster caster, @NotNull Target target) {
+        Event event = new Event(Event.TARGET_ID, NbtHelper.fromUuid(caster.getUUID()));
+        if (events.containsKey(event)) {
+            onEvent(event, target);
+            return true;
+        }
+
         for (DyeColor color : DyeColor.values()) {
             // Check if any starting nodes already contain output on this channel
             // TODO: This is horrible
             if (start.stream().anyMatch(s -> {
                 int returnTypes = s.type.getReturnTypes(this, s).length;
                 for (int i = 0; i < returnTypes; i++) {
-                    if (output.containsKey(new ChannelSocket(new Socket(s, i), color))) {
+                    if (output.containsKey(new ChannelSocket(s, i, color))) {
                         return true;
                     }
                 }
@@ -341,10 +357,8 @@ public class Spell {
             SpellState.getInstance().addSpell(this);
 
             for (Node node : start) node.type.apply(this, new ChannelNode(node, color));
-
-            Target ct = caster.asTarget();
-            onEvent(new Event(Event.SELF_ID, NbtByte.of((byte) color.ordinal())), new DistancedTarget(ct, ct, ct));
-            onEvent(new Event(Event.TARGET_ID, NbtByte.of((byte) color.ordinal())), new DistancedTarget(target, ct, ct));
+            onEvent(new Event(Event.SELF_ID, NbtByte.of((byte) color.ordinal())), caster.asTarget());
+            onEvent(event, target);
 
             return true;
         }
@@ -371,7 +385,7 @@ public class Spell {
 
     public void onEvent(@NotNull Event event, Object context) {
         if (event.eventType == Event.TICK_ID && events.isEmpty()) {
-            // end();
+            end();
             return;
         }
         
@@ -390,11 +404,11 @@ public class Spell {
     }
 
     public @NotNull Object[] getInput(@NotNull ChannelNode node) {
-        SpellType<?>[] parameters = node.node.type.getParameters();
+        SpellType<?>[] parameters = node.node.type.getParameters(node.node);
         Object[] ret = new Object[parameters.length];
         for (int i = 0; i < parameters.length; i++) {
             Socket out = inverse.get(new Socket(node.node, i));
-            ret[i] = output.get(new ChannelSocket(out, node.channel));
+            ret[i] = out == null ? null : output.get(new ChannelSocket(out.node, out.index, node.channel));
             if (ret[i] != null && !exists(getActualInputType(new Socket(node.node, i)), ret[i])) {
                 ret[i] = null;
             }
@@ -410,7 +424,7 @@ public class Spell {
     public void apply(@NotNull ChannelSocket out, @Nullable Object returnValue) {
         markDirty();
         
-        SpellType<?> returnType = out.socket.node.type.getReturnTypes(this, out.socket.node)[out.socket.index];
+        SpellType<?> returnType = out.node.type.getReturnTypes(this, out.node)[out.index];
 
         if (returnValue != null && !returnType.getValueClass().isInstance(returnValue)) {
             throw new IllegalArgumentException();
@@ -419,7 +433,7 @@ public class Spell {
         if (returnValue == null) output.remove(out);
         else output.put(out, returnValue);
 
-        for (Socket in : nodes.get(out.socket)) {
+        for (Socket in : nodes.get(new Socket(out.node, out.index))) {
             in.node.type.apply(this, new ChannelNode(in.node, out.channel));
         }
     }
@@ -431,7 +445,7 @@ public class Spell {
         }
 
         for (int i = 0; i < returnValues.length; i++) {
-            apply(new ChannelSocket(new Socket(node.node, i), node.channel), returnValues[i]);
+            apply(new ChannelSocket(node.node, i, node.channel), returnValues[i]);
         }
     }
 

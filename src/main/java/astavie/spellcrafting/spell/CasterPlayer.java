@@ -1,5 +1,7 @@
 package astavie.spellcrafting.spell;
 
+import java.util.UUID;
+
 import org.jetbrains.annotations.NotNull;
 
 import astavie.spellcrafting.api.spell.Attunable;
@@ -32,6 +34,11 @@ public record CasterPlayer(PlayerEntity player) implements Caster {
     @Override
     public double getRange() {
         return player.isCreative() ? 5.0 : 4.5;
+    }
+
+    @Override
+    public @NotNull UUID getUUID() {
+        return player.getUuid();
     }
     
 }
