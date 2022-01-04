@@ -40,6 +40,8 @@ public class NodeTarget implements NodeType {
             Caster caster = target.getTarget().asCaster();
             if (caster != null) {
                spell.registerEvent(new Spell.Event(Spell.Event.TARGET_ID, NbtHelper.fromUuid(caster.getUUID())), node);
+               spell.apply(node, new Object[node.node().getSize()]);
+               return;
             }
         }
 

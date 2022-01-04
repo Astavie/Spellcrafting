@@ -72,6 +72,9 @@ public class Spell {
 
     private final Map<Event, Object> eventsThisTick = new HashMap<>();
 
+    private final Set<ChannelNode> pendingOn = new HashSet<>();
+    private final Set<ChannelNode> pendingOff = new HashSet<>();
+
     private final UUID uuid;
     private final Set<Node> start;
     private final Multimap<Socket, Socket> nodes;
@@ -356,7 +359,9 @@ public class Spell {
             // TODO: API breach
             SpellState.getInstance().addSpell(this);
 
-            for (Node node : start) node.type.onOn(this, new ChannelNode(node, color));
+            for (Node node : start) pendingOn.add(new ChannelNode(node, color));
+            processPending();
+
             onEvent(new Event(Event.SELF_ID, NbtByte.of((byte) color.ordinal())), caster.asTarget());
             onEvent(event, target);
 
@@ -397,10 +402,13 @@ public class Spell {
         } else {
             eventsThisTick.put(event, context);
         }
+
+        processPending();
     }
 
     public void schedule(@NotNull ChannelNode handler) {
-        registerEvent(new Event(Event.TICK_ID, NbtLong.of(ServerUtils.getTime() + 1)), handler);
+        // 2 because redstone ticks
+        registerEvent(new Event(Event.TICK_ID, NbtLong.of(ServerUtils.getTime() + 2)), handler);
     }
 
     public @NotNull Object[] getInput(@NotNull ChannelNode node) {
@@ -434,10 +442,45 @@ public class Spell {
         else output.put(out, returnValue);
 
         for (Socket in : nodes.get(new Socket(out.node, out.index))) {
+            ChannelNode node = new ChannelNode(in.node, out.channel);
             if (returnValue == null) {
-                in.node.type.onOff(this, new ChannelNode(in.node, out.channel));
+                pendingOff.add(node);
             } else {
-                in.node.type.onOn(this, new ChannelNode(in.node, out.channel));
+                pendingOn.add(node);
+            }
+        }
+    }
+
+    private void processPending() {
+        while (!pendingOn.isEmpty() || !pendingOff.isEmpty()) {
+            Set<ChannelNode> current = new HashSet<>();
+            current.addAll(pendingOn);
+            current.addAll(pendingOff);
+
+            outer:
+            for (ChannelNode node : current) {
+                // check if dependencies are not pending
+                int parameters = node.node.type.getParameters(node.node).length;
+                for (int i = 0; i < parameters; i++) {
+                    Socket out = inverse.get(new Socket(node.node, i));
+                    if (out != null) {
+                        ChannelNode prev = new ChannelNode(out.node, node.channel);
+                        if (pendingOn.contains(prev) || pendingOff.contains(prev)) {
+                            continue outer;
+                        }
+                    }
+                }
+
+                // start!
+                if (pendingOn.contains(node)) {
+                    node.node.type.onOn(this, node);
+                } else {
+                    node.node.type.onOff(this, node);
+                }
+
+                // remove
+                pendingOn.remove(node);
+                pendingOff.remove(node);
             }
         }
     }
