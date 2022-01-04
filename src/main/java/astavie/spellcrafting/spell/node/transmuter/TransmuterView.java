@@ -1,4 +1,4 @@
-package astavie.spellcrafting.spell.node;
+package astavie.spellcrafting.spell.node.transmuter;
 
 import org.jetbrains.annotations.NotNull;
 

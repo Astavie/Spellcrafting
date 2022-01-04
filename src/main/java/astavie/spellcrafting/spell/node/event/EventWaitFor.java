@@ -1,4 +1,4 @@
-package astavie.spellcrafting.spell.node;
+package astavie.spellcrafting.spell.node.event;
 
 import org.jetbrains.annotations.NotNull;
 

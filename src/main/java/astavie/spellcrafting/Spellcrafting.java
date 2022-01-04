@@ -22,22 +22,22 @@ import astavie.spellcrafting.item.ItemMirror;
 import astavie.spellcrafting.item.ItemSpell;
 import astavie.spellcrafting.spell.CasterPlayer;
 import astavie.spellcrafting.spell.SpellState;
-import astavie.spellcrafting.spell.node.CharmArrow;
-import astavie.spellcrafting.spell.node.CharmAttract;
-import astavie.spellcrafting.spell.node.CharmAttune;
-import astavie.spellcrafting.spell.node.CharmExplode;
-import astavie.spellcrafting.spell.node.CharmIgnite;
-import astavie.spellcrafting.spell.node.CharmSummon;
-import astavie.spellcrafting.spell.node.CharmLaunch;
-import astavie.spellcrafting.spell.node.CharmBeam;
-import astavie.spellcrafting.spell.node.EventEntityInteract;
-import astavie.spellcrafting.spell.node.EventRepeat;
-import astavie.spellcrafting.spell.node.EventWait;
-import astavie.spellcrafting.spell.node.EventWaitFor;
-import astavie.spellcrafting.spell.node.EventCast;
-import astavie.spellcrafting.spell.node.EventTarget;
-import astavie.spellcrafting.spell.node.TransmuterDirection;
-import astavie.spellcrafting.spell.node.TransmuterView;
+import astavie.spellcrafting.spell.node.charm.CharmArrow;
+import astavie.spellcrafting.spell.node.charm.CharmAttract;
+import astavie.spellcrafting.spell.node.charm.CharmAttune;
+import astavie.spellcrafting.spell.node.charm.CharmBeam;
+import astavie.spellcrafting.spell.node.charm.CharmExplode;
+import astavie.spellcrafting.spell.node.charm.CharmIgnite;
+import astavie.spellcrafting.spell.node.charm.CharmLaunch;
+import astavie.spellcrafting.spell.node.charm.CharmSummon;
+import astavie.spellcrafting.spell.node.event.EventCast;
+import astavie.spellcrafting.spell.node.event.EventEntityInteract;
+import astavie.spellcrafting.spell.node.event.EventRepeat;
+import astavie.spellcrafting.spell.node.event.EventTarget;
+import astavie.spellcrafting.spell.node.event.EventWait;
+import astavie.spellcrafting.spell.node.event.EventWaitFor;
+import astavie.spellcrafting.spell.node.transmuter.TransmuterDirection;
+import astavie.spellcrafting.spell.node.transmuter.TransmuterView;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
@@ -200,7 +200,7 @@ public class Spellcrafting implements ModInitializer {
 
 			ARROW_STORM = new Spell(Sets.newHashSet(cast), nodes);
 		}
-		
+
 		// Items
 		ItemSpell spell = new ItemSpell();
 		Item mirror = new ItemMirror();

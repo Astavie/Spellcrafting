@@ -1,4 +1,4 @@
-package astavie.spellcrafting.spell.node;
+package astavie.spellcrafting.spell.node.charm;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

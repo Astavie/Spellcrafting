@@ -7,6 +7,8 @@ import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 
+// Mirror texture by Arna57
+
 public class ItemMirror extends Item implements Focus {
 
     public ItemMirror() {
