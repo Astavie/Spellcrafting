@@ -2,10 +2,8 @@ package astavie.spellcrafting.block;
 
 import java.util.Random;
 
-import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.Material;
 import net.minecraft.block.ShapeContext;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.server.world.ServerWorld;
@@ -23,11 +21,10 @@ import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldAccess;
-import net.minecraft.world.WorldView;
 
-public class BlockMagicLine extends Block {
+public class BlockMagicLine extends BlockMagic {
 
-    private static enum Output implements StringIdentifiable {
+    public static enum Output implements StringIdentifiable {
         LEFT, RIGHT, STRAIGHT, T_LEFT, T_RIGHT, T_SPLIT, CROSS;
 
         @Override
@@ -46,6 +43,20 @@ public class BlockMagicLine extends Block {
                 case T_RIGHT: return direction != in.rotateYClockwise();
                 case T_SPLIT: return direction != in.getOpposite();
                 case CROSS: return true;
+            }
+
+            throw new IllegalStateException();
+        }
+
+        public Direction[] getOutputs(Direction in) {
+            switch (this) {
+                case LEFT: return new Direction[] { in.rotateYClockwise() };
+                case RIGHT: return new Direction[] { in.rotateYCounterclockwise() };
+                case STRAIGHT: return new Direction[] { in.getOpposite() };
+                case T_LEFT: return new Direction[] { in.rotateYClockwise(), in.getOpposite() };
+                case T_RIGHT: return new Direction[] { in.rotateYCounterclockwise(), in.getOpposite() };
+                case T_SPLIT: return new Direction[] { in.rotateYClockwise(), in.rotateYCounterclockwise() };
+                case CROSS: return new Direction[] { in.rotateYClockwise(), in.rotateYCounterclockwise(), in.getOpposite() };
             }
 
             throw new IllegalStateException();
@@ -93,7 +104,6 @@ public class BlockMagicLine extends Block {
     public static final EnumProperty<Output> OUT = EnumProperty.of("out", Output.class);
 
     public BlockMagicLine() {
-        super(FabricBlockSettings.of(Material.DECORATION).noCollision().breakInstantly());
         setDefaultState(stateManager.getDefaultState().with(IN, Direction.SOUTH).with(OUT, Output.STRAIGHT));
     }
 
@@ -105,17 +115,6 @@ public class BlockMagicLine extends Block {
     @Override
     protected void appendProperties(Builder<Block, BlockState> builder) {
         builder.add(IN, OUT);
-    }
-
-    @Override
-    public boolean canPlaceAt(BlockState state, WorldView world, BlockPos pos) {
-        BlockPos blockPos = pos.down();
-        BlockState blockState = world.getBlockState(blockPos);
-        return this.canRunOnTop(world, blockPos, blockState);
-    }
-
-    private boolean canRunOnTop(BlockView world, BlockPos pos, BlockState floor) {
-        return floor.isSideSolidFullSquare(world, pos, Direction.UP);
     }
 
     public ActionResult onChalk(World world, BlockPos pos, BlockState state, Direction direction) {
@@ -137,8 +136,9 @@ public class BlockMagicLine extends Block {
         for (Direction check : Direction.Type.HORIZONTAL) {
             if (check == horiz) continue;
 
-            BlockState next = ctx.getWorld().getBlockState(ctx.getBlockPos().offset(check));
-            if (next.getBlock() == this && next.get(OUT).isOutput(next.get(IN), check.getOpposite())) {
+            BlockPos pos = ctx.getBlockPos().offset(check);
+            BlockState next = ctx.getWorld().getBlockState(pos);
+            if (next.getBlock() instanceof BlockMagic && ((BlockMagic) next.getBlock()).isOutput(ctx.getWorld(), pos, next, check.getOpposite())) {
                 in = check;
                 out = Output.withDirection(null, in, horiz);
                 break;
@@ -166,7 +166,7 @@ public class BlockMagicLine extends Block {
 
         // Check for forced
         BlockState currentOrigin = world.getBlockState(pos.offset(in));
-        if (currentOrigin.getBlock() == this && currentOrigin.get(OUT).isOutput(currentOrigin.get(IN), in.getOpposite())) {
+        if (currentOrigin.getBlock() instanceof BlockMagic && ((BlockMagic) currentOrigin.getBlock()).isOutput(world, pos.offset(in), currentOrigin, in.getOpposite())) {
             return state;
         }
 
@@ -175,7 +175,7 @@ public class BlockMagicLine extends Block {
             if (out.isOutput(in, check)) continue;
 
             BlockState next = world.getBlockState(pos.offset(check));
-            if (next.getBlock() == this && next.get(OUT).isOutput(next.get(IN), check.getOpposite())) {
+            if (next.getBlock() instanceof BlockMagic && ((BlockMagic) next.getBlock()).isOutput(world, pos.offset(check), next, check.getOpposite())) {
                 Output ret = null;
                 for (Direction dir : Direction.Type.HORIZONTAL) {
                     if (out.isOutput(in, dir)) {
@@ -197,6 +197,11 @@ public class BlockMagicLine extends Block {
     @Override
     public BlockState mirror(BlockState state, BlockMirror mirror) {
         return getDefaultState().with(IN, mirror.apply(state.get(IN)));
+    }
+
+    @Override
+    public boolean isOutput(WorldAccess world, BlockPos pos, BlockState state, Direction side) {
+        return state.get(OUT).isOutput(state.get(IN), side);
     }
     
 }

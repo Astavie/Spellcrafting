@@ -1,0 +1,19 @@
+{
+    "variants": {
+        "facing=north": {
+            "model": "spellcrafting:block/magic_circle_1x1"
+        },
+        "facing=east": {
+            "model": "spellcrafting:block/magic_circle_1x1",
+            "y": 90
+        },
+        "facing=south": {
+            "model": "spellcrafting:block/magic_circle_1x1",
+            "y": 180
+        },
+        "facing=west": {
+            "model": "spellcrafting:block/magic_circle_1x1",
+            "y": 270
+        }
+    }
+}

@@ -18,6 +18,7 @@ import astavie.spellcrafting.api.spell.target.TargetBlock;
 import astavie.spellcrafting.api.spell.target.TargetEntity;
 import astavie.spellcrafting.api.util.ItemList;
 import astavie.spellcrafting.api.util.ServerUtils;
+import astavie.spellcrafting.block.BlockMagicCircle1x1;
 import astavie.spellcrafting.block.BlockMagicLine;
 import astavie.spellcrafting.item.BlockItemMagicLine;
 import astavie.spellcrafting.item.ItemMirror;
@@ -56,6 +57,7 @@ import net.minecraft.client.render.RenderLayer;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.Items;
@@ -87,6 +89,7 @@ public class Spellcrafting implements ModInitializer, ClientModInitializer {
 	public static Item mirror = new ItemMirror();
 
 	public static Block magicLine = new BlockMagicLine();
+	public static Block magicCircle1x1 = new BlockMagicCircle1x1();
 
 	@Override
 	public void onInitialize() {
@@ -219,6 +222,9 @@ public class Spellcrafting implements ModInitializer, ClientModInitializer {
 		Registry.register(Registry.BLOCK, new Identifier("spellcrafting", "magic_line"), magicLine);
 		Registry.register(Registry.ITEM, new Identifier("spellcrafting", "magic_line"), new BlockItemMagicLine((BlockMagicLine) magicLine, new FabricItemSettings().group(ItemGroup.MISC)));
 
+		Registry.register(Registry.BLOCK, new Identifier("spellcrafting", "magic_circle_1x1"), magicCircle1x1);
+		Registry.register(Registry.ITEM, new Identifier("spellcrafting", "magic_circle_1x1"), new BlockItem(magicCircle1x1, new FabricItemSettings().group(ItemGroup.MISC)));
+
 		// Items
 		Registry.register(Registry.ITEM, new Identifier("spellcrafting", "spell"), spell);
 		Registry.register(Registry.ITEM, new Identifier("spellcrafting", "mirror"), mirror);
@@ -329,8 +335,8 @@ public class Spellcrafting implements ModInitializer, ClientModInitializer {
 
 	@Override
 	public void onInitializeClient() {
-		ColorProviderRegistry.BLOCK.register((state, world, pos, i) -> 0x7EF9FF, magicLine);
-		BlockRenderLayerMap.INSTANCE.putBlock(magicLine, RenderLayer.getTranslucent());
+		ColorProviderRegistry.BLOCK.register((state, world, pos, i) -> 0x7EF9FF, magicLine, magicCircle1x1);
+		BlockRenderLayerMap.INSTANCE.putBlocks(RenderLayer.getTranslucent(), magicLine, magicCircle1x1);
 	}
 
 }

@@ -28,7 +28,7 @@ public class DebugChunkGeneratorMixin {
 	@Mutable @Shadow @Final private static int Z_SIDE_LENGTH;
 
 	@Inject(method = "<init>", at = @At("TAIL"))
-	public void uwuThisShitUp(Registry<Biome> biomeRegistry, CallbackInfo info) {
+	public void init(Registry<Biome> biomeRegistry, CallbackInfo info) {
 		BLOCK_STATES.clear();
 		BLOCK_STATES.addAll(StreamSupport.stream(Registry.BLOCK.spliterator(), false).flatMap((block) -> {
 			return block.getStateManager().getStates().stream();
