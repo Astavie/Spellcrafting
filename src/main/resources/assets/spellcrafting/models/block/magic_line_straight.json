@@ -1,17 +1,7 @@
 {
-    "ambientocclusion": false,
+    "parent": "spellcrafting:block/magic",
     "textures": {
         "particle": "spellcrafting:block/magic_line_straight",
         "texture": "spellcrafting:block/magic_line_straight"
-    },
-    "elements": [
-        {   "from": [ 0, 0.25, 0 ],
-            "to": [ 16, 0.25, 16 ],
-            "shade": false,
-            "faces": {
-                "down":    { "uv": [ 0,  0, 16, 16 ], "texture": "#texture", "tintindex": 0 },
-                "up":    { "uv": [ 0,  0, 16, 16 ], "texture": "#texture", "tintindex": 0 }
-            }
-        }
-    ]
+    }
 }
