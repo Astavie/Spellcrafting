@@ -22,7 +22,7 @@ import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldAccess;
 
-public class BlockMagicLine extends BlockMagic {
+public class MagicLineBlock extends MagicBlock {
 
     public static enum Output implements StringIdentifiable {
         LEFT, RIGHT, STRAIGHT, T_LEFT, T_RIGHT, T_SPLIT, CROSS;
@@ -103,7 +103,7 @@ public class BlockMagicLine extends BlockMagic {
     public static final DirectionProperty IN = DirectionProperty.of("in", Direction.Type.HORIZONTAL);
     public static final EnumProperty<Output> OUT = EnumProperty.of("out", Output.class);
 
-    public BlockMagicLine() {
+    public MagicLineBlock() {
         setDefaultState(stateManager.getDefaultState().with(IN, Direction.SOUTH).with(OUT, Output.STRAIGHT));
     }
 
@@ -138,7 +138,7 @@ public class BlockMagicLine extends BlockMagic {
 
             BlockPos pos = ctx.getBlockPos().offset(check);
             BlockState next = ctx.getWorld().getBlockState(pos);
-            if (next.getBlock() instanceof BlockMagic && ((BlockMagic) next.getBlock()).isOutput(ctx.getWorld(), pos, next, check.getOpposite())) {
+            if (next.getBlock() instanceof MagicBlock && ((MagicBlock) next.getBlock()).isOutput(ctx.getWorld(), pos, next, check.getOpposite())) {
                 in = check;
                 out = Output.withDirection(null, in, horiz);
                 break;
@@ -166,7 +166,7 @@ public class BlockMagicLine extends BlockMagic {
 
         // Check for forced
         BlockState currentOrigin = world.getBlockState(pos.offset(in));
-        if (currentOrigin.getBlock() instanceof BlockMagic && ((BlockMagic) currentOrigin.getBlock()).isOutput(world, pos.offset(in), currentOrigin, in.getOpposite())) {
+        if (currentOrigin.getBlock() instanceof MagicBlock && ((MagicBlock) currentOrigin.getBlock()).isOutput(world, pos.offset(in), currentOrigin, in.getOpposite())) {
             return state;
         }
 
@@ -175,7 +175,7 @@ public class BlockMagicLine extends BlockMagic {
             if (out.isOutput(in, check)) continue;
 
             BlockState next = world.getBlockState(pos.offset(check));
-            if (next.getBlock() instanceof BlockMagic && ((BlockMagic) next.getBlock()).isOutput(world, pos.offset(check), next, check.getOpposite())) {
+            if (next.getBlock() instanceof MagicBlock && ((MagicBlock) next.getBlock()).isOutput(world, pos.offset(check), next, check.getOpposite())) {
                 Output ret = null;
                 for (Direction dir : Direction.Type.HORIZONTAL) {
                     if (out.isOutput(in, dir)) {

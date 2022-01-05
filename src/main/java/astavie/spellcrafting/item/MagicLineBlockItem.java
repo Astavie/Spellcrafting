@@ -1,6 +1,6 @@
 package astavie.spellcrafting.item;
 
-import astavie.spellcrafting.block.BlockMagicLine;
+import astavie.spellcrafting.block.MagicLineBlock;
 import net.minecraft.block.BlockState;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemUsageContext;
@@ -8,9 +8,9 @@ import net.minecraft.sound.BlockSoundGroup;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.util.ActionResult;
 
-public class BlockItemMagicLine extends BlockItem {
+public class MagicLineBlockItem extends BlockItem {
 
-    public BlockItemMagicLine(BlockMagicLine block, Settings settings) {
+    public MagicLineBlockItem(MagicLineBlock block, Settings settings) {
         super(block, settings);
     }
 
@@ -21,7 +21,7 @@ public class BlockItemMagicLine extends BlockItem {
             return super.useOnBlock(context);
         }
 
-        ActionResult result = ((BlockMagicLine) getBlock()).onChalk(context.getWorld(), context.getBlockPos(), block, context.getPlayerFacing());
+        ActionResult result = ((MagicLineBlock) getBlock()).onChalk(context.getWorld(), context.getBlockPos(), block, context.getPlayerFacing());
         
         if (result.isAccepted()) {
             BlockSoundGroup blockSoundGroup = block.getSoundGroup();

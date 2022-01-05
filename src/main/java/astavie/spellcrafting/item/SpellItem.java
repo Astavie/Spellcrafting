@@ -20,9 +20,9 @@ import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.world.World;
 
-public class ItemSpell extends Item {
+public class SpellItem extends Item {
 
-    public ItemSpell() {
+    public SpellItem() {
         super(new FabricItemSettings().group(ItemGroup.MISC).rarity(Rarity.RARE).equipmentSlot(stack -> EquipmentSlot.OFFHAND).maxCount(1));
     }
 

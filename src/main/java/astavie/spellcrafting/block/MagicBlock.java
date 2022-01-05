@@ -12,9 +12,9 @@ import net.minecraft.world.BlockView;
 import net.minecraft.world.WorldAccess;
 import net.minecraft.world.WorldView;
 
-public abstract class BlockMagic extends Block {
+public abstract class MagicBlock extends Block {
 
-    public BlockMagic() {
+    public MagicBlock() {
         super(FabricBlockSettings.of(Material.DECORATION).noCollision().breakInstantly());
     }
 

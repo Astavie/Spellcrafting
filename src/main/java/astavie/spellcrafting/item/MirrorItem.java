@@ -9,9 +9,9 @@ import net.minecraft.item.ItemGroup;
 
 // Mirror texture by Arna57
 
-public class ItemMirror extends Item implements Focus {
+public class MirrorItem extends Item implements Focus {
 
-    public ItemMirror() {
+    public MirrorItem() {
         super(new FabricItemSettings().group(ItemGroup.MISC).maxCount(1));
     }
 
