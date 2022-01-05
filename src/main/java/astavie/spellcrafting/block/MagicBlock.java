@@ -9,16 +9,21 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.world.BlockView;
-import net.minecraft.world.WorldAccess;
 import net.minecraft.world.WorldView;
 
 public abstract class MagicBlock extends Block {
+
+    // TODO: maximum channel transfer
 
     public MagicBlock() {
         super(FabricBlockSettings.of(Material.DECORATION).noCollision().breakInstantly());
     }
 
-    public abstract boolean isOutput(WorldAccess world, BlockPos pos, BlockState state, Direction side);
+    public abstract boolean isOutput(WorldView world, BlockPos pos, BlockState state, Direction side);
+
+    public abstract Direction[] getOutputs(WorldView world, BlockPos pos, BlockState state);
+
+    public abstract boolean isInput(WorldView world, BlockPos pos, BlockState state, Direction side);
 
     @Override
     public VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {

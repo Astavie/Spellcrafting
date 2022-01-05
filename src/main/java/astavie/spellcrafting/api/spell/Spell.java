@@ -47,6 +47,9 @@ public class Spell {
         public Node(@NotNull NodeType type) {
             this(type, 1);
         }
+        public NodeType getType() {
+            return type;
+        }
         public int getSize() {
             return size;
         }

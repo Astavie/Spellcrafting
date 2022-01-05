@@ -28,8 +28,7 @@ public class SpellItem extends Item {
 
     @Override
     public boolean hasGlint(ItemStack stack) {
-        // TODO: Only glint on active
-        return true;
+        return stack.getSubNbt("spellcrafting:spell") != null;
     }
 
     @Override

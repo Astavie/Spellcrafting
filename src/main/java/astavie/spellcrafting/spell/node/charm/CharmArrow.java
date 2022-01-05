@@ -9,6 +9,7 @@ import astavie.spellcrafting.api.spell.target.DistancedTarget;
 import astavie.spellcrafting.api.spell.target.Target;
 import astavie.spellcrafting.api.spell.target.TargetEntity;
 import astavie.spellcrafting.api.util.ItemList;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.projectile.ArrowEntity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity.PickupPermission;
 import net.minecraft.item.ItemStack;
@@ -21,6 +22,9 @@ public class CharmArrow implements NodeCharm {
 
     @Override
     public @NotNull SpellType<?>[] getParameters(@NotNull Spell.Node node) {
+        if (node.getSize() == 1) {
+            return new SpellType<?>[] { SpellType.TARGET };
+        }
         return new SpellType<?>[] { SpellType.TARGET, SpellType.TARGET };
     }
 
@@ -37,13 +41,29 @@ public class CharmArrow implements NodeCharm {
     @Override
     public @NotNull Object[] cast(@NotNull Spell spell, @NotNull Spell.ChannelNode node, @NotNull Object[] input) {
         DistancedTarget origin = (DistancedTarget) input[0];
-        DistancedTarget target = (DistancedTarget) input[1];
+        DistancedTarget target = node.node().getSize() == 1 ? null : (DistancedTarget) input[1];
 
-        if (!spell.existsAndFirstInRange(origin, target, false)) {
+        if (target == null) {
+            if (!spell.existsAndInRange(origin)) {
+                return new Object[1];
+            }
+        } else if (!spell.existsAndFirstInRange(origin, target, false)) {
             return new Object[1];
         }
 
-        Vec3d dir = target.getTarget().getPos().subtract(origin.getTarget().getPos());
+        // Get target
+        Vec3d t = target == null ? null : target.getTarget().getPos();
+        if (t == null && origin.getTarget() instanceof TargetEntity) {
+            Entity source = ((TargetEntity) origin.getTarget()).getEntity();
+            t = source.getEyePos().add(source.getRotationVector());
+        }
+
+        if (t == null) {
+            spell.onInvalidPosition(origin.getTarget().getWorld(), origin.getTarget().getPos());
+            return new Object[1];
+        }
+
+        Vec3d dir = t.subtract(origin.getTarget().getPos());
         float f = 1.0f;
 
         // Create arrow entity

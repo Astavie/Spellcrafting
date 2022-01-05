@@ -18,10 +18,11 @@ import astavie.spellcrafting.api.spell.target.TargetBlock;
 import astavie.spellcrafting.api.spell.target.TargetEntity;
 import astavie.spellcrafting.api.util.ItemList;
 import astavie.spellcrafting.api.util.ServerUtils;
-import astavie.spellcrafting.block.MagicCircle1x1Block;
+import astavie.spellcrafting.block.MagicCircleBlock;
 import astavie.spellcrafting.block.MagicLineBlock;
 import astavie.spellcrafting.block.entity.MagicCircleBlockEntity;
 import astavie.spellcrafting.client.render.block.entity.MagicCircleBlockEntityRenderer;
+import astavie.spellcrafting.item.MagicCircleBlockItem;
 import astavie.spellcrafting.item.MagicLineBlockItem;
 import astavie.spellcrafting.item.MirrorItem;
 import astavie.spellcrafting.item.SpellItem;
@@ -56,13 +57,11 @@ import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
 import net.fabricmc.fabric.api.transfer.v1.context.ContainerItemContext;
-import net.minecraft.block.Block;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.Items;
@@ -93,8 +92,16 @@ public class Spellcrafting implements ModInitializer, ClientModInitializer {
 	public static Item spell = new SpellItem();
 	public static Item mirror = new MirrorItem();
 
-	public static Block magicLine = new MagicLineBlock();
-	public static Block magicCircle1x1 = new MagicCircle1x1Block();
+	public static MagicLineBlock magicLine = new MagicLineBlock();
+	public static MagicCircleBlock magicCircle1x1;
+	public static MagicCircleBlock magicCircle2x2;
+
+	static {
+		MagicCircleBlock.SIZE = 1;
+		magicCircle1x1 = new MagicCircleBlock();
+		MagicCircleBlock.SIZE = 2;
+		magicCircle2x2 = new MagicCircleBlock();
+	}
 
 	public static BlockEntityType<MagicCircleBlockEntity> magicCircleBlockEntity;
 
@@ -123,15 +130,11 @@ public class Spellcrafting implements ModInitializer, ClientModInitializer {
 
 		{
 			Spell.Node cast    = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:cast")));
-			Spell.Node target  = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:target")));
 			Spell.Node beam    = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:beam")));
 			Spell.Node explode = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:explode")));
 
 			Multimap<Socket, Socket> nodes = HashMultimap.create();
-			nodes.put(new Socket(cast, 0), new Socket(target, 0));
-
 			nodes.put(new Socket(cast, 0), new Socket(beam, 0));
-			nodes.put(new Socket(target, 0), new Socket(beam, 1));
 
 			nodes.put(new Socket(beam, 0), new Socket(explode, 0));
 
@@ -208,17 +211,13 @@ public class Spellcrafting implements ModInitializer, ClientModInitializer {
 		{
 			Spell.Node cast    = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:cast")));
 			Spell.Node repeat  = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:repeat")));
-			Spell.Node view    = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:view")));
 			Spell.Node arrow   = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:arrow")));
 			Spell.Node ignite  = new Spell.Node(NodeType.REGISTRY.get(new Identifier("spellcrafting:ignite")));
 
 			Multimap<Socket, Socket> nodes = HashMultimap.create();
 			nodes.put(new Socket(cast, 0), new Socket(repeat, 0));
 
-			nodes.put(new Socket(repeat, 0), new Socket(view, 0));
-
 			nodes.put(new Socket(repeat, 0), new Socket(arrow, 0));
-			nodes.put(new Socket(view, 0), new Socket(arrow, 1));
 
 			nodes.put(new Socket(arrow, 0), new Socket(ignite, 0));
 
@@ -227,13 +226,16 @@ public class Spellcrafting implements ModInitializer, ClientModInitializer {
 
 		// Blocks
 		Registry.register(Registry.BLOCK, new Identifier("spellcrafting", "magic_line"), magicLine);
-		Registry.register(Registry.ITEM, new Identifier("spellcrafting", "magic_line"), new MagicLineBlockItem((MagicLineBlock) magicLine, new FabricItemSettings().group(ItemGroup.MISC)));
+		Registry.register(Registry.ITEM, new Identifier("spellcrafting", "magic_line"), new MagicLineBlockItem(magicLine, new FabricItemSettings().group(ItemGroup.MISC)));
 
 		Registry.register(Registry.BLOCK, new Identifier("spellcrafting", "magic_circle_1x1"), magicCircle1x1);
-		Registry.register(Registry.ITEM, new Identifier("spellcrafting", "magic_circle_1x1"), new BlockItem(magicCircle1x1, new FabricItemSettings().group(ItemGroup.MISC)));
+		Registry.register(Registry.ITEM, new Identifier("spellcrafting", "magic_circle_1x1"), new MagicCircleBlockItem(magicCircle1x1, new FabricItemSettings().group(ItemGroup.MISC)));
+
+		Registry.register(Registry.BLOCK, new Identifier("spellcrafting", "magic_circle_2x2"), magicCircle2x2);
+		Registry.register(Registry.ITEM, new Identifier("spellcrafting", "magic_circle_2x2"), new MagicCircleBlockItem(magicCircle2x2, new FabricItemSettings().group(ItemGroup.MISC)));
 
 		// Block Entities
-		magicCircleBlockEntity = Registry.register(Registry.BLOCK_ENTITY_TYPE, new Identifier("spellcrafting", "magic_circle"), FabricBlockEntityTypeBuilder.create(MagicCircleBlockEntity::new, magicCircle1x1).build());
+		magicCircleBlockEntity = Registry.register(Registry.BLOCK_ENTITY_TYPE, new Identifier("spellcrafting", "magic_circle"), FabricBlockEntityTypeBuilder.create(MagicCircleBlockEntity::new, magicCircle1x1, magicCircle2x2).build());
 
 		// Items
 		Registry.register(Registry.ITEM, new Identifier("spellcrafting", "spell"), spell);
@@ -322,8 +324,13 @@ public class Spellcrafting implements ModInitializer, ClientModInitializer {
 		if (container == null) {
 			return null;
 		}
+
+		Spell spell = container.getOrCreateSpell(Caster.ENTITY_CASTER.find(player, null));
+		if (spell == null) {
+			return null;
+		}
 		
-		return new Pair<>(container.getOrCreateSpell(Caster.ENTITY_CASTER.find(player, null)), focus);
+		return new Pair<>(spell, focus);
 	}
 
 	public static void cast(HitResult hit) {
@@ -345,8 +352,8 @@ public class Spellcrafting implements ModInitializer, ClientModInitializer {
 
 	@Override
 	public void onInitializeClient() {
-		ColorProviderRegistry.BLOCK.register((state, world, pos, i) -> 0x7EF9FF, magicLine, magicCircle1x1);
-		BlockRenderLayerMap.INSTANCE.putBlocks(RenderLayer.getTranslucent(), magicLine, magicCircle1x1);
+		ColorProviderRegistry.BLOCK.register((state, world, pos, i) -> 0x7EF9FF, magicLine, magicCircle1x1, magicCircle2x2);
+		BlockRenderLayerMap.INSTANCE.putBlocks(RenderLayer.getTranslucent(), magicLine, magicCircle1x1, magicCircle2x2);
 		BlockEntityRendererRegistry.register(magicCircleBlockEntity, MagicCircleBlockEntityRenderer::new);
 	}
 

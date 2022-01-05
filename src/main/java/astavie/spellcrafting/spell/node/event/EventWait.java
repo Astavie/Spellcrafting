@@ -33,7 +33,8 @@ public class EventWait implements NodeEvent<Void> {
 
     @Override
     public @Nullable Spell.Event getEvent(@NotNull Spell spell, @NotNull Spell.ChannelNode node, @NotNull Object[] input) {
-        return new Spell.Event(Spell.Event.TICK_ID, NbtLong.of(ServerUtils.getTime() + 10)); // TODO: Variable time
+        // TODO: Variable time
+        return new Spell.Event(Spell.Event.TICK_ID, NbtLong.of(ServerUtils.getTime() + 10));
     }
 
     @Override

@@ -21,6 +21,7 @@ import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldAccess;
+import net.minecraft.world.WorldView;
 
 public class MagicLineBlock extends MagicBlock {
 
@@ -200,8 +201,18 @@ public class MagicLineBlock extends MagicBlock {
     }
 
     @Override
-    public boolean isOutput(WorldAccess world, BlockPos pos, BlockState state, Direction side) {
+    public boolean isOutput(WorldView world, BlockPos pos, BlockState state, Direction side) {
         return state.get(OUT).isOutput(state.get(IN), side);
+    }
+
+    @Override
+    public boolean isInput(WorldView world, BlockPos pos, BlockState state, Direction side) {
+        return state.get(IN) == side;
+    }
+
+    @Override
+    public Direction[] getOutputs(WorldView world, BlockPos pos, BlockState state) {
+        return state.get(OUT).getOutputs(state.get(IN));
     }
     
 }

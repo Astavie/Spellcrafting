@@ -16,7 +16,7 @@ public interface NodeType {
 
     @NotNull SpellType<?>[] getParameters(@NotNull Spell.Node node);
 
-    @NotNull SpellType<?>[] getReturnTypes(@NotNull Spell spell, @NotNull Spell.Node node);
+    @NotNull SpellType<?>[] getReturnTypes(@Nullable Spell spell, @NotNull Spell.Node node);
 
     @NotNull ItemList getComponents(@NotNull Spell.Node node);
 

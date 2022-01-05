@@ -24,6 +24,9 @@ public class CharmBeam implements NodeCharm {
 
     @Override
     public @NotNull SpellType<?>[] getParameters(@NotNull Spell.Node node) {
+        if (node.getSize() == 1) {
+            return new SpellType<?>[] { SpellType.TARGET };
+        }
         return new SpellType<?>[] { SpellType.TARGET, SpellType.TARGET };
     }
 
@@ -41,19 +44,32 @@ public class CharmBeam implements NodeCharm {
     @SuppressWarnings("resource")
     public @NotNull Object[] cast(@NotNull Spell spell, @NotNull Spell.ChannelNode node, @NotNull Object[] input) {
         DistancedTarget t1 = (DistancedTarget) input[0];
-        DistancedTarget t2 = (DistancedTarget) input[1];
+        DistancedTarget t2 = node.node().getSize() == 1 ? null : (DistancedTarget) input[1];
 
-        if (!spell.existsAndFirstInRange(t1, t2, false)) {
+        if (t2 == null) {
+            if (!spell.existsAndInRange(t1)) {
+                return new Object[1];
+            }
+        } else if (!spell.existsAndFirstInRange(t1, t2, false)) {
             return new Object[1];
         }
 
         // Get target
         Entity source = null;
+        Vec3d t = t2 == null ? null : t2.getTarget().getPos();
         if (t1.getTarget() instanceof TargetEntity) {
             source = ((TargetEntity) t1.getTarget()).getEntity();
+            if (t == null) {
+                t = source.getEyePos().add(source.getRotationVector());
+            }
         }
 
-        Vec3d dir = t2.getTarget().getPos().subtract(t1.getTarget().getPos()).normalize();
+        if (t == null) {
+            spell.onInvalidPosition(t1.getTarget().getWorld(), t1.getTarget().getPos());
+            return new Object[1];
+        }
+
+        Vec3d dir = t.subtract(t1.getTarget().getPos()).normalize();
         // TODO: Variable distance
         HitResult result = RaycastUtils.raycast(t1.getTarget().getWorld(), t1.getTarget().getPos(), t1.getTarget().getPos().add(dir.multiply(20)), source);
 
@@ -67,7 +83,9 @@ public class CharmBeam implements NodeCharm {
 
         // Return target
         Target target = Spellcrafting.getTarget(t1.getTarget().getWorld(), result);
-        spell.schedule(node);
+
+        // TODO: Better solution
+        // spell.schedule(node);
 
         return new Object[] { new DistancedTarget(target, t1.getOrigin().withPos(target.getPos()), t1.getCaster()) };
     }

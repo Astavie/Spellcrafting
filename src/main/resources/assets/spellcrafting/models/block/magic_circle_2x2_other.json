@@ -1,0 +1,6 @@
+{
+    "ambientocclusion": false,
+    "textures": {
+        "particle": "spellcrafting:block/magic_circle_1x1"
+    }
+}
