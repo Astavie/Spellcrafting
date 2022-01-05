@@ -73,10 +73,10 @@ public class BlockMagicLine extends Block {
                     if (direction == in.rotateYClockwise()) return T_LEFT;
                     break;
                 case T_LEFT:
-                    if (direction == in.rotateYClockwise()) return CROSS;
+                    if (direction == in.rotateYCounterclockwise()) return CROSS;
                     break;
                 case T_RIGHT:
-                    if (direction == in.rotateYCounterclockwise()) return CROSS;
+                    if (direction == in.rotateYClockwise()) return CROSS;
                     break;
                 case T_SPLIT:
                     if (direction == in.getOpposite()) return CROSS;

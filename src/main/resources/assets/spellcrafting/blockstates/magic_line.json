@@ -62,6 +62,54 @@
         "in=east,out=t_split": {
             "model": "spellcrafting:block/magic_line_t_split",
             "y": 270
+        },
+
+        "in=south,out=t_left": {
+            "model": "spellcrafting:block/magic_line_t_left"
+        },
+        "in=west,out=t_left": {
+            "model": "spellcrafting:block/magic_line_t_left",
+            "y": 90
+        },
+        "in=north,out=t_left": {
+            "model": "spellcrafting:block/magic_line_t_left",
+            "y": 180
+        },
+        "in=east,out=t_left": {
+            "model": "spellcrafting:block/magic_line_t_left",
+            "y": 270
+        },
+
+        "in=south,out=t_right": {
+            "model": "spellcrafting:block/magic_line_t_right"
+        },
+        "in=west,out=t_right": {
+            "model": "spellcrafting:block/magic_line_t_right",
+            "y": 90
+        },
+        "in=north,out=t_right": {
+            "model": "spellcrafting:block/magic_line_t_right",
+            "y": 180
+        },
+        "in=east,out=t_right": {
+            "model": "spellcrafting:block/magic_line_t_right",
+            "y": 270
+        },
+
+        "in=south,out=cross": {
+            "model": "spellcrafting:block/magic_line_cross"
+        },
+        "in=west,out=cross": {
+            "model": "spellcrafting:block/magic_line_cross",
+            "y": 90
+        },
+        "in=north,out=cross": {
+            "model": "spellcrafting:block/magic_line_cross",
+            "y": 180
+        },
+        "in=east,out=cross": {
+            "model": "spellcrafting:block/magic_line_cross",
+            "y": 270
         }
     }
 }
