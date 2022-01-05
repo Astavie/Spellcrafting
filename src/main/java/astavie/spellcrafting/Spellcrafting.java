@@ -10,8 +10,8 @@ import astavie.spellcrafting.api.spell.Attunable;
 import astavie.spellcrafting.api.spell.Caster;
 import astavie.spellcrafting.api.spell.Focus;
 import astavie.spellcrafting.api.spell.Spell;
-import astavie.spellcrafting.api.spell.SpellContainer;
 import astavie.spellcrafting.api.spell.Spell.Socket;
+import astavie.spellcrafting.api.spell.SpellContainer;
 import astavie.spellcrafting.api.spell.node.NodeType;
 import astavie.spellcrafting.api.spell.target.Target;
 import astavie.spellcrafting.api.spell.target.TargetBlock;
@@ -19,6 +19,7 @@ import astavie.spellcrafting.api.spell.target.TargetEntity;
 import astavie.spellcrafting.api.util.ItemList;
 import astavie.spellcrafting.api.util.ServerUtils;
 import astavie.spellcrafting.block.BlockMagicLine;
+import astavie.spellcrafting.item.BlockItemMagicLine;
 import astavie.spellcrafting.item.ItemMirror;
 import astavie.spellcrafting.item.ItemSpell;
 import astavie.spellcrafting.spell.CasterPlayer;
@@ -55,7 +56,6 @@ import net.minecraft.client.render.RenderLayer;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.Items;
@@ -217,7 +217,7 @@ public class Spellcrafting implements ModInitializer, ClientModInitializer {
 
 		// Blocks
 		Registry.register(Registry.BLOCK, new Identifier("spellcrafting", "magic_line"), magicLine);
-		Registry.register(Registry.ITEM, new Identifier("spellcrafting", "magic_line"), new BlockItem(magicLine, new FabricItemSettings().group(ItemGroup.MISC)));
+		Registry.register(Registry.ITEM, new Identifier("spellcrafting", "magic_line"), new BlockItemMagicLine((BlockMagicLine) magicLine, new FabricItemSettings().group(ItemGroup.MISC)));
 
 		// Items
 		Registry.register(Registry.ITEM, new Identifier("spellcrafting", "spell"), spell);

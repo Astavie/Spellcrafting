@@ -10,36 +10,91 @@ import net.minecraft.block.ShapeContext;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.state.StateManager.Builder;
+import net.minecraft.state.property.DirectionProperty;
 import net.minecraft.state.property.EnumProperty;
+import net.minecraft.util.ActionResult;
 import net.minecraft.util.BlockMirror;
 import net.minecraft.util.BlockRotation;
 import net.minecraft.util.StringIdentifiable;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.Direction.Axis;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.world.BlockView;
+import net.minecraft.world.World;
 import net.minecraft.world.WorldAccess;
 import net.minecraft.world.WorldView;
 
 public class BlockMagicLine extends Block {
 
-    public static enum InOut implements StringIdentifiable {
-        IN, OUT, NONE;
+    private static enum Output implements StringIdentifiable {
+        LEFT, RIGHT, STRAIGHT, T_LEFT, T_RIGHT, T_SPLIT, CROSS;
 
         @Override
         public String asString() {
             return toString().toLowerCase();
         }
+
+        public boolean isOutput(Direction in, Direction direction) {
+            if (in == direction || direction.getAxis() == Axis.Y) return false;
+
+            switch (this) {
+                case LEFT: return direction == in.rotateYClockwise();
+                case RIGHT: return direction == in.rotateYCounterclockwise();
+                case STRAIGHT: return direction == in.getOpposite();
+                case T_LEFT: return direction != in.rotateYCounterclockwise();
+                case T_RIGHT: return direction != in.rotateYClockwise();
+                case T_SPLIT: return direction != in.getOpposite();
+                case CROSS: return true;
+            }
+
+            throw new IllegalStateException();
+        }
+
+        public static Output withDirection(Output out, Direction in, Direction direction) {
+            if (out == null) {
+                if (direction == in.getOpposite()) return STRAIGHT;
+                if (direction == in.rotateYCounterclockwise()) return RIGHT;
+                if (direction == in.rotateYClockwise()) return LEFT;
+                return null;
+            }
+
+            switch (out) {
+                case LEFT:
+                    if (direction == in.getOpposite()) return T_LEFT;
+                    if (direction == in.rotateYCounterclockwise()) return T_SPLIT;
+                    break;
+                case RIGHT:
+                    if (direction == in.getOpposite()) return T_RIGHT;
+                    if (direction == in.rotateYClockwise()) return T_SPLIT;
+                    break;
+                case STRAIGHT:
+                    if (direction == in.rotateYCounterclockwise()) return T_RIGHT;
+                    if (direction == in.rotateYClockwise()) return T_LEFT;
+                    break;
+                case T_LEFT:
+                    if (direction == in.rotateYClockwise()) return CROSS;
+                    break;
+                case T_RIGHT:
+                    if (direction == in.rotateYCounterclockwise()) return CROSS;
+                    break;
+                case T_SPLIT:
+                    if (direction == in.getOpposite()) return CROSS;
+                    break;
+                case CROSS:
+                    break;
+            }
+
+            return out;
+        }
     }
 
-    public static final EnumProperty<InOut> NORTH = EnumProperty.of("north", InOut.class);
-    public static final EnumProperty<InOut> SOUTH = EnumProperty.of("south", InOut.class);
-    public static final EnumProperty<InOut> EAST = EnumProperty.of("east", InOut.class);
-    public static final EnumProperty<InOut> WEST = EnumProperty.of("west", InOut.class);
+    public static final DirectionProperty IN = DirectionProperty.of("in", Direction.Type.HORIZONTAL);
+    public static final EnumProperty<Output> OUT = EnumProperty.of("out", Output.class);
 
     public BlockMagicLine() {
         super(FabricBlockSettings.of(Material.DECORATION).noCollision().breakInstantly());
-        setDefaultState(stateManager.getDefaultState().with(NORTH, InOut.OUT).with(SOUTH, InOut.IN).with(EAST, InOut.NONE).with(WEST, InOut.NONE));
+        setDefaultState(stateManager.getDefaultState().with(IN, Direction.SOUTH).with(OUT, Output.STRAIGHT));
     }
 
     @Override
@@ -49,7 +104,7 @@ public class BlockMagicLine extends Block {
 
     @Override
     protected void appendProperties(Builder<Block, BlockState> builder) {
-        builder.add(NORTH, SOUTH, EAST, WEST);
+        builder.add(IN, OUT);
     }
 
     @Override
@@ -63,49 +118,34 @@ public class BlockMagicLine extends Block {
         return floor.isSideSolidFullSquare(world, pos, Direction.UP);
     }
 
-    private EnumProperty<InOut> getEnum(Direction dir) {
-        switch (dir) {
-            case NORTH:
-                return NORTH;
-            case SOUTH:
-                return SOUTH;
-            case EAST:
-                return EAST;
-            case WEST:
-                return WEST;
-            default:
-                return null;
+    public ActionResult onChalk(World world, BlockPos pos, BlockState state, Direction direction) {
+        Output current = state.get(OUT);
+        Output with = Output.withDirection(current, state.get(IN), direction);
+        if (current != with) {
+            world.setBlockState(pos, state.with(OUT, with), Block.NOTIFY_LISTENERS);
+            return ActionResult.success(world.isClient);
         }
+        return ActionResult.PASS;
     }
 
     @Override
     public BlockState getPlacementState(ItemPlacementContext ctx) {
         Direction horiz = ctx.getPlayerFacing();
         Direction in = horiz.getOpposite();
+        Output out = Output.STRAIGHT;
 
         for (Direction check : Direction.Type.HORIZONTAL) {
             if (check == horiz) continue;
 
             BlockState next = ctx.getWorld().getBlockState(ctx.getBlockPos().offset(check));
-            if (next.getBlock() instanceof BlockMagicLine && next.get(getEnum(check.getOpposite())) == InOut.OUT) {
+            if (next.getBlock() == this && next.get(OUT).isOutput(next.get(IN), check.getOpposite())) {
                 in = check;
+                out = Output.withDirection(null, in, horiz);
                 break;
             }
         }
 
-        return getDefaultState()
-            .with(getEnum(horiz), InOut.OUT)
-            .with(getEnum(horiz.rotateYClockwise()), horiz.rotateYClockwise() == in ? InOut.IN : InOut.NONE)
-            .with(getEnum(horiz.getOpposite()), horiz.getOpposite() == in ? InOut.IN : InOut.NONE)
-            .with(getEnum(horiz.rotateYCounterclockwise()), horiz.rotateYCounterclockwise() == in ? InOut.IN : InOut.NONE);
-    }
-
-    public Direction getSide(BlockState state, InOut inout) {
-        if (state.get(NORTH) == inout) return Direction.NORTH;
-        if (state.get(SOUTH) == inout) return Direction.SOUTH;
-        if (state.get(WEST) == inout) return Direction.WEST;
-        if (state.get(EAST) == inout) return Direction.EAST;
-        return null;
+        return getDefaultState().with(IN, in).with(OUT, out);
     }
 
     @Override
@@ -121,62 +161,42 @@ public class BlockMagicLine extends Block {
             world.createAndScheduleBlockTick(pos, this, 1);
         }
 
-        Direction out = getSide(state, InOut.OUT);
-        Direction in = getSide(state, InOut.IN);
-        if (out == null || in == null) {
+        Direction in = state.get(IN);
+        Output out = state.get(OUT);
+
+        // Check for forced
+        BlockState currentOrigin = world.getBlockState(pos.offset(in));
+        if (currentOrigin.getBlock() == this && currentOrigin.get(OUT).isOutput(currentOrigin.get(IN), in.getOpposite())) {
             return state;
         }
 
-        // Check for forced straight beginning
-        if (out.getOpposite() == in) {
-            BlockState currentOrigin = world.getBlockState(pos.offset(in));
-            if (currentOrigin.getBlock() instanceof BlockMagicLine && currentOrigin.get(getEnum(in.getOpposite())) == InOut.OUT) {
-                return state;
-            }
-        }
-
         // Recalculate direction
-        in = out.getOpposite();
-
-        boolean multiple = false;
-
         for (Direction check : Direction.Type.HORIZONTAL) {
-            if (check == out) continue;
+            if (out.isOutput(in, check)) continue;
 
             BlockState next = world.getBlockState(pos.offset(check));
-            if (next.getBlock() instanceof BlockMagicLine && next.get(getEnum(check.getOpposite())) == InOut.OUT) {
-                if (multiple) {
-                    in = out.getOpposite();
-                    break;
+            if (next.getBlock() == this && next.get(OUT).isOutput(next.get(IN), check.getOpposite())) {
+                Output ret = null;
+                for (Direction dir : Direction.Type.HORIZONTAL) {
+                    if (out.isOutput(in, dir)) {
+                        ret = Output.withDirection(ret, check, dir);
+                    }
                 }
-
-                in = check;
-                multiple = true;
+                return state.with(IN, check).with(OUT, ret);
             }
         }
 
-        return state
-            .with(getEnum(out.rotateYClockwise()), out.rotateYClockwise() == in ? InOut.IN : InOut.NONE)
-            .with(getEnum(out.getOpposite()), out.getOpposite() == in ? InOut.IN : InOut.NONE)
-            .with(getEnum(out.rotateYCounterclockwise()), out.rotateYCounterclockwise() == in ? InOut.IN : InOut.NONE);
+        return state;
     }
 
     @Override
     public BlockState rotate(BlockState state, BlockRotation rotation) {
-        return getDefaultState()
-            .with(NORTH, state.get(getEnum(rotation.rotate(Direction.NORTH))))
-            .with(SOUTH, state.get(getEnum(rotation.rotate(Direction.SOUTH))))
-            .with(EAST, state.get(getEnum(rotation.rotate(Direction.EAST))))
-            .with(WEST, state.get(getEnum(rotation.rotate(Direction.WEST))));
+        return getDefaultState().with(IN, rotation.rotate(state.get(IN)));
     }
 
     @Override
     public BlockState mirror(BlockState state, BlockMirror mirror) {
-        return getDefaultState()
-            .with(NORTH, state.get(getEnum(mirror.apply(Direction.NORTH))))
-            .with(SOUTH, state.get(getEnum(mirror.apply(Direction.SOUTH))))
-            .with(EAST, state.get(getEnum(mirror.apply(Direction.EAST))))
-            .with(WEST, state.get(getEnum(mirror.apply(Direction.WEST))));
+        return getDefaultState().with(IN, mirror.apply(state.get(IN)));
     }
     
 }

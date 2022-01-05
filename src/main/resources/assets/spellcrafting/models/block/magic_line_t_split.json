@@ -1,8 +1,8 @@
 {
     "ambientocclusion": false,
     "textures": {
-        "particle": "spellcrafting:block/magic_line_bend_clockwise",
-        "texture": "spellcrafting:block/magic_line_bend_clockwise"
+        "particle": "spellcrafting:block/magic_line_t_split",
+        "texture": "spellcrafting:block/magic_line_t_split"
     },
     "elements": [
         {   "from": [ 0, 0.25, 0 ],

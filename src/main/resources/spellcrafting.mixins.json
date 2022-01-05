@@ -6,7 +6,8 @@
     "mixins": [
         "ProjectileEntityMixin",
         "EntityMixin",
-        "LivingEntityMixin"
+        "LivingEntityMixin",
+        "DebugChunkGeneratorMixin"
     ],
     "client": [],
     "injectors": {

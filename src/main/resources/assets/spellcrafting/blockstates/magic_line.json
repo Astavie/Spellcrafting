@@ -1,50 +1,66 @@
 {
     "variants": {
-        "east=none,north=out,south=in,west=none": {
+        "in=south,out=straight": {
             "model": "spellcrafting:block/magic_line_straight"
         },
-        "east=out,north=none,south=none,west=in": {
+        "in=west,out=straight": {
             "model": "spellcrafting:block/magic_line_straight",
             "y": 90
         },
-        "east=none,north=in,south=out,west=none": {
+        "in=north,out=straight": {
             "model": "spellcrafting:block/magic_line_straight",
             "y": 180
         },
-        "east=in,north=none,south=none,west=out": {
+        "in=east,out=straight": {
             "model": "spellcrafting:block/magic_line_straight",
             "y": 270
         },
 
-        "east=out,north=none,south=in,west=none": {
-            "model": "spellcrafting:block/magic_line_bend_clockwise"
+        "in=south,out=right": {
+            "model": "spellcrafting:block/magic_line_right"
         },
-        "east=none,north=none,south=out,west=in": {
-            "model": "spellcrafting:block/magic_line_bend_clockwise",
+        "in=west,out=right": {
+            "model": "spellcrafting:block/magic_line_right",
             "y": 90
         },
-        "east=none,north=in,south=none,west=out": {
-            "model": "spellcrafting:block/magic_line_bend_clockwise",
+        "in=north,out=right": {
+            "model": "spellcrafting:block/magic_line_right",
             "y": 180
         },
-        "east=in,north=out,south=none,west=none": {
-            "model": "spellcrafting:block/magic_line_bend_clockwise",
+        "in=east,out=right": {
+            "model": "spellcrafting:block/magic_line_right",
             "y": 270
         },
 
-        "east=in,north=none,south=out,west=none": {
-            "model": "spellcrafting:block/magic_line_bend_counterclockwise"
+        "in=east,out=left": {
+            "model": "spellcrafting:block/magic_line_left"
         },
-        "east=none,north=none,south=in,west=out": {
-            "model": "spellcrafting:block/magic_line_bend_counterclockwise",
+        "in=south,out=left": {
+            "model": "spellcrafting:block/magic_line_left",
             "y": 90
         },
-        "east=none,north=out,south=none,west=in": {
-            "model": "spellcrafting:block/magic_line_bend_counterclockwise",
+        "in=west,out=left": {
+            "model": "spellcrafting:block/magic_line_left",
             "y": 180
         },
-        "east=out,north=in,south=none,west=none": {
-            "model": "spellcrafting:block/magic_line_bend_counterclockwise",
+        "in=north,out=left": {
+            "model": "spellcrafting:block/magic_line_left",
+            "y": 270
+        },
+
+        "in=south,out=t_split": {
+            "model": "spellcrafting:block/magic_line_t_split"
+        },
+        "in=west,out=t_split": {
+            "model": "spellcrafting:block/magic_line_t_split",
+            "y": 90
+        },
+        "in=north,out=t_split": {
+            "model": "spellcrafting:block/magic_line_t_split",
+            "y": 180
+        },
+        "in=east,out=t_split": {
+            "model": "spellcrafting:block/magic_line_t_split",
             "y": 270
         }
     }
