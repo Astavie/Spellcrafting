@@ -10,6 +10,7 @@ import astavie.spellcrafting.api.spell.target.Target;
 import astavie.spellcrafting.api.spell.target.TargetEntity;
 import astavie.spellcrafting.api.util.ItemList;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityType;
 import net.minecraft.entity.projectile.ArrowEntity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity.PickupPermission;
 import net.minecraft.item.ItemStack;
@@ -86,8 +87,8 @@ public class CharmArrow implements NodeCharm {
     }
 
     @Override
-    public boolean matches(int size, ItemList recipe) {
-        return recipe.size() == 1 && recipe.get(Items.ARROW) == 1;
+    public boolean matches(int size, ItemList recipe, EntityType<?> sacrifice) {
+        return recipe.size() == 1 && recipe.get(Items.ARROW) == 1 && sacrifice == null;
     }
 
 }

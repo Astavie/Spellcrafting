@@ -10,6 +10,7 @@ import astavie.spellcrafting.api.spell.target.Target;
 import astavie.spellcrafting.api.spell.target.TargetEntity;
 import astavie.spellcrafting.api.util.ItemList;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityType;
 import net.minecraft.item.Items;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.explosion.Explosion;
@@ -54,8 +55,8 @@ public class CharmExplode implements NodeCharm {
     }
 
     @Override
-    public boolean matches(int size, ItemList recipe) {
-        return recipe.size() == 2 && recipe.get(Items.GUNPOWDER) == 2 && recipe.get(Items.SAND) == 2; // TODO: Creeper sacrifice
+    public boolean matches(int size, ItemList recipe, EntityType<?> sacrifice) {
+        return recipe.size() == 1 && recipe.get(Items.SAND) == 1 && sacrifice == EntityType.CREEPER;
     }
     
 }

@@ -80,8 +80,8 @@ public class CharmSummon implements NodeCharm {
     }
 
     @Override
-    public boolean matches(int size, ItemList recipe) {
-        return recipe.size() == 1 && recipe.get(Items.STRING) == 1; // TODO: Sacrifice
+    public boolean matches(int size, ItemList recipe, EntityType<?> sacrifice) {
+        return recipe.size() == 1 && recipe.get(Items.EGG) == 1 && sacrifice == type;
     }
     
 }

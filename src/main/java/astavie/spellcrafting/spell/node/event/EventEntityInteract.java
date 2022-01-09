@@ -12,6 +12,7 @@ import astavie.spellcrafting.api.spell.target.TargetEntity;
 import astavie.spellcrafting.api.util.ItemList;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityType;
 import net.minecraft.nbt.NbtHelper;
 import net.minecraft.util.Identifier;
 
@@ -67,7 +68,7 @@ public class EventEntityInteract implements NodeEvent<Target> {
     }
 
     @Override
-    public boolean matches(int size, ItemList recipe) {
+    public boolean matches(int size, ItemList recipe, EntityType<?> sacrifice) {
         return recipe.size() == 1 && recipe.get(this.recipe) == 1;
     }
     

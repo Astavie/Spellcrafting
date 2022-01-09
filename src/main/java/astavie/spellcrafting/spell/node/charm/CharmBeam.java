@@ -15,6 +15,7 @@ import astavie.spellcrafting.api.spell.target.TargetEntity;
 import astavie.spellcrafting.api.util.ItemList;
 import astavie.spellcrafting.util.RaycastUtils;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityType;
 import net.minecraft.item.Items;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.world.ServerWorld;
@@ -38,7 +39,7 @@ public class CharmBeam implements NodeCharm {
 
     @Override
     public @NotNull ItemList getComponents(@NotNull Spell.Node node) {
-        return new ItemList().addItem(Items.PRISMARINE_CRYSTALS); // TODO: Harder Components?
+        return new ItemList().addItem(Items.PRISMARINE_CRYSTALS).addItem(Items.SPIDER_EYE);
     }
 
     @Override
@@ -98,8 +99,8 @@ public class CharmBeam implements NodeCharm {
     }
 
     @Override
-    public boolean matches(int size, ItemList recipe) {
-        return recipe.size() == 1 && recipe.get(Items.SEA_LANTERN) == 1; // TODO: Guardian sacrifice?
+    public boolean matches(int size, ItemList recipe, EntityType<?> sacrifice) {
+        return recipe.size() == 1 && recipe.get(Items.SPIDER_EYE) == 1 && (sacrifice == EntityType.GUARDIAN || sacrifice == EntityType.ELDER_GUARDIAN);
     }
     
 }

@@ -17,6 +17,7 @@ import net.minecraft.block.CampfireBlock;
 import net.minecraft.block.CandleBlock;
 import net.minecraft.block.CandleCakeBlock;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityType;
 import net.minecraft.entity.projectile.ArrowEntity;
 import net.minecraft.item.Items;
 import net.minecraft.sound.SoundCategory;
@@ -98,7 +99,7 @@ public class CharmIgnite implements NodeCharm {
     }
 
     @Override
-    public boolean matches(int size, ItemList recipe) {
+    public boolean matches(int size, ItemList recipe, EntityType<?> sacrifice) {
         return recipe.size() == 1 && recipe.get(Items.BLAZE_POWDER) == 1;
     }
     

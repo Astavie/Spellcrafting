@@ -8,6 +8,7 @@ import astavie.spellcrafting.api.spell.SpellType;
 import astavie.spellcrafting.api.spell.node.NodeEvent;
 import astavie.spellcrafting.api.util.ItemList;
 import astavie.spellcrafting.api.util.ServerUtils;
+import net.minecraft.entity.EntityType;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtLong;
 
@@ -43,7 +44,7 @@ public class EventWait implements NodeEvent<Void> {
     }
 
     @Override
-    public boolean matches(int size, ItemList recipe) {
+    public boolean matches(int size, ItemList recipe, EntityType<?> sacrifice) {
         return size == 1 && recipe.size() == 1 && recipe.get(Items.CLOCK) == 1;
     }
     

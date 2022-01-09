@@ -7,6 +7,7 @@ import astavie.spellcrafting.api.spell.Spell;
 import astavie.spellcrafting.api.spell.SpellType;
 import astavie.spellcrafting.api.util.ItemList;
 import net.fabricmc.fabric.api.event.registry.FabricRegistryBuilder;
+import net.minecraft.entity.EntityType;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 
@@ -27,6 +28,6 @@ public interface NodeType {
     default void onEvent(@NotNull Spell spell, @NotNull Spell.ChannelNode node, @NotNull Spell.Event type, @Nullable Object context) {
     }
 
-    boolean matches(int size, ItemList recipe);
+    boolean matches(int size, @NotNull ItemList recipe, @Nullable EntityType<?> sacrifice);
     
 }

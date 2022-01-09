@@ -11,6 +11,7 @@ import astavie.spellcrafting.api.spell.target.TargetBlock;
 import astavie.spellcrafting.api.spell.target.TargetEntity;
 import astavie.spellcrafting.api.util.ItemList;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityType;
 import net.minecraft.item.Items;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
@@ -50,7 +51,7 @@ public class TransmuterView implements NodeTransmuter {
     }
 
     @Override
-    public boolean matches(int size, ItemList recipe) {
+    public boolean matches(int size, ItemList recipe, EntityType<?> sacrifice) {
         return recipe.size() == 1 && recipe.get(Items.SPIDER_EYE) == 1;
     }
     

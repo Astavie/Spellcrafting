@@ -8,6 +8,7 @@ import astavie.spellcrafting.api.spell.node.NodeTransmuter;
 import astavie.spellcrafting.api.spell.target.DistancedTarget;
 import astavie.spellcrafting.api.spell.target.TargetBlock;
 import astavie.spellcrafting.api.util.ItemList;
+import net.minecraft.entity.EntityType;
 import net.minecraft.item.Items;
 import net.minecraft.util.math.Direction;
 
@@ -57,7 +58,7 @@ public class TransmuterDirection implements NodeTransmuter {
     }
 
     @Override
-    public boolean matches(int size, ItemList recipe) {
+    public boolean matches(int size, ItemList recipe, EntityType<?> sacrifice) {
         // TODO: Differentiate between directions
         return recipe.size() == 1 && recipe.get(Items.COMPASS) == 1;
     }

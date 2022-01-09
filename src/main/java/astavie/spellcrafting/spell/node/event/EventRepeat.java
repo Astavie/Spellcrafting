@@ -7,6 +7,7 @@ import astavie.spellcrafting.api.spell.Spell;
 import astavie.spellcrafting.api.spell.SpellType;
 import astavie.spellcrafting.api.spell.node.NodeCharm;
 import astavie.spellcrafting.api.util.ItemList;
+import net.minecraft.entity.EntityType;
 
 public class EventRepeat implements NodeCharm {
 
@@ -48,7 +49,7 @@ public class EventRepeat implements NodeCharm {
     }
 
     @Override
-    public boolean matches(int size, ItemList recipe) {
+    public boolean matches(int size, ItemList recipe, EntityType<?> sacrifice) {
         return false; // TODO: Recipe
     }
     

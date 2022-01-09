@@ -17,7 +17,9 @@ import astavie.spellcrafting.block.MagicBlock;
 import astavie.spellcrafting.block.MagicCircleBlock;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.entity.EntityType;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.SpawnEggItem;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
@@ -25,8 +27,10 @@ import net.minecraft.network.Packet;
 import net.minecraft.network.listener.ClientPlayPacketListener;
 import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
+import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 
 public class MagicCircleBlockEntity extends BlockEntity {
@@ -39,8 +43,9 @@ public class MagicCircleBlockEntity extends BlockEntity {
 
     }
 
-    private LinkedList<ItemStack> stacks = new LinkedList<>();
-    private int squaredSize;
+    private final LinkedList<ItemStack> stacks = new LinkedList<>();
+    private final int squaredSize;
+    private EntityType<?> sacrifice;
 
     public MagicCircleBlockEntity(BlockPos pos, BlockState state) {
         super(Spellcrafting.magicCircleBlockEntity, pos, state);
@@ -55,16 +60,20 @@ public class MagicCircleBlockEntity extends BlockEntity {
             items.add(stack.writeNbt(new NbtCompound()));
         }
         nbt.put("items", items);
+        if (sacrifice != null) nbt.putString("sacrifice", Registry.ENTITY_TYPE.getKey(sacrifice).get().getValue().toString());
     }
 
     @Override
     public void readNbt(NbtCompound nbt) {
         stacks.clear();
+        sacrifice = null;
 
         NbtList items = nbt.getList("items", NbtElement.COMPOUND_TYPE);
         for (int i = 0; i < items.size(); i++) {
             stacks.add(ItemStack.fromNbt(items.getCompound(i)));
         }
+
+        if (nbt.contains("sacrifice")) sacrifice = Registry.ENTITY_TYPE.get(new Identifier(nbt.getString("sacrifice")));
     }
 
     public ItemStack peekItem() {
@@ -85,8 +94,12 @@ public class MagicCircleBlockEntity extends BlockEntity {
     }
 
     public boolean pushItem(ItemStack itemStack) {
-        if (stacks.size()
-         >= squaredSize) return false;
+        if (itemStack.getItem() instanceof SpawnEggItem) {
+            setSacrifice(((SpawnEggItem) itemStack.getItem()).getEntityType(itemStack.getNbt()));
+            return true;
+        }
+
+        if (stacks.size() >= squaredSize) return false;
 
         stacks.add(itemStack);
         markDirty();
@@ -99,6 +112,17 @@ public class MagicCircleBlockEntity extends BlockEntity {
         return true;
     }
 
+    public void setSacrifice(EntityType<?> type) {
+        this.sacrifice = type;
+
+        markDirty();
+        ((ServerWorld) world).getChunkManager().markForUpdate(pos);
+    }
+
+    public EntityType<?> getSacrifice() {
+        return this.sacrifice;
+    }
+
     @Override
     public NbtCompound toInitialChunkDataNbt() {
         NbtCompound nbt = new NbtCompound();
@@ -107,6 +131,7 @@ public class MagicCircleBlockEntity extends BlockEntity {
             items.add(stack.writeNbt(new NbtCompound()));
         }
         nbt.put("items", items);
+        if (sacrifice != null) nbt.putString("sacrifice", Registry.ENTITY_TYPE.getKey(sacrifice).get().getValue().toString());
         return nbt;
     }
 
@@ -124,7 +149,7 @@ public class MagicCircleBlockEntity extends BlockEntity {
         int size = ((MagicCircleBlock) getCachedState().getBlock()).size;
 
         for (var entry : NodeType.REGISTRY.getEntries()) {
-            if (entry.getValue().matches(size, items)) return entry.getValue();
+            if (entry.getValue().matches(size, items, sacrifice)) return entry.getValue();
         }
 
         return null;
