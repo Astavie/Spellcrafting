@@ -34,6 +34,7 @@ public class SpellItem extends Item {
     @Override
     public void appendStacks(ItemGroup group, DefaultedList<ItemStack> stacks) {
         if (isIn(group)) {
+            stacks.add(new ItemStack(this));
             stacks.add(getStack(Spellcrafting.BOMB, "Bomb"));
             stacks.add(getStack(Spellcrafting.EXPLODING_KITTENS, "Exploding Kittens"));
             stacks.add(getStack(Spellcrafting.FIREWORK, "Firework"));

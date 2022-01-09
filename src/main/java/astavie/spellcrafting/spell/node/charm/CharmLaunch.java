@@ -41,6 +41,11 @@ public class CharmLaunch implements NodeCharm {
             return new Object[0];
         }
 
+        if (!(t1.getTarget() instanceof TargetEntity)) {
+            spell.onInvalidPosition(t1.getTarget().getWorld(), t1.getTarget().getPos());
+            return new Object[0];
+        }
+
         // TODO: Particles
 
         Entity e = ((TargetEntity) t1.getTarget()).getEntity();

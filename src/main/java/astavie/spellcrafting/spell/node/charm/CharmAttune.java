@@ -34,6 +34,12 @@ public class CharmAttune implements NodeCharm {
             return new Object[2];
         }
 
+        if (t1.getTarget().asAttunable() == null || t2.getTarget().asAttunable() == null) {
+            spell.onInvalidPosition(t1.getTarget().getWorld(), t1.getTarget().getPos());
+            spell.onInvalidPosition(t2.getTarget().getWorld(), t2.getTarget().getPos());
+            return new Object[2];
+        }
+
         // TODO: Particles
 
         // Attune!
