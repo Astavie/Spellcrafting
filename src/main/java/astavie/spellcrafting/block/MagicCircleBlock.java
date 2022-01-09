@@ -51,26 +51,17 @@ public class MagicCircleBlock extends MagicBlock implements BlockEntityProvider 
         if (!world.isClient) {
             MagicCircleBlockEntity circle = getBlockEntity(world, pos);
             if (circle != null) {
-                int index = size == 1 ? 0 : state.get(X) + state.get(Y) * size;
                 ItemStack itemStack = player.getStackInHand(hand);
-                if (circle.getItem(index).isEmpty()) {
+                if (itemStack.isEmpty()) {
+                    ItemStack remove = circle.popItem(); 
+                    player.setStackInHand(hand, remove);
+                } else {
                     ItemStack insert = itemStack.copy();
                     insert.setCount(1);
-                    circle.setItem(index, insert);
-
-                    itemStack.decrement(1);
-                    player.setStackInHand(hand, itemStack);
-                    return ActionResult.SUCCESS;
-                } else if (
-                    itemStack.isEmpty() ||
-                    (ItemStack.canCombine(circle.getItem(index), itemStack) && itemStack.getCount() < itemStack.getMaxCount())
-                ) {
-                    ItemStack remove = circle.getItem(index);
-                    circle.setItem(index, ItemStack.EMPTY);
-
-                    remove.setCount(itemStack.getCount() + 1);
-                    player.setStackInHand(hand, remove);
-                    return ActionResult.SUCCESS;
+                    if (circle.pushItem(insert)) {
+                        itemStack.decrement(1);
+                        player.setStackInHand(hand, itemStack);
+                    }
                 }
             }
         }
@@ -137,7 +128,7 @@ public class MagicCircleBlock extends MagicBlock implements BlockEntityProvider 
         for (int y = 0; y < size; y++) {
             for (int x = 0; x < size; x++) {
                 BlockPos pos2 = circle.getPos().offset(right, x).offset(down, y);
-                ItemScatterer.spawn(world, pos2.getX(), pos2.getY(), pos2.getZ(), circle.getItem(x + y * size));
+                ItemScatterer.spawn(world, pos2.getX(), pos2.getY(), pos2.getZ(), circle.popItem());
             }
         }
     }
@@ -188,20 +179,10 @@ public class MagicCircleBlock extends MagicBlock implements BlockEntityProvider 
         BlockState state = world.getBlockState(pos);
 
         Direction right = state.get(FACING);
-        Direction left = right.getOpposite();
-        Direction up = right.rotateYCounterclockwise();
+        Direction down = right.rotateYClockwise();
 
-        for (int i = 0; i < size; i++) {
-            for (int j = 0; j < size; j++) {
-                BlockPos p = pos.offset(up, i).offset(left, j);
-                BlockState s = world.getBlockState(p);
-                if (s.getBlock() == this && s.get(X) == 0 && s.get(Y) == 0) {
-                    return (MagicCircleBlockEntity) world.getBlockEntity(p);
-                }
-            }
-        }
-
-        return null;
+        BlockPos p = pos.offset(down, -state.get(Y)).offset(right, -state.get(X));
+        return (MagicCircleBlockEntity) world.getBlockEntity(p);
     }
 
     @Override

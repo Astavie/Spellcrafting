@@ -57,6 +57,7 @@ import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
 import net.fabricmc.fabric.api.transfer.v1.context.ContainerItemContext;
+import net.minecraft.block.BlockEntityProvider;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.entity.Entity;
@@ -235,7 +236,7 @@ public class Spellcrafting implements ModInitializer, ClientModInitializer {
 		Registry.register(Registry.ITEM, new Identifier("spellcrafting", "magic_circle_2x2"), new MagicCircleBlockItem(magicCircle2x2, new FabricItemSettings().group(ItemGroup.MISC)));
 
 		// Block Entities
-		magicCircleBlockEntity = Registry.register(Registry.BLOCK_ENTITY_TYPE, new Identifier("spellcrafting", "magic_circle"), FabricBlockEntityTypeBuilder.create(MagicCircleBlockEntity::new, magicCircle1x1, magicCircle2x2).build());
+		magicCircleBlockEntity = Registry.register(Registry.BLOCK_ENTITY_TYPE, new Identifier("spellcrafting", "magic_circle"), FabricBlockEntityTypeBuilder.create((pos, state) -> (MagicCircleBlockEntity) ((BlockEntityProvider) state.getBlock()).createBlockEntity(pos, state), magicCircle1x1, magicCircle2x2).build());
 
 		// Items
 		Registry.register(Registry.ITEM, new Identifier("spellcrafting", "spell"), spell);

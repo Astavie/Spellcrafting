@@ -1,8 +1,8 @@
 package astavie.spellcrafting.block.entity;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
 
@@ -41,13 +41,13 @@ public class MagicCircleBlockEntity extends BlockEntity {
 
     }
 
-    private ItemStack[] stacks;
+    private LinkedList<ItemStack> stacks = new LinkedList<>();
+    private int squaredSize;
 
     public MagicCircleBlockEntity(BlockPos pos, BlockState state) {
         super(Spellcrafting.magicCircleBlockEntity, pos, state);
         int size = ((MagicCircleBlock) state.getBlock()).size;
-        stacks = new ItemStack[size * size];
-        Arrays.fill(stacks, ItemStack.EMPTY);
+        squaredSize = size * size;
     }
 
     @Override
@@ -61,14 +61,44 @@ public class MagicCircleBlockEntity extends BlockEntity {
 
     @Override
     public void readNbt(NbtCompound nbt) {
+        stacks.clear();
+
         NbtList items = nbt.getList("items", NbtElement.COMPOUND_TYPE);
         for (int i = 0; i < items.size(); i++) {
-            stacks[i] = ItemStack.fromNbt(items.getCompound(i));
+            stacks.add(ItemStack.fromNbt(items.getCompound(i)));
         }
     }
 
+    public ItemStack peekItem() {
+        return stacks.size() == 0 ? ItemStack.EMPTY : stacks.getLast();
+    }
+
     public ItemStack getItem(int i) {
-        return stacks[i];
+        return i >= stacks.size() ? ItemStack.EMPTY : stacks.get(i);
+    }
+
+    public ItemStack popItem() {
+        if (stacks.size() == 0) return ItemStack.EMPTY;
+
+        markDirty();
+        ((ServerWorld) world).getChunkManager().markForUpdate(pos);
+
+        return stacks.removeLast();
+    }
+
+    public boolean pushItem(ItemStack itemStack) {
+        if (stacks.size()
+         >= squaredSize) return false;
+
+        stacks.add(itemStack);
+        markDirty();
+        ((ServerWorld) world).getChunkManager().markForUpdate(pos);
+
+        if (itemStack.getItem() == Spellcrafting.spell && itemStack.getSubNbt("spellcrafting:spell") == null) {
+            createSpell();
+        }
+
+        return true;
     }
 
     @Override
@@ -89,17 +119,7 @@ public class MagicCircleBlockEntity extends BlockEntity {
 
     private NodeType getNodeType() {
         // TODO: Better recipes
-        return RECIPES.get(ItemVariant.of(stacks[0]));
-    }
-
-    public void setItem(int i, ItemStack itemStack) {
-        stacks[i] = itemStack;
-        markDirty();
-        ((ServerWorld) world).getChunkManager().markForUpdate(pos);
-
-        if (itemStack.getItem() == Spellcrafting.spell && itemStack.getSubNbt("spellcrafting:spell") == null) {
-            createSpell();
-        }
+        return RECIPES.get(ItemVariant.of(stacks.getFirst()));
     }
 
     private static final Map<ItemVariant, NodeType> RECIPES = new HashMap<>();
@@ -165,7 +185,7 @@ public class MagicCircleBlockEntity extends BlockEntity {
 
         // TODO: Better recipes
         Spell spell = new Spell(start, nodes);
-        stacks[0].setSubNbt("spellcrafting:spell", Spell.serialize(spell));
+        stacks.getFirst().setSubNbt("spellcrafting:spell", Spell.serialize(spell));
     }
 
     private void continueSpell(Map<BlockPos, Spell.Node> all, Set<Spell.Node> blacklist, Set<Spell.Node> start, Multimap<Spell.Socket, Spell.Socket> nodes, BlockPos pos, Spell.Socket previous) {
@@ -211,8 +231,8 @@ public class MagicCircleBlockEntity extends BlockEntity {
         Set<Spell.Node> newBlackList = new HashSet<>(blacklist);
         newBlackList.add(node);
 
-        for (BlockPos output : outputs) {
-            continueSpell(all, newBlackList, start, nodes, new Spell.Socket(node, 0), world, output.offset(facing), facing.getOpposite());
+        for (int i = 0; i < outputs.length; i++) {
+            continueSpell(all, newBlackList, start, nodes, new Spell.Socket(node, i), world, outputs[i].offset(facing), facing.getOpposite());
         }
     }
 
