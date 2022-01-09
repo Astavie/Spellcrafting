@@ -46,5 +46,10 @@ public class EventRepeat implements NodeCharm {
             spell.apply(node, new Object[1]);
         }
     }
+
+    @Override
+    public boolean matches(int size, ItemList recipe) {
+        return false; // TODO: Recipe
+    }
     
 }

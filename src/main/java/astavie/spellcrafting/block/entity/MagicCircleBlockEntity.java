@@ -12,11 +12,12 @@ import com.google.common.collect.Multimap;
 import astavie.spellcrafting.Spellcrafting;
 import astavie.spellcrafting.api.spell.Spell;
 import astavie.spellcrafting.api.spell.node.NodeType;
-import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
+import astavie.spellcrafting.api.util.ItemList;
+import astavie.spellcrafting.block.MagicBlock;
+import astavie.spellcrafting.block.MagicCircleBlock;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
@@ -24,10 +25,7 @@ import net.minecraft.network.Packet;
 import net.minecraft.network.listener.ClientPlayPacketListener;
 import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
-import astavie.spellcrafting.block.MagicBlock;
-import astavie.spellcrafting.block.MagicCircleBlock;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
 
@@ -118,24 +116,18 @@ public class MagicCircleBlockEntity extends BlockEntity {
     }
 
     private NodeType getNodeType() {
-        // TODO: Better recipes
-        return RECIPES.get(ItemVariant.of(stacks.getFirst()));
-    }
+        ItemList items = new ItemList();
+        for (ItemStack stack : stacks) {
+            items.addItem(stack);
+        }
 
-    private static final Map<ItemVariant, NodeType> RECIPES = new HashMap<>();
+        int size = ((MagicCircleBlock) getCachedState().getBlock()).size;
 
-    static {
-        RECIPES.put(ItemVariant.of(Spellcrafting.spell), NodeType.REGISTRY.get(new Identifier("spellcrafting:cast")));
-        RECIPES.put(ItemVariant.of(Items.CONDUIT), NodeType.REGISTRY.get(new Identifier("spellcrafting:beam")));
-        RECIPES.put(ItemVariant.of(Items.GUNPOWDER), NodeType.REGISTRY.get(new Identifier("spellcrafting:explode")));
-        RECIPES.put(ItemVariant.of(Items.ARROW), NodeType.REGISTRY.get(new Identifier("spellcrafting:arrow")));
-        RECIPES.put(ItemVariant.of(Items.STRING), NodeType.REGISTRY.get(new Identifier("spellcrafting:cat")));
-        RECIPES.put(ItemVariant.of(Items.CLOCK), NodeType.REGISTRY.get(new Identifier("spellcrafting:wait")));
-        RECIPES.put(ItemVariant.of(Items.BLAZE_POWDER), NodeType.REGISTRY.get(new Identifier("spellcrafting:ignite")));
-        RECIPES.put(ItemVariant.of(Items.ARROW), NodeType.REGISTRY.get(new Identifier("spellcrafting:arrow")));
-        RECIPES.put(ItemVariant.of(Items.TARGET), NodeType.REGISTRY.get(new Identifier("spellcrafting:target")));
-        RECIPES.put(ItemVariant.of(Items.PISTON), NodeType.REGISTRY.get(new Identifier("spellcrafting:launch")));
-        RECIPES.put(ItemVariant.of(Items.FEATHER), NodeType.REGISTRY.get(new Identifier("spellcrafting:land")));
+        for (var entry : NodeType.REGISTRY.getEntries()) {
+            if (entry.getValue().matches(size, items)) return entry.getValue();
+        }
+
+        return null;
     }
 
     private BlockPos[] getInputPositions() {
@@ -183,7 +175,6 @@ public class MagicCircleBlockEntity extends BlockEntity {
             return;
         }
 
-        // TODO: Better recipes
         Spell spell = new Spell(start, nodes);
         stacks.getFirst().setSubNbt("spellcrafting:spell", Spell.serialize(spell));
     }

@@ -10,6 +10,7 @@ import astavie.spellcrafting.api.spell.node.NodeType;
 import astavie.spellcrafting.api.spell.target.DistancedTarget;
 import astavie.spellcrafting.api.spell.target.Target;
 import astavie.spellcrafting.api.util.ItemList;
+import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtHelper;
 
 public class EventTarget implements NodeType {
@@ -70,6 +71,11 @@ public class EventTarget implements NodeType {
             }
             return;
         }
+    }
+
+    @Override
+    public boolean matches(int size, ItemList recipe) {
+        return recipe.size() == 1 && recipe.get(Items.STICK) == 1;
     }
     
 }

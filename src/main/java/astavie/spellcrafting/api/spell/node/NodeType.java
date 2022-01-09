@@ -26,5 +26,7 @@ public interface NodeType {
 
     default void onEvent(@NotNull Spell spell, @NotNull Spell.ChannelNode node, @NotNull Spell.Event type, @Nullable Object context) {
     }
+
+    boolean matches(int size, ItemList recipe);
     
 }

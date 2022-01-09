@@ -52,5 +52,10 @@ public class CharmExplode implements NodeCharm {
 
         return new Object[0];
     }
+
+    @Override
+    public boolean matches(int size, ItemList recipe) {
+        return recipe.size() == 2 && recipe.get(Items.GUNPOWDER) == 2 && recipe.get(Items.SAND) == 2; // TODO: Creeper sacrifice
+    }
     
 }

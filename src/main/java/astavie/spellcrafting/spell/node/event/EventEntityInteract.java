@@ -10,6 +10,7 @@ import astavie.spellcrafting.api.spell.target.DistancedTarget;
 import astavie.spellcrafting.api.spell.target.Target;
 import astavie.spellcrafting.api.spell.target.TargetEntity;
 import astavie.spellcrafting.api.util.ItemList;
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NbtHelper;
 import net.minecraft.util.Identifier;
@@ -18,10 +19,12 @@ public class EventEntityInteract implements NodeEvent<Target> {
 
     private final Identifier eventType;
     private final ItemList components;
+    private final ItemVariant recipe;
 
-    public EventEntityInteract(Identifier eventType, ItemList components) {
+    public EventEntityInteract(Identifier eventType, ItemList components, ItemVariant recipe) {
         this.eventType = eventType;
         this.components = components;
+        this.recipe = recipe;
     }
 
     @Override
@@ -61,6 +64,11 @@ public class EventEntityInteract implements NodeEvent<Target> {
                 new DistancedTarget(context, input.getOrigin(), input.getCaster())
             };
         }
+    }
+
+    @Override
+    public boolean matches(int size, ItemList recipe) {
+        return recipe.size() == 1 && recipe.get(this.recipe) == 1;
     }
     
 }

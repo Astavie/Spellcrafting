@@ -41,5 +41,10 @@ public class EventWait implements NodeEvent<Void> {
     public @NotNull Object[] onEvent(@NotNull Spell spell, @NotNull Spell.ChannelNode node, @Nullable Void context) {
         return spell.getInput(node);
     }
+
+    @Override
+    public boolean matches(int size, ItemList recipe) {
+        return size == 1 && recipe.size() == 1 && recipe.get(Items.CLOCK) == 1;
+    }
     
 }

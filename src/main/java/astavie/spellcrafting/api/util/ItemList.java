@@ -13,6 +13,22 @@ import net.minecraft.item.ItemStack;
 public class ItemList implements Iterable<Map.Entry<ItemVariant, Long>> {
 
     private final Map<ItemVariant, Long> items = new LinkedHashMap<>();
+
+    public int size() {
+        return items.size();
+    }
+
+    public long get(Item item) {
+        return get(ItemVariant.of(item));
+    }
+
+    public long get(ItemStack item) {
+        return get(ItemVariant.of(item));
+    }
+
+    public long get(ItemVariant item) {
+        return items.containsKey(item) ? items.get(item) : 0;
+    }
     
     public ItemList addItem(@NotNull Item item) {
         addItem(ItemVariant.of(item), 1);

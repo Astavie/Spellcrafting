@@ -55,5 +55,11 @@ public class TransmuterDirection implements NodeTransmuter {
             ), t1.getOrigin(), t1.getCaster())
         };
     }
+
+    @Override
+    public boolean matches(int size, ItemList recipe) {
+        // TODO: Differentiate between directions
+        return recipe.size() == 1 && recipe.get(Items.COMPASS) == 1;
+    }
     
 }

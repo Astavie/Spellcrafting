@@ -82,5 +82,10 @@ public class CharmAttract implements NodeCharm {
 
         effect(((TargetEntity) t2.getTarget()).getEntity(), t1.getTarget().getPos());
     }
+
+    @Override
+    public boolean matches(int size, ItemList recipe) {
+        return false; // TODO: Recipe
+    }
     
 }

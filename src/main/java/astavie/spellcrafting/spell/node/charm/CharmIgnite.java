@@ -96,5 +96,10 @@ public class CharmIgnite implements NodeCharm {
         }
         return new Object[0];
     }
+
+    @Override
+    public boolean matches(int size, ItemList recipe) {
+        return recipe.size() == 1 && recipe.get(Items.BLAZE_POWDER) == 1;
+    }
     
 }

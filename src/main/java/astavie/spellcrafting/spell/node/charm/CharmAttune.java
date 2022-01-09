@@ -7,6 +7,7 @@ import astavie.spellcrafting.api.spell.SpellType;
 import astavie.spellcrafting.api.spell.node.NodeCharm;
 import astavie.spellcrafting.api.spell.target.DistancedTarget;
 import astavie.spellcrafting.api.util.ItemList;
+import net.minecraft.item.Items;
 
 public class CharmAttune implements NodeCharm {
 
@@ -50,6 +51,11 @@ public class CharmAttune implements NodeCharm {
             new DistancedTarget(t1.getTarget(), t1.getTarget(), t1.getCaster()),
             new DistancedTarget(t2.getTarget(), t2.getTarget(), t2.getCaster())
         };
+    }
+
+    @Override
+    public boolean matches(int size, ItemList recipe) {
+        return recipe.size() == 1 && recipe.get(Items.BELL) == 1;
     }
     
 }

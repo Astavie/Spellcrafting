@@ -3,6 +3,7 @@ package astavie.spellcrafting.spell.node.event;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import astavie.spellcrafting.Spellcrafting;
 import astavie.spellcrafting.api.spell.Spell;
 import astavie.spellcrafting.api.spell.SpellType;
 import astavie.spellcrafting.api.spell.node.NodeType;
@@ -40,6 +41,11 @@ public class EventCast implements NodeType {
     @Override
     public void onEvent(@NotNull Spell spell, @NotNull Spell.ChannelNode node, @NotNull Spell.Event type, @Nullable Object context) {
         spell.apply(node, new Object[] { new DistancedTarget((Target) context, (Target) context, (Target) context) });
+    }
+
+    @Override
+    public boolean matches(int size, ItemList recipe) {
+        return recipe.size() == 1 && recipe.get(Spellcrafting.spell) == 1;
     }
 
 }

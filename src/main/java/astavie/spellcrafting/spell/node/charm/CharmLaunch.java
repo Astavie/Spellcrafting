@@ -62,5 +62,10 @@ public class CharmLaunch implements NodeCharm {
         ((ServerWorld) e.world).getChunkManager().sendToNearbyPlayers(e, new EntityVelocityUpdateS2CPacket(e));
         return new Object[0];
     }
+
+    @Override
+    public boolean matches(int size, ItemList recipe) {
+        return recipe.size() == 2 && recipe.get(Items.GUNPOWDER) == 1 && recipe.get(Items.PISTON) == 1;
+    }
     
 }

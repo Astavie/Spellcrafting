@@ -15,6 +15,7 @@ import astavie.spellcrafting.api.spell.target.TargetEntity;
 import astavie.spellcrafting.api.util.ItemList;
 import astavie.spellcrafting.util.RaycastUtils;
 import net.minecraft.entity.Entity;
+import net.minecraft.item.Items;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.hit.HitResult;
@@ -37,7 +38,7 @@ public class CharmBeam implements NodeCharm {
 
     @Override
     public @NotNull ItemList getComponents(@NotNull Spell.Node node) {
-        return new ItemList(); // TODO: Components
+        return new ItemList().addItem(Items.PRISMARINE_CRYSTALS); // TODO: Harder Components?
     }
 
     @Override
@@ -94,6 +95,11 @@ public class CharmBeam implements NodeCharm {
     public void onEvent(@NotNull Spell spell, @NotNull Spell.ChannelNode node, @NotNull Spell.Event type, @Nullable Object context) {
         // Reset after one tick
         spell.apply(node, new Object[] { null });
+    }
+
+    @Override
+    public boolean matches(int size, ItemList recipe) {
+        return recipe.size() == 1 && recipe.get(Items.SEA_LANTERN) == 1; // TODO: Guardian sacrifice?
     }
     
 }

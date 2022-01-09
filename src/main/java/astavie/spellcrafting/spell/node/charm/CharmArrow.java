@@ -85,4 +85,9 @@ public class CharmArrow implements NodeCharm {
         return new Object[] { new DistancedTarget(arrowTarget, origin.getOrigin(), origin.getCaster()) };
     }
 
+    @Override
+    public boolean matches(int size, ItemList recipe) {
+        return recipe.size() == 1 && recipe.get(Items.ARROW) == 1;
+    }
+
 }

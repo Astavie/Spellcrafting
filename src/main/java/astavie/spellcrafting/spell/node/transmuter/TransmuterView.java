@@ -11,6 +11,7 @@ import astavie.spellcrafting.api.spell.target.TargetBlock;
 import astavie.spellcrafting.api.spell.target.TargetEntity;
 import astavie.spellcrafting.api.util.ItemList;
 import net.minecraft.entity.Entity;
+import net.minecraft.item.Items;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
@@ -46,6 +47,11 @@ public class TransmuterView implements NodeTransmuter {
         Target out = new TargetBlock((ServerWorld) e.world, new BlockPos(pos), pos, null);
 
         return new Object[] { new DistancedTarget(out, target.getOrigin(), target.getCaster()) };
+    }
+
+    @Override
+    public boolean matches(int size, ItemList recipe) {
+        return recipe.size() == 1 && recipe.get(Items.SPIDER_EYE) == 1;
     }
     
 }

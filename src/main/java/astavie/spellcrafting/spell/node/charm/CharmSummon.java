@@ -14,6 +14,7 @@ import astavie.spellcrafting.api.util.ItemList;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.SpawnReason;
+import net.minecraft.item.Items;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
@@ -76,6 +77,11 @@ public class CharmSummon implements NodeCharm {
         }
 
         return new Object[] { new DistancedTarget(target, t1.getOrigin(), t1.getCaster()) };
+    }
+
+    @Override
+    public boolean matches(int size, ItemList recipe) {
+        return recipe.size() == 1 && recipe.get(Items.STRING) == 1; // TODO: Sacrifice
     }
     
 }

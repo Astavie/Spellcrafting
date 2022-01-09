@@ -57,6 +57,7 @@ import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
 import net.fabricmc.fabric.api.transfer.v1.context.ContainerItemContext;
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.minecraft.block.BlockEntityProvider;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.client.render.RenderLayer;
@@ -120,8 +121,8 @@ public class Spellcrafting implements ModInitializer, ClientModInitializer {
 
 		Registry.register(NodeType.REGISTRY, new Identifier("spellcrafting:cast"), new EventCast());
 		Registry.register(NodeType.REGISTRY, new Identifier("spellcrafting:target"), new EventTarget());
-		Registry.register(NodeType.REGISTRY, new Identifier("spellcrafting:hit"), new EventEntityInteract(Spell.Event.HIT_ID, new ItemList().addItem(Items.TARGET)));
-		Registry.register(NodeType.REGISTRY, new Identifier("spellcrafting:land"), new EventEntityInteract(Spell.Event.LAND_ID, new ItemList().addItem(Items.FEATHER)));
+		Registry.register(NodeType.REGISTRY, new Identifier("spellcrafting:hit"), new EventEntityInteract(Spell.Event.HIT_ID, new ItemList().addItem(Items.ARROW), ItemVariant.of(Items.TARGET)));
+		Registry.register(NodeType.REGISTRY, new Identifier("spellcrafting:land"), new EventEntityInteract(Spell.Event.LAND_ID, new ItemList().addItem(Items.FEATHER), ItemVariant.of(Items.FEATHER)));
 		Registry.register(NodeType.REGISTRY, new Identifier("spellcrafting:wait"), new EventWait());
 		Registry.register(NodeType.REGISTRY, new Identifier("spellcrafting:waitfor"), new EventWaitFor());
 		Registry.register(NodeType.REGISTRY, new Identifier("spellcrafting:repeat"), new EventRepeat());
