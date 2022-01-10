@@ -299,7 +299,7 @@ public class Spellcrafting implements ModInitializer, ClientModInitializer {
 
 				// Cast!
 				if (pair.getLeft().onTarget(caster, pair.getRight().redirectTarget(caster, target))) {
-					player.swingHand(Hand.MAIN_HAND, true);
+					player.swingHand(Hand.OFF_HAND, true);
 				}
 			});
 		});
@@ -315,14 +315,10 @@ public class Spellcrafting implements ModInitializer, ClientModInitializer {
 	}
 
 	public static Pair<Spell, Focus> getSpell(PlayerEntity player) {
-		Focus focus = Focus.HAND;
+		Focus focus = Focus.ITEM_FOCUS.find(player.getOffHandStack(), ContainerItemContext.ofPlayerHand(player, Hand.OFF_HAND));
+		if (focus == null) focus = Focus.HAND;
 
-		if (!player.getMainHandStack().isEmpty()) {
-			focus = Focus.ITEM_FOCUS.find(player.getMainHandStack(), ContainerItemContext.ofPlayerHand(player, Hand.MAIN_HAND));
-			if (focus == null) return null;
-		}
-
-		SpellContainer container = SpellContainer.ITEM_SPELL.find(player.getOffHandStack(), null);
+		SpellContainer container = SpellContainer.ITEM_SPELL.find(player.getMainHandStack(), null);
 		if (container == null) {
 			return null;
 		}

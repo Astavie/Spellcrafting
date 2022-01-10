@@ -64,7 +64,7 @@ public class SpellItem extends Item {
             Spellcrafting.cast(hit);
         }
 
-        return TypedActionResult.pass(user.getStackInHand(hand));
+        return TypedActionResult.fail(user.getStackInHand(hand));
     }
 
 }
