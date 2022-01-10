@@ -1,19 +1,30 @@
 {
-    "variants": {
-        "facing=north": {
-            "model": "spellcrafting:block/magic_circle_1x1"
-        },
-        "facing=east": {
-            "model": "spellcrafting:block/magic_circle_1x1",
-            "y": 90
-        },
-        "facing=south": {
-            "model": "spellcrafting:block/magic_circle_1x1",
-            "y": 180
-        },
-        "facing=west": {
-            "model": "spellcrafting:block/magic_circle_1x1",
-            "y": 270
-        }
-    }
+    "multipart": [
+        {   "when": { "facing": "north" },
+            "apply": { "model": "spellcrafting:block/magic_circle_1x1" }},
+        {   "when": { "facing": "east" },
+            "apply": { "model": "spellcrafting:block/magic_circle_1x1", "y": 90 }},
+        {   "when": { "facing": "south" },
+            "apply": { "model": "spellcrafting:block/magic_circle_1x1", "y": 180 }},
+        {   "when": { "facing": "west" },
+            "apply": { "model": "spellcrafting:block/magic_circle_1x1", "y": 270 }},
+        
+        {   "when": { "facing": "north", "input": "off|ready|casting|sacrifice|error" },
+            "apply": { "model": "spellcrafting:block/magic_circle_1x1_input" }},
+        {   "when": { "facing": "east", "input": "off|ready|casting|sacrifice|error" },
+            "apply": { "model": "spellcrafting:block/magic_circle_1x1_input", "y": 90 }},
+        {   "when": { "facing": "south", "input": "off|ready|casting|sacrifice|error" },
+            "apply": { "model": "spellcrafting:block/magic_circle_1x1_input", "y": 180 }},
+        {   "when": { "facing": "west", "input": "off|ready|casting|sacrifice|error" },
+            "apply": { "model": "spellcrafting:block/magic_circle_1x1_input", "y": 270 }},
+        
+        {   "when": { "facing": "north", "output": "off|ready|casting|sacrifice|error" },
+            "apply": { "model": "spellcrafting:block/magic_circle_1x1_output" }},
+        {   "when": { "facing": "east", "output": "off|ready|casting|sacrifice|error" },
+            "apply": { "model": "spellcrafting:block/magic_circle_1x1_output", "y": 90 }},
+        {   "when": { "facing": "south", "output": "off|ready|casting|sacrifice|error" },
+            "apply": { "model": "spellcrafting:block/magic_circle_1x1_output", "y": 180 }},
+        {   "when": { "facing": "west", "output": "off|ready|casting|sacrifice|error" },
+            "apply": { "model": "spellcrafting:block/magic_circle_1x1_output", "y": 270 }}
+    ]
 }

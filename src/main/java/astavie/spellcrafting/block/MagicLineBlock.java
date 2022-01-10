@@ -105,7 +105,7 @@ public class MagicLineBlock extends MagicBlock {
     public static final EnumProperty<Output> OUT = EnumProperty.of("out", Output.class);
 
     public MagicLineBlock() {
-        setDefaultState(stateManager.getDefaultState().with(IN, Direction.SOUTH).with(OUT, Output.STRAIGHT));
+        setDefaultState(stateManager.getDefaultState().with(IN, Direction.SOUTH).with(OUT, Output.STRAIGHT).with(STATUS, Status.OFF));
     }
 
     @Override
@@ -115,7 +115,7 @@ public class MagicLineBlock extends MagicBlock {
 
     @Override
     protected void appendProperties(Builder<Block, BlockState> builder) {
-        builder.add(IN, OUT);
+        builder.add(IN, OUT, STATUS);
     }
 
     public ActionResult onChalk(World world, BlockPos pos, BlockState state, Direction direction) {
@@ -133,20 +133,22 @@ public class MagicLineBlock extends MagicBlock {
         Direction horiz = ctx.getPlayerFacing();
         Direction in = horiz.getOpposite();
         Output out = Output.STRAIGHT;
+        Status status = Status.OFF;
 
         for (Direction check : Direction.Type.HORIZONTAL) {
             if (check == horiz) continue;
 
             BlockPos pos = ctx.getBlockPos().offset(check);
             BlockState next = ctx.getWorld().getBlockState(pos);
-            if (next.getBlock() instanceof MagicBlock && ((MagicBlock) next.getBlock()).isOutput(ctx.getWorld(), pos, next, check.getOpposite())) {
+            if (next.getBlock() instanceof MagicBlock magic && magic.isOutput(ctx.getWorld(), pos, next, check.getOpposite())) {
                 in = check;
                 out = Output.withDirection(null, in, horiz);
+                status = magic.getOutputState(ctx.getWorld(), pos, next, check.getOpposite());
                 break;
             }
         }
 
-        return getDefaultState().with(IN, in).with(OUT, out);
+        return getDefaultState().with(IN, in).with(OUT, out).with(STATUS, status);
     }
 
     @Override
@@ -167,9 +169,11 @@ public class MagicLineBlock extends MagicBlock {
 
         // Check for forced
         BlockState currentOrigin = world.getBlockState(pos.offset(in));
-        if (currentOrigin.getBlock() instanceof MagicBlock && ((MagicBlock) currentOrigin.getBlock()).isOutput(world, pos.offset(in), currentOrigin, in.getOpposite())) {
-            return state;
+        if (currentOrigin.getBlock() instanceof MagicBlock magic && magic.isOutput(world, pos.offset(in), currentOrigin, in.getOpposite())) {
+            return state.with(STATUS, magic.getOutputState(world, pos.offset(in), currentOrigin, in.getOpposite()));
         }
+
+        state = state.with(STATUS, Status.OFF);
 
         // Recalculate direction
         for (Direction check : Direction.Type.HORIZONTAL) {
@@ -213,6 +217,11 @@ public class MagicLineBlock extends MagicBlock {
     @Override
     public Direction[] getOutputs(WorldView world, BlockPos pos, BlockState state) {
         return state.get(OUT).getOutputs(state.get(IN));
+    }
+
+    @Override
+    public Status getOutputState(WorldView world, BlockPos pos, BlockState state, Direction side) {
+        return isOutput(world, pos, state, side) ? state.get(STATUS) : Status.NONE;
     }
     
 }

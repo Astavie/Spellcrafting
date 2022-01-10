@@ -15,6 +15,7 @@ import astavie.spellcrafting.api.spell.node.NodeType;
 import astavie.spellcrafting.api.util.ItemList;
 import astavie.spellcrafting.block.MagicBlock;
 import astavie.spellcrafting.block.MagicCircleBlock;
+import astavie.spellcrafting.block.MagicBlock.Status;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.EntityType;
@@ -90,7 +91,11 @@ public class MagicCircleBlockEntity extends BlockEntity {
         markDirty();
         ((ServerWorld) world).getChunkManager().markForUpdate(pos);
 
-        return stacks.removeLast();
+        ItemStack ret = stacks.removeLast();
+
+        onRecipe();
+
+        return ret;
     }
 
     public boolean pushItem(ItemStack itemStack) {
@@ -109,6 +114,8 @@ public class MagicCircleBlockEntity extends BlockEntity {
             createSpell();
         }
 
+        onRecipe();
+
         return true;
     }
 
@@ -117,6 +124,13 @@ public class MagicCircleBlockEntity extends BlockEntity {
 
         markDirty();
         ((ServerWorld) world).getChunkManager().markForUpdate(pos);
+
+        onRecipe();
+    }
+
+    private void onRecipe() {
+        ((MagicCircleBlock) getCachedState().getBlock()).setStatus(world, pos, getCachedState(), getNodeType() == null ? Status.OFF : Status.READY);
+        // TODO: Particles
     }
 
     public EntityType<?> getSacrifice() {
@@ -253,8 +267,6 @@ public class MagicCircleBlockEntity extends BlockEntity {
     }
 
     private static void continueSpell(Map<BlockPos, Spell.Node> all, Set<Spell.Node> blacklist, Set<Spell.Node> start, Multimap<Spell.Socket, Spell.Socket> nodes, Spell.Socket previous, World world, BlockPos pos, Direction input) {
-        // TODO: These should work with the block lookup api
-
         BlockState block = world.getBlockState(pos);
         if (!(block.getBlock() instanceof MagicBlock)) return;
 

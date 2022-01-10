@@ -1,0 +1,7 @@
+{
+    "parent": "spellcrafting:block/magic",
+    "textures": {
+        "particle": "spellcrafting:block/magic_circle_2x2_br",
+        "texture": "spellcrafting:block/magic_circle_2x2_br"
+    }
+}

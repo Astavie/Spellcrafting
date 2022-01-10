@@ -1,22 +1,67 @@
 {
     "variants": {
+        "facing=north,x=0,y=0": {
+            "model": "spellcrafting:block/magic_circle_2x2_bl"
+        },
+        "facing=east,x=0,y=0": {
+            "model": "spellcrafting:block/magic_circle_2x2_bl",
+            "y": 90
+        },
+        "facing=south,x=0,y=0": {
+            "model": "spellcrafting:block/magic_circle_2x2_bl",
+            "y": 180
+        },
+        "facing=west,x=0,y=0": {
+            "model": "spellcrafting:block/magic_circle_2x2_bl",
+            "y": 270
+        },
+        
         "facing=north,x=1,y=0": {
-            "model": "spellcrafting:block/magic_circle_2x2"
+            "model": "spellcrafting:block/magic_circle_2x2_tl"
         },
         "facing=east,x=1,y=0": {
-            "model": "spellcrafting:block/magic_circle_2x2",
+            "model": "spellcrafting:block/magic_circle_2x2_tl",
             "y": 90
         },
         "facing=south,x=1,y=0": {
-            "model": "spellcrafting:block/magic_circle_2x2",
+            "model": "spellcrafting:block/magic_circle_2x2_tl",
             "y": 180
         },
         "facing=west,x=1,y=0": {
-            "model": "spellcrafting:block/magic_circle_2x2",
+            "model": "spellcrafting:block/magic_circle_2x2_tl",
             "y": 270
         },
-        "x=0,y=0": { "model": "spellcrafting:block/magic_circle_2x2_other" },
-        "x=0,y=1": { "model": "spellcrafting:block/magic_circle_2x2_other" },
-        "x=1,y=1": { "model": "spellcrafting:block/magic_circle_2x2_other" }
+        
+        "facing=north,x=0,y=1": {
+            "model": "spellcrafting:block/magic_circle_2x2_br"
+        },
+        "facing=east,x=0,y=1": {
+            "model": "spellcrafting:block/magic_circle_2x2_br",
+            "y": 90
+        },
+        "facing=south,x=0,y=1": {
+            "model": "spellcrafting:block/magic_circle_2x2_br",
+            "y": 180
+        },
+        "facing=west,x=0,y=1": {
+            "model": "spellcrafting:block/magic_circle_2x2_br",
+            "y": 270
+        },
+        
+        "facing=north,x=1,y=1": {
+            "model": "spellcrafting:block/magic_circle_2x2_tr"
+        },
+        "facing=east,x=1,y=1": {
+            "model": "spellcrafting:block/magic_circle_2x2_tr",
+            "y": 90
+        },
+        "facing=south,x=1,y=1": {
+            "model": "spellcrafting:block/magic_circle_2x2_tr",
+            "y": 180
+        },
+        "facing=west,x=1,y=1": {
+            "model": "spellcrafting:block/magic_circle_2x2_tr",
+            "y": 270
+        }
     }
 }

@@ -18,6 +18,7 @@ import astavie.spellcrafting.api.spell.target.TargetBlock;
 import astavie.spellcrafting.api.spell.target.TargetEntity;
 import astavie.spellcrafting.api.util.ItemList;
 import astavie.spellcrafting.api.util.ServerUtils;
+import astavie.spellcrafting.block.MagicBlock;
 import astavie.spellcrafting.block.MagicCircleBlock;
 import astavie.spellcrafting.block.MagicLineBlock;
 import astavie.spellcrafting.block.entity.MagicCircleBlockEntity;
@@ -350,7 +351,18 @@ public class Spellcrafting implements ModInitializer, ClientModInitializer {
 
 	@Override
 	public void onInitializeClient() {
-		ColorProviderRegistry.BLOCK.register((state, world, pos, i) -> 0x7EF9FF, magicLine, magicCircle1x1, magicCircle2x2);
+		ColorProviderRegistry.BLOCK.register((state, world, pos, i) -> {
+			switch (i) {
+				case 0:
+					return state.get(MagicBlock.STATUS).color;
+				case 1:
+					return state.get(MagicCircleBlock.INPUT).color;
+				case 2:
+					return state.get(MagicCircleBlock.OUTPUT).color;
+				default:
+					return 0;
+			}
+		}, magicLine, magicCircle1x1, magicCircle2x2);
 		BlockRenderLayerMap.INSTANCE.putBlocks(RenderLayer.getTranslucent(), magicLine, magicCircle1x1, magicCircle2x2);
 		BlockEntityRendererRegistry.register(magicCircleBlockEntity, MagicCircleBlockEntityRenderer::new);
 	}
