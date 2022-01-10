@@ -2,7 +2,6 @@ package astavie.spellcrafting.api.spell;
 
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -464,15 +463,23 @@ public class Spell {
         if (event.eventType == Event.TICK_ID) {
             long time = ((NbtLong) event.argument).longValue();
 
-            for (Iterator<Map.Entry<ChannelNode, Long>> it = ticking.entrySet().iterator(); it.hasNext();) {
-                Map.Entry<ChannelNode, Long> e = it.next();
-                if (time >= e.getValue()) it.remove();
+            Map<ChannelNode, Long> cont = new HashMap<>();
 
-                // 2 because redstone ticks
-                if ((time & 1) == (e.getValue() & 1)) {
-                    e.getKey().node.type.onEvent(this, e.getKey(), event, context);
+            while (!ticking.isEmpty()) {
+                Map<ChannelNode, Long> copy = new HashMap<>(ticking);
+                ticking.clear();
+
+                for (Map.Entry<ChannelNode, Long> e : copy.entrySet()) {
+                    if (time < e.getValue()) cont.put(e.getKey(), e.getValue());
+
+                    // 2 because redstone ticks
+                    if ((time & 1) == (e.getValue() & 1)) {
+                        e.getKey().node.type.onEvent(this, e.getKey(), event, context);
+                    }
                 }
             }
+
+            ticking.putAll(cont);
 
             eventsThisTick.clear();
         } else {
